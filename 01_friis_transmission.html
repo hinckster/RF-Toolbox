@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friis Transmission | RF Toolbox</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --card: #1e1e24; --border: #2a2a35;
+    --accent: #00c8ff; --accent2: #7b61ff; --text: #e2e2e8; --muted: #888899;
+    --green: #00e5a0;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  nav { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  nav a { color: var(--accent); text-decoration: none; font-size: 0.88rem; }
+  nav a:hover { text-decoration: underline; }
+  nav span { color: var(--muted); }
+
+  header { padding: 2rem 1.5rem 1.5rem; max-width: 1100px; margin: 0 auto; }
+  header .tag { font-size: 0.72rem; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.4rem; }
+  header h1 { font-size: 2rem; font-weight: 700; }
+  header p { color: var(--muted); margin-top: 0.4rem; }
+
+  .equation-box {
+    max-width: 1100px; margin: 0 auto 1.5rem; padding: 0 1.5rem;
+  }
+  .equation-box .eq-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1.2rem 1.5rem; display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center;
+  }
+  .eq-primary {
+    font-family: 'Courier New', monospace; font-size: 1.1rem; color: var(--accent);
+    flex: 1; min-width: 280px;
+  }
+  .eq-secondary { font-family: 'Courier New', monospace; font-size: 0.88rem; color: var(--accent2); }
+  .eq-note { font-size: 0.82rem; color: var(--muted); margin-top: 0.3rem; }
+
+  .layout {
+    display: grid; grid-template-columns: 320px 1fr; gap: 1.4rem;
+    max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem;
+  }
+  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem;
+  }
+  .panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1.1rem; }
+
+  .slider-row { margin-bottom: 1.1rem; }
+  .slider-row label { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.35rem; }
+  .slider-row label span { color: var(--accent); font-family: 'Courier New', monospace; font-weight: 600; }
+  input[type=range] {
+    width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer;
+  }
+  .slider-row .hints { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
+
+  .results { margin-top: 1.4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; }
+  .result-card .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .result-card .value { font-size: 1.3rem; font-weight: 700; color: var(--green); font-family: 'Courier New', monospace; margin-top: 0.15rem; }
+  .result-card .unit { font-size: 0.7rem; color: var(--muted); }
+
+  .chart-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; display: flex; flex-direction: column; }
+  .chart-panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
+  .chart-wrap { flex: 1; position: relative; min-height: 340px; }
+
+  .sweep-toggle { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; flex-wrap: wrap; }
+  .sweep-btn {
+    padding: 0.35rem 0.9rem; border-radius: 20px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--muted); font-size: 0.8rem; cursor: pointer; transition: 0.15s;
+  }
+  .sweep-btn.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">← RF Toolbox</a>
+  <span>/</span>
+  <span>01 Friis Transmission</span>
+</nav>
+
+<header>
+  <div class="tag">Tool 01</div>
+  <h1>Friis Transmission Equation</h1>
+  <p>Free-space link budget: received power as a function of distance and frequency</p>
+</header>
+
+<div class="equation-box">
+  <div class="eq-card">
+    <div>
+      <div class="eq-primary">Pr = Pt + Gt + Gr + 20·log₁₀(λ / 4πd)</div>
+      <div class="eq-note">all quantities in dBm / dB, d in metres, λ = c / f</div>
+    </div>
+    <div>
+      <div class="eq-secondary">FSPL(dB) = 20·log₁₀(d) + 20·log₁₀(f) − 147.55</div>
+      <div class="eq-note">free-space path loss (SI units)</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="panel">
+    <h3>Parameters</h3>
+
+    <div class="slider-row">
+      <label>Tx Power (Pt) <span id="lPt">20 dBm</span></label>
+      <input type="range" id="sPt" min="-10" max="50" value="20" step="1">
+      <div class="hints"><span>−10</span><span>50 dBm</span></div>
+    </div>
+    <div class="slider-row">
+      <label>Tx Antenna Gain (Gt) <span id="lGt">6 dBi</span></label>
+      <input type="range" id="sGt" min="0" max="40" value="6" step="0.5">
+      <div class="hints"><span>0</span><span>40 dBi</span></div>
+    </div>
+    <div class="slider-row">
+      <label>Rx Antenna Gain (Gr) <span id="lGr">6 dBi</span></label>
+      <input type="range" id="sGr" min="0" max="40" value="6" step="0.5">
+      <div class="hints"><span>0</span><span>40 dBi</span></div>
+    </div>
+    <div class="slider-row">
+      <label>Frequency <span id="lFreq">2.4 GHz</span></label>
+      <input type="range" id="sFreq" min="0.1" max="100" value="2.4" step="0.1">
+      <div class="hints"><span>100 MHz</span><span>100 GHz</span></div>
+    </div>
+    <div class="slider-row">
+      <label>Distance <span id="lDist">1000 m</span></label>
+      <input type="range" id="sDist" min="1" max="100000" value="1000" step="1">
+      <div class="hints"><span>1 m</span><span>100 km</span></div>
+    </div>
+
+    <div class="results">
+      <div class="result-card">
+        <div class="label">Received Power</div>
+        <div class="value" id="rPr">—</div>
+        <div class="unit">dBm</div>
+      </div>
+      <div class="result-card">
+        <div class="label">Path Loss</div>
+        <div class="value" id="rFSPL">—</div>
+        <div class="unit">dB</div>
+      </div>
+      <div class="result-card">
+        <div class="label">Wavelength</div>
+        <div class="value" id="rLambda">—</div>
+        <div class="unit">mm</div>
+      </div>
+      <div class="result-card">
+        <div class="label">Link Margin</div>
+        <div class="value" id="rMargin">—</div>
+        <div class="unit">dB vs −90 dBm</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-panel">
+    <h3>Sweep Plot</h3>
+    <div class="sweep-toggle">
+      <button class="sweep-btn active" data-sweep="distance" onclick="setSweep('distance')">Pr vs Distance</button>
+      <button class="sweep-btn" data-sweep="frequency" onclick="setSweep('frequency')">Pr vs Frequency</button>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="chart"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+const C = 3e8;
+const REF = -90; // dBm sensitivity reference
+
+let sweepMode = 'distance';
+
+const inputs = {
+  Pt: document.getElementById('sPt'),
+  Gt: document.getElementById('sGt'),
+  Gr: document.getElementById('sGr'),
+  freq: document.getElementById('sFreq'),
+  dist: document.getElementById('sDist'),
+};
+const labels = {
+  Pt: document.getElementById('lPt'),
+  Gt: document.getElementById('lGt'),
+  Gr: document.getElementById('lGr'),
+  freq: document.getElementById('lFreq'),
+  dist: document.getElementById('lDist'),
+};
+
+function friis(Pt, Gt, Gr, fGHz, dM) {
+  const lambda = C / (fGHz * 1e9);
+  const fspl = 20 * Math.log10(4 * Math.PI * dM / lambda);
+  const Pr = Pt + Gt + Gr - fspl;
+  return { Pr, fspl, lambda };
+}
+
+function getVals() {
+  return {
+    Pt: +inputs.Pt.value,
+    Gt: +inputs.Gt.value,
+    Gr: +inputs.Gr.value,
+    fGHz: +inputs.freq.value,
+    dM: +inputs.dist.value,
+  };
+}
+
+function formatFreq(f) { return f >= 1 ? f.toFixed(1) + ' GHz' : (f * 1000).toFixed(0) + ' MHz'; }
+function formatDist(d) { return d >= 1000 ? (d / 1000).toFixed(1) + ' km' : d.toFixed(0) + ' m'; }
+
+function updateLabels() {
+  const v = getVals();
+  labels.Pt.textContent = v.Pt + ' dBm';
+  labels.Gt.textContent = v.Gt + ' dBi';
+  labels.Gr.textContent = v.Gr + ' dBi';
+  labels.freq.textContent = formatFreq(v.fGHz);
+  labels.dist.textContent = formatDist(v.dM);
+}
+
+function updateResults() {
+  const v = getVals();
+  const { Pr, fspl, lambda } = friis(v.Pt, v.Gt, v.Gr, v.fGHz, v.dM);
+  document.getElementById('rPr').textContent = Pr.toFixed(1);
+  document.getElementById('rFSPL').textContent = fspl.toFixed(1);
+  document.getElementById('rLambda').textContent = (lambda * 1000).toFixed(1);
+  document.getElementById('rMargin').textContent = (Pr - REF).toFixed(1);
+}
+
+// Chart setup
+const ctx = document.getElementById('chart').getContext('2d');
+const chartData = {
+  labels: [],
+  datasets: [{
+    label: 'Received Power (dBm)',
+    data: [],
+    borderColor: '#00c8ff',
+    backgroundColor: 'rgba(0,200,255,0.08)',
+    borderWidth: 2,
+    pointRadius: 0,
+    fill: true,
+    tension: 0.3,
+  }, {
+    label: 'Sensitivity (−90 dBm)',
+    data: [],
+    borderColor: '#ff4d6d',
+    borderWidth: 1.5,
+    borderDash: [6, 4],
+    pointRadius: 0,
+    fill: false,
+  }]
+};
+
+const chart = new Chart(ctx, {
+  type: 'line',
+  data: chartData,
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 0 },
+    plugins: {
+      legend: { labels: { color: '#888899', font: { size: 11 } } },
+      tooltip: { mode: 'index', intersect: false }
+    },
+    scales: {
+      x: {
+        ticks: { color: '#888899', maxTicksLimit: 8, font: { size: 10 } },
+        grid: { color: '#2a2a35' },
+        title: { display: true, color: '#888899', font: { size: 11 } }
+      },
+      y: {
+        ticks: { color: '#888899', font: { size: 10 } },
+        grid: { color: '#2a2a35' },
+        title: { display: true, text: 'Power (dBm)', color: '#888899', font: { size: 11 } }
+      }
+    }
+  }
+});
+
+function buildDistanceSweep() {
+  const v = getVals();
+  const points = 120;
+  const dMax = 100000;
+  const xs = [], ys = [], ref = [];
+  for (let i = 0; i < points; i++) {
+    const d = Math.exp(Math.log(1) + (Math.log(dMax) - Math.log(1)) * i / (points - 1));
+    const { Pr } = friis(v.Pt, v.Gt, v.Gr, v.fGHz, d);
+    xs.push(d >= 1000 ? (d / 1000).toFixed(1) + 'km' : d.toFixed(0) + 'm');
+    ys.push(Pr);
+    ref.push(REF);
+  }
+  chart.data.labels = xs;
+  chart.data.datasets[0].data = ys;
+  chart.data.datasets[1].data = ref;
+  chart.options.scales.x.title.text = 'Distance';
+  chart.update('none');
+}
+
+function buildFrequencySweep() {
+  const v = getVals();
+  const points = 100;
+  const xs = [], ys = [], ref = [];
+  for (let i = 0; i < points; i++) {
+    const f = 0.1 + (100 - 0.1) * i / (points - 1);
+    const { Pr } = friis(v.Pt, v.Gt, v.Gr, f, v.dM);
+    xs.push(f >= 1 ? f.toFixed(1) + 'G' : (f * 1000).toFixed(0) + 'M');
+    ys.push(Pr);
+    ref.push(REF);
+  }
+  chart.data.labels = xs;
+  chart.data.datasets[0].data = ys;
+  chart.data.datasets[1].data = ref;
+  chart.options.scales.x.title.text = 'Frequency';
+  chart.update('none');
+}
+
+function updateChart() {
+  if (sweepMode === 'distance') buildDistanceSweep();
+  else buildFrequencySweep();
+}
+
+function setSweep(mode) {
+  sweepMode = mode;
+  document.querySelectorAll('.sweep-btn').forEach(b => b.classList.toggle('active', b.dataset.sweep === mode));
+  updateChart();
+}
+
+function onInput() { updateLabels(); updateResults(); updateChart(); }
+
+Object.values(inputs).forEach(el => el.addEventListener('input', onInput));
+onInput();
+</script>
+</body>
+</html>

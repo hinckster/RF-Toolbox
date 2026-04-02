@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Antenna Array Factor | RF Toolbox</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --card: #1e1e24; --border: #2a2a35;
+    --accent: #00c8ff; --accent2: #7b61ff; --text: #e2e2e8; --muted: #888899;
+    --green: #00e5a0; --orange: #ffaa00;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+  nav { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  nav a { color: var(--accent); text-decoration: none; font-size: 0.88rem; }
+  nav span { color: var(--muted); }
+  header { padding: 2rem 1.5rem 1.5rem; max-width: 1100px; margin: 0 auto; }
+  header .tag { font-size: 0.72rem; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.4rem; }
+  header h1 { font-size: 2rem; font-weight: 700; }
+  header p { color: var(--muted); margin-top: 0.4rem; }
+
+  .equation-box { max-width: 1100px; margin: 0 auto 1.5rem; padding: 0 1.5rem; }
+  .eq-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem 1.5rem; display: flex; flex-wrap: wrap; gap: 2rem; }
+  .eq-primary { font-family: 'Courier New', monospace; font-size: 1rem; color: var(--accent); margin-bottom: 0.3rem; }
+  .eq-secondary { font-family: 'Courier New', monospace; font-size: 0.84rem; color: var(--accent2); }
+  .eq-note { font-size: 0.79rem; color: var(--muted); margin-top: 0.3rem; }
+
+  .layout { display: grid; grid-template-columns: 300px 1fr; gap: 1.4rem; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem; }
+  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
+  .panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
+
+  .slider-row { margin-bottom: 1rem; }
+  .slider-row label { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.3rem; }
+  .slider-row label span { color: var(--orange); font-family: 'Courier New', monospace; font-weight: 600; }
+  input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
+  .hints { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 0.15rem; }
+
+  .results { margin-top: 1.2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem; }
+  .result-card .label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .result-card .value { font-size: 1.2rem; font-weight: 700; color: var(--green); font-family: 'Courier New', monospace; }
+  .result-card .unit { font-size: 0.68rem; color: var(--muted); }
+
+  .chart-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; display: flex; flex-direction: column; gap: 1rem; }
+  .chart-panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+  .chart-wrap { position: relative; min-height: 360px; }
+  .polar-wrap { position: relative; min-height: 360px; }
+
+  .plot-tabs { display: flex; gap: 0.5rem; }
+  .tab-btn { padding: 0.3rem 0.8rem; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 0.78rem; cursor: pointer; transition: 0.15s; }
+  .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+
+  canvas#polar { display: block; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">← RF Toolbox</a>
+  <span>/</span>
+  <span>04 Antenna Array Factor</span>
+</nav>
+
+<header>
+  <div class="tag">Tool 04</div>
+  <h1>Antenna Array Factor (ULA)</h1>
+  <p>Uniform Linear Array beam pattern with phase-steering</p>
+</header>
+
+<div class="equation-box">
+  <div class="eq-card">
+    <div>
+      <div class="eq-primary">AF(θ) = sin(N·ψ/2) / [N · sin(ψ/2)]</div>
+      <div class="eq-note">normalised array factor for N isotropic elements</div>
+    </div>
+    <div>
+      <div class="eq-secondary">ψ = k·d·cos(θ) + β</div>
+      <div class="eq-secondary">k = 2π/λ &nbsp;|&nbsp; β = −k·d·cos(θ₀)</div>
+      <div class="eq-note">d = element spacing, θ₀ = scan angle, θ = observation angle</div>
+    </div>
+    <div>
+      <div class="eq-secondary">HPBW ≈ 0.886·λ / (N·d) [rad]</div>
+      <div class="eq-secondary">Directivity ≈ N·d/λ · 2 (broadside, λ/2 spacing)</div>
+      <div class="eq-note">first null at ψ = ±2π/N</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="panel">
+    <h3>Array Parameters</h3>
+
+    <div class="slider-row">
+      <label>Elements (N) <span id="lN">8</span></label>
+      <input type="range" id="sN" min="2" max="64" value="8" step="1">
+      <div class="hints"><span>2</span><span>64</span></div>
+    </div>
+    <div class="slider-row">
+      <label>Spacing (d/λ) <span id="lD">0.50 λ</span></label>
+      <input type="range" id="sD" min="0.1" max="1.5" value="0.5" step="0.05">
+      <div class="hints"><span>0.1λ</span><span>1.5λ</span></div>
+    </div>
+    <div class="slider-row">
+      <label>Scan Angle (θ₀) <span id="lTheta">90°</span></label>
+      <input type="range" id="sTheta" min="0" max="180" value="90" step="1">
+      <div class="hints"><span>0° (endfire)</span><span>180°</span></div>
+    </div>
+    <div class="slider-row">
+      <label>Element Taper <span id="lTaper">Uniform</span></label>
+      <input type="range" id="sTaper" min="0" max="2" value="0" step="1">
+      <div class="hints"><span>Uniform</span><span>Cosine</span></div>
+    </div>
+
+    <div class="results">
+      <div class="result-card">
+        <div class="label">Array Gain</div>
+        <div class="value" id="rGain">—</div>
+        <div class="unit">dBi (N isotropic)</div>
+      </div>
+      <div class="result-card">
+        <div class="label">HPBW</div>
+        <div class="value" id="rHPBW">—</div>
+        <div class="unit">degrees</div>
+      </div>
+      <div class="result-card">
+        <div class="label">First Null</div>
+        <div class="value" id="rNull">—</div>
+        <div class="unit">degrees from θ₀</div>
+      </div>
+      <div class="result-card">
+        <div class="label">SLL</div>
+        <div class="value" id="rSLL">—</div>
+        <div class="unit">dBc</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-panel">
+    <div class="plot-tabs">
+      <button class="tab-btn active" onclick="setTab('rect')">Rectangular (dB vs θ)</button>
+      <button class="tab-btn" onclick="setTab('polar')">Polar Pattern</button>
+    </div>
+
+    <div id="rectView" class="chart-wrap">
+      <canvas id="chartAF"></canvas>
+    </div>
+    <div id="polarView" class="polar-wrap" style="display:none;">
+      <canvas id="polar"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+let activeTab = 'rect';
+
+function setTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('rectView').style.display  = tab === 'rect'  ? '' : 'none';
+  document.getElementById('polarView').style.display = tab === 'polar' ? '' : 'none';
+  if (tab === 'polar') drawPolar();
+}
+
+function get(id) { return +document.getElementById(id).value; }
+
+const taperNames = ['Uniform', 'Hann', 'Cosine'];
+
+function arrayFactor(theta_rad, N, d_lambda, theta0_rad, taperType) {
+  // Manual DFT-style sum for flexibility with taper
+  const k_times_d = 2 * Math.PI * d_lambda; // k*d (normalised)
+  let re = 0, im = 0;
+  for (let n = 0; n < N; n++) {
+    let w = 1;
+    if (taperType === 1) w = 0.5 - 0.5 * Math.cos(2 * Math.PI * n / (N - 1)); // Hann
+    if (taperType === 2) w = Math.cos(Math.PI * (n - (N-1)/2) / N);            // Cosine
+    const phase = k_times_d * (Math.cos(theta_rad) - Math.cos(theta0_rad)) * n;
+    re += w * Math.cos(phase);
+    im += w * Math.sin(phase);
+  }
+  return Math.sqrt(re * re + im * im);
+}
+
+function buildPattern() {
+  const N     = get('sN');
+  const d     = get('sD');
+  const th0   = get('sTheta') * Math.PI / 180;
+  const taper = get('sTaper');
+  const pts   = 360;
+  const thetas = [], vals_dB = [], vals_lin = [];
+  // normalise to max
+  let maxVal = 0;
+  for (let i = 0; i <= pts; i++) {
+    const th = i * Math.PI / pts;
+    const af = arrayFactor(th, N, d, th0, taper);
+    if (af > maxVal) maxVal = af;
+  }
+  for (let i = 0; i <= pts; i++) {
+    const th = i * Math.PI / pts; // 0 to π
+    const af = arrayFactor(th, N, d, th0, taper) / maxVal;
+    thetas.push((i).toFixed(1));
+    const dB = 20 * Math.log10(Math.max(af, 1e-6));
+    vals_dB.push(dB);
+    vals_lin.push(af);
+  }
+  return { thetas, vals_dB, vals_lin };
+}
+
+// Rectangular chart
+const ctx = document.getElementById('chartAF').getContext('2d');
+const chartAF = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Array Factor (dB)',
+      data: [],
+      borderColor: '#00c8ff',
+      backgroundColor: 'rgba(0,200,255,0.07)',
+      borderWidth: 2,
+      pointRadius: 0,
+      fill: true,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, animation: { duration: 0 },
+    plugins: { legend: { labels: { color: '#888899', font: { size: 11 } } } },
+    scales: {
+      x: {
+        ticks: { color: '#888899', maxTicksLimit: 10, font: { size: 10 },
+          callback: (v, i) => i % 36 === 0 ? i + '°' : '' },
+        grid: { color: '#2a2a35' },
+        title: { display: true, text: 'θ (degrees)', color: '#888899', font: { size: 11 } }
+      },
+      y: {
+        min: -50, max: 5,
+        ticks: { color: '#888899', font: { size: 10 } },
+        grid: { color: '#2a2a35' },
+        title: { display: true, text: 'Array Factor (dB)', color: '#888899', font: { size: 11 } }
+      }
+    }
+  }
+});
+
+function drawPolar() {
+  const canvas = document.getElementById('polar');
+  canvas.width  = canvas.offsetWidth  || 500;
+  canvas.height = canvas.offsetHeight || 360;
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  const R = Math.min(cx, cy) - 30;
+  const c = canvas.getContext('2d');
+  c.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Grid circles at -10, -20, -30 dB
+  c.strokeStyle = '#2a2a35'; c.lineWidth = 1;
+  [1, 0.316, 0.1, 0.0316].forEach((r, i) => {
+    c.beginPath();
+    c.arc(cx, cy, R * r, 0, 2 * Math.PI);
+    c.stroke();
+    if (i > 0) {
+      c.fillStyle = '#555'; c.font = '10px monospace';
+      c.fillText([-10,-20,-30][i-1]+'dB', cx + R*r + 2, cy - 2);
+    }
+  });
+  // Radial lines
+  for (let a = 0; a < 360; a += 30) {
+    const rad = a * Math.PI / 180;
+    c.beginPath(); c.moveTo(cx, cy);
+    c.lineTo(cx + R * Math.cos(rad), cy - R * Math.sin(rad));
+    c.stroke();
+    c.fillStyle = '#666'; c.font = '10px sans-serif';
+    const tx = cx + (R + 16) * Math.cos(rad) - 8;
+    const ty = cy - (R + 16) * Math.sin(rad) + 4;
+    c.fillText(a + '°', tx, ty);
+  }
+
+  const N   = get('sN');
+  const d   = get('sD');
+  const th0 = get('sTheta') * Math.PI / 180;
+  const tap = get('sTaper');
+  let maxVal = 0;
+  for (let i = 0; i < 360; i++) {
+    const a = arrayFactor(i * Math.PI / 180, N, d, th0, tap);
+    if (a > maxVal) maxVal = a;
+  }
+
+  c.beginPath(); c.strokeStyle = '#00c8ff'; c.lineWidth = 2;
+  for (let i = 0; i <= 360; i++) {
+    const theta = i * Math.PI / 180; // elevation sweep 0-180, then mirror
+    const af = arrayFactor(theta % Math.PI, N, d, th0, tap) / maxVal;
+    const dBlin = Math.max(af, 1e-6);
+    const rr = R * dBlin; // linear radius
+    // Map θ: 0° = up (north), 90° = right
+    const plotAngle = theta - Math.PI / 2;
+    const px = cx + rr * Math.cos(plotAngle);
+    const py = cy + rr * Math.sin(plotAngle);
+    if (i === 0) c.moveTo(px, py); else c.lineTo(px, py);
+  }
+  c.stroke();
+}
+
+function computeMetrics(vals_dB, vals_lin) {
+  const N = get('sN'), d = get('sD'), th0_deg = get('sTheta');
+  // HPBW: find angles where |AF|^2 = 0.5
+  const half = 1 / Math.sqrt(2);
+  let hpbw = 0;
+  let abovePrev = false;
+  let crossings = [];
+  for (let i = 0; i < vals_lin.length; i++) {
+    const above = vals_lin[i] >= half;
+    if (i > 0 && above !== abovePrev) crossings.push(i);
+    abovePrev = above;
+  }
+  if (crossings.length >= 2) hpbw = crossings[crossings.length-1] - crossings[0];
+  else hpbw = Math.round(0.886 / (N * d) * 180 / Math.PI);
+
+  // SLL: second peak after main lobe nulls
+  let inMainLobe = true;
+  let firstNull = -1, sll = -13.3;
+  for (let i = 1; i < vals_lin.length - 1; i++) {
+    if (inMainLobe && vals_lin[i] < 0.05) { firstNull = i; inMainLobe = false; }
+    if (!inMainLobe && vals_lin[i] > vals_lin[i-1] && vals_lin[i] > vals_lin[i+1]) {
+      sll = vals_dB[i]; break;
+    }
+  }
+  const firstNullDeg = firstNull > 0 ? Math.abs(firstNull - th0_deg) : Math.round(180 / N);
+  return { hpbw, sll, firstNullDeg };
+}
+
+function update() {
+  const N    = get('sN');
+  const d    = get('sD');
+  const th0  = get('sTheta');
+  const tap  = get('sTaper');
+
+  document.getElementById('lN').textContent     = N;
+  document.getElementById('lD').textContent     = d.toFixed(2) + ' λ';
+  document.getElementById('lTheta').textContent = th0 + '°';
+  document.getElementById('lTaper').textContent = taperNames[tap];
+
+  const { thetas, vals_dB, vals_lin } = buildPattern();
+  chartAF.data.labels = thetas;
+  chartAF.data.datasets[0].data = vals_dB.map(v => +v.toFixed(2));
+  chartAF.update('none');
+
+  if (activeTab === 'polar') drawPolar();
+
+  const { hpbw, sll, firstNullDeg } = computeMetrics(vals_dB, vals_lin);
+  document.getElementById('rGain').textContent = (10 * Math.log10(N)).toFixed(1);
+  document.getElementById('rHPBW').textContent = hpbw.toFixed(0);
+  document.getElementById('rSLL').textContent  = sll.toFixed(1);
+  document.getElementById('rNull').textContent = firstNullDeg.toFixed(0);
+}
+
+document.querySelectorAll('input[type=range]').forEach(el => el.addEventListener('input', update));
+window.addEventListener('resize', () => { if (activeTab === 'polar') drawPolar(); });
+update();
+</script>
+</body>
+</html>

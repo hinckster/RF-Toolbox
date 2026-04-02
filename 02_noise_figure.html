@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Noise Figure Cascade | RF Toolbox</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --card: #1e1e24; --border: #2a2a35;
+    --accent: #00c8ff; --accent2: #7b61ff; --text: #e2e2e8; --muted: #888899;
+    --green: #00e5a0; --orange: #ffaa00;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  nav { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  nav a { color: var(--accent); text-decoration: none; font-size: 0.88rem; }
+  nav span { color: var(--muted); }
+
+  header { padding: 2rem 1.5rem 1.5rem; max-width: 1100px; margin: 0 auto; }
+  header .tag { font-size: 0.72rem; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.4rem; }
+  header h1 { font-size: 2rem; font-weight: 700; }
+  header p { color: var(--muted); margin-top: 0.4rem; }
+
+  .equation-box { max-width: 1100px; margin: 0 auto 1.5rem; padding: 0 1.5rem; }
+  .eq-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1.2rem 1.5rem;
+  }
+  .eq-primary { font-family: 'Courier New', monospace; font-size: 1rem; color: var(--accent); margin-bottom: 0.5rem; }
+  .eq-secondary { font-family: 'Courier New', monospace; font-size: 0.84rem; color: var(--accent2); }
+  .eq-note { font-size: 0.8rem; color: var(--muted); margin-top: 0.4rem; }
+
+  .layout {
+    display: grid; grid-template-columns: 340px 1fr; gap: 1.4rem;
+    max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem;
+  }
+  @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
+  .panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
+
+  .stage-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.9rem 1rem; margin-bottom: 0.8rem; }
+  .stage-block .stage-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.7rem; }
+  .stage-label { font-size: 0.82rem; font-weight: 600; color: var(--accent); }
+  .stage-contrib { font-size: 0.72rem; color: var(--muted); font-family: 'Courier New', monospace; }
+
+  .mini-slider { margin-bottom: 0.6rem; }
+  .mini-slider label { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 0.25rem; }
+  .mini-slider label span { color: var(--orange); font-family: 'Courier New', monospace; font-weight: 600; font-size: 0.8rem; }
+  input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
+
+  .results { margin-top: 1.2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem; }
+  .result-card .label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .result-card .value { font-size: 1.2rem; font-weight: 700; color: var(--green); font-family: 'Courier New', monospace; }
+  .result-card .unit { font-size: 0.7rem; color: var(--muted); }
+
+  .chart-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; display: flex; flex-direction: column; gap: 1rem; }
+  .chart-panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+  .chart-wrap { position: relative; min-height: 250px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">← RF Toolbox</a>
+  <span>/</span>
+  <span>02 Noise Figure Cascade</span>
+</nav>
+
+<header>
+  <div class="tag">Tool 02</div>
+  <h1>Noise Figure Cascade (Friis)</h1>
+  <p>System noise factor and noise figure for a chain of up to 4 stages</p>
+</header>
+
+<div class="equation-box">
+  <div class="eq-card">
+    <div class="eq-primary">F_sys = F₁ + (F₂ − 1)/G₁ + (F₃ − 1)/(G₁·G₂) + (F₄ − 1)/(G₁·G₂·G₃)</div>
+    <div class="eq-secondary">NF_sys = 10·log₁₀(F_sys) &nbsp;|&nbsp; F = 10^(NF/10) &nbsp;|&nbsp; G = 10^(Gain/10)</div>
+    <div class="eq-note">Each subsequent stage is de-weighted by the cumulative gain preceding it. First stage dominates when G₁ is large.</div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="panel">
+    <h3>Stage Parameters</h3>
+
+    <!-- Stage 1 -->
+    <div class="stage-block" id="block1">
+      <div class="stage-header">
+        <span class="stage-label">Stage 1</span>
+        <span class="stage-contrib" id="contrib1"></span>
+      </div>
+      <div class="mini-slider">
+        <label>NF₁ <span id="lNF1">2.0 dB</span></label>
+        <input type="range" id="sNF1" min="0" max="20" value="2" step="0.1">
+      </div>
+      <div class="mini-slider">
+        <label>Gain₁ <span id="lG1">20.0 dB</span></label>
+        <input type="range" id="sG1" min="-10" max="40" value="20" step="0.5">
+      </div>
+    </div>
+
+    <!-- Stage 2 -->
+    <div class="stage-block" id="block2">
+      <div class="stage-header">
+        <span class="stage-label">Stage 2</span>
+        <span class="stage-contrib" id="contrib2"></span>
+      </div>
+      <div class="mini-slider">
+        <label>NF₂ <span id="lNF2">4.0 dB</span></label>
+        <input type="range" id="sNF2" min="0" max="20" value="4" step="0.1">
+      </div>
+      <div class="mini-slider">
+        <label>Gain₂ <span id="lG2">10.0 dB</span></label>
+        <input type="range" id="sG2" min="-10" max="40" value="10" step="0.5">
+      </div>
+    </div>
+
+    <!-- Stage 3 -->
+    <div class="stage-block" id="block3">
+      <div class="stage-header">
+        <span class="stage-label">Stage 3</span>
+        <span class="stage-contrib" id="contrib3"></span>
+      </div>
+      <div class="mini-slider">
+        <label>NF₃ <span id="lNF3">6.0 dB</span></label>
+        <input type="range" id="sNF3" min="0" max="20" value="6" step="0.1">
+      </div>
+      <div class="mini-slider">
+        <label>Gain₃ <span id="lG3">10.0 dB</span></label>
+        <input type="range" id="sG3" min="-10" max="40" value="10" step="0.5">
+      </div>
+    </div>
+
+    <!-- Stage 4 -->
+    <div class="stage-block" id="block4">
+      <div class="stage-header">
+        <span class="stage-label">Stage 4</span>
+        <span class="stage-contrib" id="contrib4"></span>
+      </div>
+      <div class="mini-slider">
+        <label>NF₄ <span id="lNF4">8.0 dB</span></label>
+        <input type="range" id="sNF4" min="0" max="20" value="8" step="0.1">
+      </div>
+      <div class="mini-slider">
+        <label>Gain₄ <span id="lG4">10.0 dB</span></label>
+        <input type="range" id="sG4" min="-10" max="40" value="10" step="0.5">
+      </div>
+    </div>
+
+    <div class="results">
+      <div class="result-card">
+        <div class="label">System NF</div>
+        <div class="value" id="rNFsys">—</div>
+        <div class="unit">dB</div>
+      </div>
+      <div class="result-card">
+        <div class="label">Cumul. Gain</div>
+        <div class="value" id="rGtot">—</div>
+        <div class="unit">dB</div>
+      </div>
+      <div class="result-card">
+        <div class="label">Noise Temp</div>
+        <div class="value" id="rTeq">—</div>
+        <div class="unit">K (T₀=290 K)</div>
+      </div>
+      <div class="result-card">
+        <div class="label">Noise Floor</div>
+        <div class="value" id="rNfloor">—</div>
+        <div class="unit">dBm/Hz</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-panel">
+    <h3>Cumulative NF by Stage</h3>
+    <div class="chart-wrap">
+      <canvas id="chartNF"></canvas>
+    </div>
+    <h3>Stage NF Contribution</h3>
+    <div class="chart-wrap">
+      <canvas id="chartContrib"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+const NFs = [2,3,4,5,6,7,8,9].map((_,i)=> [2,4,6,8][i] ?? 4);
+const Gs  = [20,10,10,10];
+
+function getStageParams() {
+  return [1,2,3,4].map(i => ({
+    NF: +document.getElementById(`sNF${i}`).value,
+    G:  +document.getElementById(`sG${i}`).value,
+  }));
+}
+
+function dBtoLin(dB) { return Math.pow(10, dB / 10); }
+function linTodB(lin) { return 10 * Math.log10(lin); }
+
+function computeCascade(stages) {
+  const F = stages.map(s => dBtoLin(s.NF));
+  const G = stages.map(s => dBtoLin(s.G));
+
+  // Cumulative F at each stage boundary
+  const cumF = [F[0]];
+  const contrib = [F[0] - 1]; // contribution of each stage to (F_sys - 1)
+  let cumG = G[0];
+  for (let i = 1; i < 4; i++) {
+    const c = (F[i] - 1) / cumG;
+    contrib.push(c);
+    cumF.push(cumF[cumF.length - 1] + c);
+    cumG *= G[i];
+  }
+
+  const Fsys = cumF[3];
+  return { cumF, contrib, Fsys, cumG };
+}
+
+// Charts
+const ctxNF = document.getElementById('chartNF').getContext('2d');
+const chartNF = new Chart(ctxNF, {
+  type: 'line',
+  data: {
+    labels: ['After Stg 1','After Stg 2','After Stg 3','After Stg 4'],
+    datasets: [{
+      label: 'Cumulative NF (dB)',
+      data: [],
+      borderColor: '#00c8ff',
+      backgroundColor: 'rgba(0,200,255,0.1)',
+      borderWidth: 2.5,
+      pointRadius: 5,
+      pointBackgroundColor: '#00c8ff',
+      fill: true,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, animation: { duration: 150 },
+    plugins: { legend: { labels: { color: '#888899', font: { size: 11 } } } },
+    scales: {
+      x: { ticks: { color: '#888899' }, grid: { color: '#2a2a35' } },
+      y: { ticks: { color: '#888899' }, grid: { color: '#2a2a35' },
+           title: { display: true, text: 'NF (dB)', color: '#888899', font: { size: 11 } } }
+    }
+  }
+});
+
+const ctxC = document.getElementById('chartContrib').getContext('2d');
+const chartContrib = new Chart(ctxC, {
+  type: 'bar',
+  data: {
+    labels: ['Stage 1','Stage 2','Stage 3','Stage 4'],
+    datasets: [{
+      label: 'Noise Factor Contribution',
+      data: [],
+      backgroundColor: ['#00c8ff88','#7b61ff88','#ffaa0088','#ff4d6d88'],
+      borderColor:     ['#00c8ff','#7b61ff','#ffaa00','#ff4d6d'],
+      borderWidth: 1.5,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, animation: { duration: 150 },
+    plugins: { legend: { labels: { color: '#888899', font: { size: 11 } } } },
+    scales: {
+      x: { ticks: { color: '#888899' }, grid: { color: '#2a2a35' } },
+      y: { ticks: { color: '#888899' }, grid: { color: '#2a2a35' },
+           title: { display: true, text: 'ΔF contribution (linear)', color: '#888899', font: { size: 11 } } }
+    }
+  }
+});
+
+function update() {
+  const stages = getStageParams();
+  // update labels
+  [1,2,3,4].forEach(i => {
+    document.getElementById(`lNF${i}`).textContent = stages[i-1].NF.toFixed(1) + ' dB';
+    document.getElementById(`lG${i}`).textContent  = stages[i-1].G.toFixed(1) + ' dB';
+  });
+
+  const { cumF, contrib, Fsys, cumG } = computeCascade(stages);
+
+  chartNF.data.datasets[0].data = cumF.map(f => linTodB(f).toFixed(3));
+  chartNF.update('none');
+
+  chartContrib.data.datasets[0].data = contrib.map(c => +c.toFixed(6));
+  chartContrib.update('none');
+
+  // Stage contributions as % of total (F-1)
+  const total_contrib = Fsys - 1;
+  [1,2,3,4].forEach((i,idx) => {
+    const pct = total_contrib > 0 ? (contrib[idx] / total_contrib * 100).toFixed(1) : '0.0';
+    document.getElementById(`contrib${i}`).textContent = pct + '% of total';
+  });
+
+  const T0 = 290;
+  const Teq = T0 * (Fsys - 1);
+  const NF_sys = linTodB(Fsys);
+  const G_tot = stages.reduce((a,s) => a + s.G, 0);
+  const nfloor = -174 + NF_sys; // dBm/Hz at T0
+
+  document.getElementById('rNFsys').textContent  = NF_sys.toFixed(2);
+  document.getElementById('rGtot').textContent   = G_tot.toFixed(1);
+  document.getElementById('rTeq').textContent    = Teq.toFixed(0);
+  document.getElementById('rNfloor').textContent = nfloor.toFixed(1);
+}
+
+document.querySelectorAll('input[type=range]').forEach(el => el.addEventListener('input', update));
+update();
+</script>
+</body>
+</html>

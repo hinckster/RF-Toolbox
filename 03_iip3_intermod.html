@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IIP3 &amp; Intermod | RF Toolbox</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --card: #1e1e24; --border: #2a2a35;
+    --accent: #00c8ff; --accent2: #7b61ff; --text: #e2e2e8; --muted: #888899;
+    --green: #00e5a0; --orange: #ffaa00; --red: #ff4d6d;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+  nav { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  nav a { color: var(--accent); text-decoration: none; font-size: 0.88rem; }
+  nav span { color: var(--muted); }
+  header { padding: 2rem 1.5rem 1.5rem; max-width: 1100px; margin: 0 auto; }
+  header .tag { font-size: 0.72rem; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.4rem; }
+  header h1 { font-size: 2rem; font-weight: 700; }
+  header p { color: var(--muted); margin-top: 0.4rem; }
+
+  .equation-box { max-width: 1100px; margin: 0 auto 1.5rem; padding: 0 1.5rem; }
+  .eq-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1.2rem 1.5rem; display: flex; flex-wrap: wrap; gap: 1.5rem;
+  }
+  .eq-col { min-width: 240px; }
+  .eq-primary { font-family: 'Courier New', monospace; font-size: 0.98rem; color: var(--accent); margin-bottom: 0.3rem; }
+  .eq-secondary { font-family: 'Courier New', monospace; font-size: 0.84rem; color: var(--accent2); }
+  .eq-note { font-size: 0.79rem; color: var(--muted); margin-top: 0.3rem; }
+
+  .layout { display: grid; grid-template-columns: 310px 1fr; gap: 1.4rem; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem; }
+  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
+  .panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
+
+  .slider-row { margin-bottom: 1rem; }
+  .slider-row label { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.3rem; }
+  .slider-row label span { color: var(--orange); font-family: 'Courier New', monospace; font-weight: 600; }
+  input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
+  .hints { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 0.15rem; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+
+  .results { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.4rem; }
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem; }
+  .result-card .label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .result-card .value { font-size: 1.2rem; font-weight: 700; font-family: 'Courier New', monospace; margin-top: 0.1rem; }
+  .result-card .unit { font-size: 0.68rem; color: var(--muted); }
+  .v-green { color: var(--green); }
+  .v-orange { color: var(--orange); }
+  .v-red { color: var(--red); }
+  .v-accent { color: var(--accent); }
+
+  .chart-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
+  .chart-panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
+  .chart-wrap { position: relative; min-height: 420px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">← RF Toolbox</a>
+  <span>/</span>
+  <span>03 IIP3 &amp; Intermod</span>
+</nav>
+
+<header>
+  <div class="tag">Tool 03</div>
+  <h1>IIP3 &amp; Third-Order Intermodulation</h1>
+  <p>Fundamental and IM3 spur intercept for a two-tone test</p>
+</header>
+
+<div class="equation-box">
+  <div class="eq-card">
+    <div class="eq-col">
+      <div class="eq-primary">P_fund(out) = G + Pin</div>
+      <div class="eq-primary">P_IM3(out) = 3·Pin − 2·IIP3 + G</div>
+      <div class="eq-note">slopes: fundamental = 1 dB/dB, IM3 = 3 dB/dB</div>
+    </div>
+    <div class="eq-col">
+      <div class="eq-secondary">OIP3 = IIP3 + G</div>
+      <div class="eq-secondary">IM3 dBc = 2·(IIP3 − Pin)</div>
+      <div class="eq-secondary">P_1dB ≈ IIP3 − 9.6 dB</div>
+      <div class="eq-note">intercept point where fund = IM3 line</div>
+    </div>
+    <div class="eq-col">
+      <div class="eq-secondary">1/IIP3_sys = Σ Gᵢ / IIP3ᵢ</div>
+      <div class="eq-note">cascaded IIP3 (linear voltages) — later stages dominate after gain</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="panel">
+    <h3>Single-Stage Parameters</h3>
+    <div class="slider-row">
+      <label>Input Power (Pin) <span id="lPin">−30 dBm</span></label>
+      <input type="range" id="sPin" min="-60" max="20" value="-30" step="1">
+      <div class="hints"><span>−60</span><span>+20 dBm</span></div>
+    </div>
+    <div class="slider-row">
+      <label>Gain (G) <span id="lG">20 dB</span></label>
+      <input type="range" id="sG" min="-10" max="40" value="20" step="0.5">
+      <div class="hints"><span>−10</span><span>40 dB</span></div>
+    </div>
+    <div class="slider-row">
+      <label>IIP3 <span id="lIIP3">+10 dBm</span></label>
+      <input type="range" id="sIIP3" min="-20" max="50" value="10" step="1">
+      <div class="hints"><span>−20</span><span>+50 dBm</span></div>
+    </div>
+
+    <div class="results">
+      <div class="result-card"><div class="label">P_fund (out)</div><div class="value v-green" id="rPfund">—</div><div class="unit">dBm</div></div>
+      <div class="result-card"><div class="label">P_IM3 (out)</div><div class="value v-red" id="rPIM3">—</div><div class="unit">dBm</div></div>
+      <div class="result-card"><div class="label">OIP3</div><div class="value v-accent" id="rOIP3">—</div><div class="unit">dBm</div></div>
+      <div class="result-card"><div class="label">IM3 dBc</div><div class="value v-orange" id="rIM3c">—</div><div class="unit">dBc</div></div>
+      <div class="result-card"><div class="label">P_1dB (in)</div><div class="value v-accent" id="rP1dB">—</div><div class="unit">dBm</div></div>
+      <div class="result-card"><div class="label">SFDR</div><div class="value v-green" id="rSFDR">—</div><div class="unit">dB</div></div>
+    </div>
+
+    <hr class="divider">
+    <h3>Noise Floor for SFDR</h3>
+    <div class="slider-row">
+      <label>System NF <span id="lNF">5 dB</span></label>
+      <input type="range" id="sNF" min="0" max="20" value="5" step="0.5">
+      <div class="hints"><span>0</span><span>20 dB</span></div>
+    </div>
+    <div class="slider-row">
+      <label>Bandwidth <span id="lBW">1 MHz</span></label>
+      <input type="range" id="sBW" min="3" max="9" value="6" step="0.1">
+      <div class="hints"><span>1 kHz</span><span>1 GHz</span></div>
+    </div>
+  </div>
+
+  <div class="chart-panel">
+    <h3>Power Transfer Plot (Two-Tone)</h3>
+    <div class="chart-wrap">
+      <canvas id="chart"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+const ids = {
+  Pin: 'sPin', G: 'sG', IIP3: 'sIIP3', NF: 'sNF', BW: 'sBW'
+};
+
+function get(id) { return +document.getElementById(id).value; }
+
+function computeChart(IIP3, G, Pin) {
+  const n = 100;
+  const pMin = -70, pMax = 30;
+  const labels = [], fund = [], im3 = [];
+  for (let i = 0; i < n; i++) {
+    const p = pMin + (pMax - pMin) * i / (n - 1);
+    labels.push(p.toFixed(1));
+    fund.push(Math.min(p + G, IIP3 + G)); // compress at OIP3
+    im3.push(3 * p - 2 * IIP3 + G);
+  }
+  return { labels, fund, im3 };
+}
+
+const ctx = document.getElementById('chart').getContext('2d');
+const myChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [
+      {
+        label: 'Fundamental Output',
+        data: [], borderColor: '#00c8ff', borderWidth: 2.5,
+        pointRadius: 0, fill: false, tension: 0,
+      },
+      {
+        label: 'IM3 Product',
+        data: [], borderColor: '#ff4d6d', borderWidth: 2,
+        pointRadius: 0, fill: false, tension: 0, borderDash: [5,3],
+      },
+      {
+        label: 'Operating Point',
+        data: [], borderColor: '#ffaa00', borderWidth: 0,
+        pointRadius: 8, pointBackgroundColor: '#ffaa00',
+        showLine: false, fill: false,
+      },
+      {
+        label: 'OIP3 / IIP3',
+        data: [], borderColor: '#7b61ff', borderWidth: 0,
+        pointRadius: 8, pointBackgroundColor: '#7b61ff', pointStyle: 'crossRot',
+        showLine: false, fill: false,
+      },
+      {
+        label: 'Noise Floor',
+        data: [], borderColor: '#444466', borderWidth: 1.5,
+        pointRadius: 0, fill: false, tension: 0, borderDash: [2,4],
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, animation: { duration: 0 },
+    plugins: { legend: { labels: { color: '#888899', font: { size: 11 } } }, tooltip: { mode: 'index', intersect: false } },
+    scales: {
+      x: {
+        ticks: { color: '#888899', maxTicksLimit: 10, font: { size: 10 } },
+        grid: { color: '#2a2a35' },
+        title: { display: true, text: 'Input Power (dBm)', color: '#888899', font: { size: 11 } }
+      },
+      y: {
+        ticks: { color: '#888899', font: { size: 10 } },
+        grid: { color: '#2a2a35' },
+        min: -150, max: 60,
+        title: { display: true, text: 'Output Power (dBm)', color: '#888899', font: { size: 11 } }
+      }
+    }
+  }
+});
+
+function update() {
+  const Pin  = get('sPin');
+  const G    = get('sG');
+  const IIP3 = get('sIIP3');
+  const NF   = get('sNF');
+  const BWlog = get('sBW'); // log10 of BW in Hz: 3=1kHz, 6=1MHz, 9=1GHz
+  const BW_Hz = Math.pow(10, BWlog);
+
+  document.getElementById('lPin').textContent  = (Pin >= 0 ? '+' : '') + Pin + ' dBm';
+  document.getElementById('lG').textContent    = G + ' dB';
+  document.getElementById('lIIP3').textContent = (IIP3 >= 0 ? '+' : '') + IIP3 + ' dBm';
+  document.getElementById('lNF').textContent   = NF + ' dB';
+  const bwLabel = BW_Hz >= 1e9 ? '1 GHz' : BW_Hz >= 1e6 ? (BW_Hz/1e6).toFixed(1)+' MHz' : BW_Hz >= 1e3 ? (BW_Hz/1e3).toFixed(1)+' kHz' : BW_Hz+'Hz';
+  document.getElementById('lBW').textContent   = bwLabel;
+
+  const OIP3 = IIP3 + G;
+  const Pfund = Pin + G;
+  const PIM3  = 3 * Pin - 2 * IIP3 + G;
+  const IM3c  = PIM3 - Pfund;
+  const P1dBin = IIP3 - 9.6;
+  const noiseFloor_dBm = -174 + NF + 10 * Math.log10(BW_Hz);
+  // SFDR = 2/3 * (OIP3 - noiseFloor)
+  const SFDR = (2/3) * (OIP3 - noiseFloor_dBm);
+
+  document.getElementById('rPfund').textContent = Pfund.toFixed(1);
+  document.getElementById('rPIM3').textContent  = PIM3.toFixed(1);
+  document.getElementById('rOIP3').textContent  = OIP3.toFixed(1);
+  document.getElementById('rIM3c').textContent  = IM3c.toFixed(1);
+  document.getElementById('rP1dB').textContent  = P1dBin.toFixed(1);
+  document.getElementById('rSFDR').textContent  = SFDR.toFixed(1);
+
+  const { labels, fund, im3 } = computeChart(IIP3, G, Pin);
+  const nFloorArr = labels.map(() => noiseFloor_dBm);
+
+  myChart.data.labels = labels;
+  myChart.data.datasets[0].data = fund;
+  myChart.data.datasets[1].data = im3;
+  // Operating point
+  myChart.data.datasets[2].data = [{ x: Pin.toFixed(1), y: Pfund }];
+  // OIP3/IIP3 intercept mark
+  myChart.data.datasets[3].data = [{ x: IIP3.toFixed(1), y: OIP3 }];
+  myChart.data.datasets[4].data = nFloorArr;
+  myChart.update('none');
+}
+
+document.querySelectorAll('input[type=range]').forEach(el => el.addEventListener('input', update));
+update();
+</script>
+</body>
+</html>

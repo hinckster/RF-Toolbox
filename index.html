@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RF Engineering Toolbox</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f;
+    --surface: #16161a;
+    --card: #1e1e24;
+    --border: #2a2a35;
+    --accent: #00c8ff;
+    --accent2: #7b61ff;
+    --text: #e2e2e8;
+    --muted: #888899;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  header {
+    padding: 3rem 2rem 2rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #0d0d20 0%, var(--bg) 100%);
+  }
+  header h1 {
+    font-size: 2.6rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  header p { margin-top: 0.6rem; color: var(--muted); font-size: 1.05rem; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.4rem;
+    max-width: 1100px;
+    margin: 3rem auto;
+    padding: 0 1.5rem;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.6rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0,200,255,0.12);
+  }
+  .card-icon { font-size: 2rem; }
+  .card-num { font-size: 0.72rem; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
+  .card h2 { font-size: 1.15rem; font-weight: 600; }
+  .card p { font-size: 0.88rem; color: var(--muted); line-height: 1.55; }
+  .card .eq {
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    color: var(--accent2);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    margin-top: auto;
+  }
+
+  footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted);
+    font-size: 0.82rem;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>RF Engineering Toolbox</h1>
+  <p>Interactive calculators for RF &amp; microwave systems analysis</p>
+</header>
+
+<div class="grid">
+
+  <a class="card" href="01_friis_transmission.html">
+    <div class="card-icon">📡</div>
+    <div class="card-num">Tool 01</div>
+    <h2>Friis Transmission</h2>
+    <p>Calculate received power in a free-space link. Sweep distance or frequency and observe path loss in real time.</p>
+    <div class="eq">Pr = Pt + Gt + Gr + 20·log(λ/4πd)</div>
+  </a>
+
+  <a class="card" href="02_noise_figure.html">
+    <div class="card-icon">🔊</div>
+    <div class="card-num">Tool 02</div>
+    <h2>Noise Figure Cascade</h2>
+    <p>Friis cascade formula for up to 4 stages. See how each stage's NF and gain shape the system noise floor.</p>
+    <div class="eq">F = F₁ + (F₂-1)/G₁ + (F₃-1)/G₁G₂ + …</div>
+  </a>
+
+  <a class="card" href="03_iip3_intermod.html">
+    <div class="card-icon">📈</div>
+    <div class="card-num">Tool 03</div>
+    <h2>IIP3 &amp; Intermod</h2>
+    <p>Third-order intercept and IM3 product calculator. Visualise the fundamental and spur intercept on a log–log plot.</p>
+    <div class="eq">OIP3 = Pin + (Pfund - PIM3)/2</div>
+  </a>
+
+  <a class="card" href="04_antenna_array.html">
+    <div class="card-icon">🔭</div>
+    <div class="card-num">Tool 04</div>
+    <h2>Antenna Array Factor</h2>
+    <p>Uniform linear array beam pattern. Adjust element count, spacing, and scan angle to shape the main lobe.</p>
+    <div class="eq">AF(θ) = sin(N·ψ/2) / N·sin(ψ/2)</div>
+  </a>
+
+  <a class="card" href="05_smith_chart.html">
+    <div class="card-icon">🎯</div>
+    <div class="card-num">Tool 05</div>
+    <h2>Smith Chart</h2>
+    <p>Plot normalised load impedance on an interactive Smith Chart. Reads out Γ, VSWR, and return loss live.</p>
+    <div class="eq">Γ = (Z_L − Z₀) / (Z_L + Z₀)</div>
+  </a>
+
+</div>
+
+<footer>RF Toolbox &mdash; self-contained HTML calculators &mdash; no server required</footer>
+</body>
+</html>
