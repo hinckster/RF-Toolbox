@@ -12,6 +12,16 @@
     --green: #00e5a0; --orange: #ffaa00; --red: #ff4d6d;
   }
   body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  /* ── Toolbar ── */
+  .toolbar { position: fixed; top: 14px; right: 16px; display: flex; gap: 6px; z-index: 100; }
+  .tbtn {
+    background: var(--card); border: 1px solid var(--border); color: var(--muted);
+    border-radius: 5px; padding: 5px 10px; font-size: .75rem; cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+  .tbtn:hover { border-color: var(--accent); color: var(--accent); }
+
   nav { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
   nav a { color: var(--accent); text-decoration: none; font-size: 0.88rem; }
   nav span { color: var(--muted); }
@@ -27,14 +37,14 @@
   .eq-note { font-size: 0.79rem; color: var(--muted); margin-top: 0.3rem; }
 
   .layout { display: grid; grid-template-columns: 280px 1fr; gap: 1.4rem; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem; }
-  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+  @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
 
   .panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; display: flex; flex-direction: column; gap: 0; }
   .panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
 
   .slider-row { margin-bottom: 1rem; }
   .slider-row label { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.3rem; }
-  .slider-row label span { color: var(--orange); font-family: 'Courier New', monospace; font-weight: 600; }
+  .slider-row label span { color: var(--orange); font-family: 'Courier New', monospace; font-weight: 600; transition: all 200ms ease; }
   input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
   .hints { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 0.15rem; }
 
@@ -43,24 +53,37 @@
   .results { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
   .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem; }
   .result-card .label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-  .result-card .value { font-size: 1.05rem; font-weight: 700; font-family: 'Courier New', monospace; margin-top: 0.1rem; }
+  .result-card .value { font-size: 1.05rem; font-weight: 700; font-family: 'Courier New', monospace; margin-top: 0.1rem; transition: all 200ms ease; }
   .result-card .unit { font-size: 0.67rem; color: var(--muted); }
-  .v-green { color: var(--green); }
-  .v-accent { color: var(--accent); }
-  .v-orange { color: var(--orange); }
-  .v-red { color: var(--red); }
-  .v-accent2 { color: var(--accent2); }
+  .v-green { color: var(--green); } .v-accent { color: var(--accent); } .v-orange { color: var(--orange); }
+  .v-red { color: var(--red); } .v-accent2 { color: var(--accent2); }
 
-  .smith-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
-  .smith-panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
-  .canvas-wrap { position: relative; display: flex; justify-content: center; }
-  canvas#smith { display: block; }
+  .smith-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; display: flex; flex-direction: column; gap: 1rem; }
+  .smith-panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+  .canvas-wrap { display: flex; justify-content: center; }
 
   .z0-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; font-size: 0.86rem; }
   .z0-row input[type=number] { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 0.3rem 0.5rem; width: 80px; font-size: 0.86rem; }
+
+  .presets { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.2rem; }
+  .preset-btn { padding: 0.3rem 0.6rem; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--muted); cursor: pointer; font-size: 0.78rem; transition: border-color .15s, color .15s; }
+  .preset-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .annotation {
+    border-left: 3px solid var(--accent); background: var(--surface);
+    padding: 11px 14px; border-radius: 0 8px 8px 0;
+    font-size: 0.83rem; color: var(--muted); line-height: 1.65;
+  }
+  .annotation strong { color: var(--text); }
 </style>
 </head>
 <body>
+
+<div class="toolbar">
+  <button class="tbtn" onclick="takeScreenshot('Smith Chart')">📷 Screenshot</button>
+  <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
+</div>
 
 <nav>
   <a href="index.html">← RF Toolbox</a>
@@ -117,57 +140,41 @@
     <hr class="divider">
     <h3>Results</h3>
     <div class="results">
-      <div class="result-card">
-        <div class="label">Z_L</div>
-        <div class="value v-accent" id="rZL">—</div>
-        <div class="unit">Ω</div>
-      </div>
-      <div class="result-card">
-        <div class="label">z (norm.)</div>
-        <div class="value v-accent2" id="rZn">—</div>
-        <div class="unit">Z / Z₀</div>
-      </div>
-      <div class="result-card">
-        <div class="label">|Γ|</div>
-        <div class="value v-orange" id="rGmag">—</div>
-        <div class="unit">unitless</div>
-      </div>
-      <div class="result-card">
-        <div class="label">∠Γ</div>
-        <div class="value v-orange" id="rGang">—</div>
-        <div class="unit">degrees</div>
-      </div>
-      <div class="result-card">
-        <div class="label">VSWR</div>
-        <div class="value v-red" id="rVSWR">—</div>
-        <div class="unit">:1</div>
-      </div>
-      <div class="result-card">
-        <div class="label">Return Loss</div>
-        <div class="value v-green" id="rRL">—</div>
-        <div class="unit">dB</div>
-      </div>
-      <div class="result-card">
-        <div class="label">Γ_re</div>
-        <div class="value v-accent" id="rGre">—</div>
-        <div class="unit"></div>
-      </div>
-      <div class="result-card">
-        <div class="label">Γ_im</div>
-        <div class="value v-accent" id="rGim">—</div>
-        <div class="unit"></div>
-      </div>
+      <div class="result-card"><div class="label">Z_L</div><div class="value v-accent" id="rZL">—</div><div class="unit">Ω</div></div>
+      <div class="result-card"><div class="label">z (norm.)</div><div class="value v-accent2" id="rZn">—</div><div class="unit">Z / Z₀</div></div>
+      <div class="result-card"><div class="label">|Γ|</div><div class="value v-orange" id="rGmag">—</div><div class="unit">unitless</div></div>
+      <div class="result-card"><div class="label">∠Γ</div><div class="value v-orange" id="rGang">—</div><div class="unit">degrees</div></div>
+      <div class="result-card"><div class="label">VSWR</div><div class="value v-red" id="rVSWR">—</div><div class="unit">:1</div></div>
+      <div class="result-card"><div class="label">Return Loss</div><div class="value v-green" id="rRL">—</div><div class="unit">dB</div></div>
+      <div class="result-card"><div class="label">Γ_re</div><div class="value v-accent" id="rGre">—</div></div>
+      <div class="result-card"><div class="label">Γ_im</div><div class="value v-accent" id="rGim">—</div></div>
     </div>
 
     <hr class="divider">
+    <h3>Admittance &amp; Q</h3>
+    <div class="results">
+      <div class="result-card"><div class="label">Y_L (G)</div><div class="value v-accent" id="rYG">—</div><div class="unit">mS</div></div>
+      <div class="result-card"><div class="label">Y_L (B)</div><div class="value v-accent2" id="rYB">—</div><div class="unit">mS</div></div>
+      <div class="result-card"><div class="label">Q factor</div><div class="value v-orange" id="rQ">—</div><div class="unit">|X|/R</div></div>
+      <div class="result-card"><div class="label">Mismatch Loss</div><div class="value v-red" id="rML">—</div><div class="unit">dB</div></div>
+    </div>
+
+    <hr class="divider">
+    <h3>L-Match Synthesis (series–shunt)</h3>
+    <div style="font-size:.78rem;color:var(--muted);margin-bottom:.5rem">Normalized reactances to match Z_L → Z₀</div>
+    <div id="lMatchBox" style="font-size:.8rem;line-height:1.8;font-family:'Courier New',monospace;color:var(--accent2);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.6rem .8rem;min-height:60px"></div>
+
+    <hr class="divider">
     <h3>Quick Presets</h3>
-    <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.2rem;">
-      <button onclick="setPreset(50,0)" style="padding:0.3rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:0.78rem;">Matched</button>
-      <button onclick="setPreset(0,0)" style="padding:0.3rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:0.78rem;">Short</button>
-      <button onclick="setPreset(1e6,0)" style="padding:0.3rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:0.78rem;">Open</button>
-      <button onclick="setPreset(50,50)" style="padding:0.3rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:0.78rem;">50+j50</button>
-      <button onclick="setPreset(100,-75)" style="padding:0.3rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:0.78rem;">100−j75</button>
-      <button onclick="setPreset(25,0)" style="padding:0.3rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:0.78rem;">25 Ω</button>
+    <div class="presets">
+      <button class="preset-btn" onclick="setPreset(50,0)">Matched</button>
+      <button class="preset-btn" onclick="setPreset(0,0)">Short</button>
+      <button class="preset-btn" onclick="setPreset(1e6,0)">Open</button>
+      <button class="preset-btn" onclick="setPreset(50,50)">50+j50</button>
+      <button class="preset-btn" onclick="setPreset(100,-75)">100−j75</button>
+      <button class="preset-btn" onclick="setPreset(25,0)">25 Ω</button>
+      <button class="preset-btn" onclick="setPreset(75,0)">75 Ω</button>
+      <button class="preset-btn" onclick="setPreset(100,0)">100 Ω</button>
     </div>
   </div>
 
@@ -176,6 +183,7 @@
     <div class="canvas-wrap">
       <canvas id="smith" width="520" height="520"></canvas>
     </div>
+    <div class="annotation" id="annotation">Updating…</div>
   </div>
 </div>
 
@@ -185,142 +193,159 @@ const ctx    = canvas.getContext('2d');
 
 function get(id) { return +document.getElementById(id).value; }
 
-// Gamma from normalised impedance z = r + jx
 function gammaFromZ(R, X, Z0) {
-  const r = R / Z0, x = X / Z0;
-  const denom = (r + 1) ** 2 + x ** 2;
-  const gr = ((r - 1) * (r + 1) + x * x) / denom;
-  const gi = (2 * x) / denom;
-  return { gr, gi };
+  const r = R/Z0, x = X/Z0;
+  const denom = (r+1)**2 + x**2;
+  return { gr: ((r-1)*(r+1)+x*x)/denom, gi: (2*x)/denom };
 }
 
 function drawSmith() {
-  const S  = canvas.width;
-  const cx = S / 2, cy = S / 2, R = S / 2 - 24;
-
+  const S = canvas.width, cx = S/2, cy = S/2, R = S/2 - 24;
   ctx.clearRect(0, 0, S, S);
 
-  // Outer circle (|Γ| = 1)
-  ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI);
-  ctx.strokeStyle = '#3a3a4a'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,2*Math.PI);
+  ctx.strokeStyle='#3a3a4a'; ctx.lineWidth=1.5; ctx.stroke();
 
-  // Constant-resistance circles: r = 0, 0.2, 0.5, 1, 2, 5
-  const rVals = [0, 0.2, 0.5, 1, 2, 5, 10];
-  rVals.forEach(r => {
-    const cx_ = cx + R * r / (r + 1);
-    const cr   = R / (r + 1);
-    ctx.beginPath(); ctx.arc(cx_, cy, cr, 0, 2 * Math.PI);
-    ctx.strokeStyle = r === 0 ? '#3a4a5a' : '#2a3040';
-    ctx.lineWidth   = r === 1 ? 1 : 0.8;
-    ctx.stroke();
-    // label at θ=0 edge
-    if (r > 0 && r <= 5) {
-      const lx = cx + R * (r / (r+1) + 1/(r+1)) + 3;
-      ctx.fillStyle = '#555'; ctx.font = '9px monospace';
-      ctx.fillText(r, lx, cy + 4);
-    }
+  [0, 0.2, 0.5, 1, 2, 5, 10].forEach(r => {
+    const cx_ = cx+R*r/(r+1), cr = R/(r+1);
+    ctx.beginPath(); ctx.arc(cx_,cy,cr,0,2*Math.PI);
+    ctx.strokeStyle = r===0 ? '#3a4a5a' : '#2a3040';
+    ctx.lineWidth   = r===1 ? 1 : 0.8; ctx.stroke();
+    if (r>0 && r<=5) { ctx.fillStyle='#555'; ctx.font='9px monospace'; ctx.fillText(r, cx+R*(r/(r+1)+1/(r+1))+3, cy+4); }
   });
 
-  // Constant-reactance arcs: x = ±0.2, ±0.5, ±1, ±2, ±5
-  const xVals = [0.2, 0.5, 1, 2, 5];
-  xVals.forEach(x => {
+  [0.2, 0.5, 1, 2, 5].forEach(x => {
     [-x, x].forEach(xi => {
-      const cy_  = cy - R / xi;
-      const cr    = Math.abs(R / xi);
-      ctx.beginPath();
-      ctx.arc(cx + R, cy_, cr, 0, 2 * Math.PI);
-      ctx.strokeStyle = '#2a3040'; ctx.lineWidth = 0.8;
-      ctx.stroke();
-      // label
-      const lx2 = cx + R - 5;
-      const ly2 = cy - R / xi + (xi > 0 ? -cr - 2 : cr + 10);
-      ctx.fillStyle = '#555'; ctx.font = '9px monospace';
-      ctx.fillText((xi > 0 ? '+' : '') + xi + 'j', lx2, ly2);
+      ctx.beginPath(); ctx.arc(cx+R, cy-R/xi, Math.abs(R/xi), 0, 2*Math.PI);
+      ctx.strokeStyle='#2a3040'; ctx.lineWidth=0.8; ctx.stroke();
+      ctx.fillStyle='#555'; ctx.font='9px monospace';
+      ctx.fillText((xi>0?'+':'')+xi+'j', cx+R-5, cy-R/xi+(xi>0?-Math.abs(R/xi)-2:Math.abs(R/xi)+10));
     });
   });
 
-  // Axes
-  ctx.beginPath(); ctx.moveTo(cx - R, cy); ctx.lineTo(cx + R, cy);
-  ctx.strokeStyle = '#3a3a4a'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx-R,cy); ctx.lineTo(cx+R,cy);
+  ctx.strokeStyle='#3a3a4a'; ctx.lineWidth=1; ctx.stroke();
 
-  // |Γ| circles at 0.25, 0.5, 0.75
-  [0.25, 0.5, 0.75].forEach(g => {
-    ctx.beginPath(); ctx.arc(cx, cy, R * g, 0, 2 * Math.PI);
-    ctx.strokeStyle = '#1e2030'; ctx.lineWidth = 0.7;
-    ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
+  [0.25,0.5,0.75].forEach(g => {
+    ctx.beginPath(); ctx.arc(cx,cy,R*g,0,2*Math.PI);
+    ctx.strokeStyle='#1e2030'; ctx.lineWidth=0.7; ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
   });
 
-  // Axis labels
-  ctx.fillStyle = '#555'; ctx.font = '9px monospace';
-  ctx.fillText('SC', cx - R - 20, cy + 4);
-  ctx.fillText('OC', cx + R + 4, cy + 4);
-  ctx.fillText('+jX', cx + 4, cy - R - 8);
-  ctx.fillText('−jX', cx + 4, cy + R + 14);
+  ctx.fillStyle='#555'; ctx.font='9px monospace';
+  ctx.fillText('SC', cx-R-20, cy+4); ctx.fillText('OC', cx+R+4, cy+4);
+  ctx.fillText('+jX', cx+4, cy-R-8); ctx.fillText('−jX', cx+4, cy+R+14);
 
-  // -- Plot the impedance point --
-  const Z0 = get('iZ0');
-  const R_  = get('sR');
-  const X_  = get('sX');
+  const Z0=get('iZ0'), R_=get('sR'), X_=get('sX');
   const { gr, gi } = gammaFromZ(R_, X_, Z0);
-  const px = cx + R * gr;
-  const py = cy - R * gi;
+  const px=cx+R*gr, py=cy-R*gi;
+  const gmag=Math.sqrt(gr*gr+gi*gi);
 
-  // VSWR circle
-  const gmag = Math.sqrt(gr*gr + gi*gi);
-  if (gmag < 1) {
-    ctx.beginPath(); ctx.arc(cx, cy, R * gmag, 0, 2 * Math.PI);
-    ctx.strokeStyle = 'rgba(255,170,0,0.35)'; ctx.lineWidth = 1.5;
-    ctx.setLineDash([6, 3]); ctx.stroke(); ctx.setLineDash([]);
+  if (gmag<1) {
+    ctx.beginPath(); ctx.arc(cx,cy,R*gmag,0,2*Math.PI);
+    ctx.strokeStyle='rgba(255,170,0,0.35)'; ctx.lineWidth=1.5;
+    ctx.setLineDash([6,3]); ctx.stroke(); ctx.setLineDash([]);
   }
 
-  // Line from centre to point
-  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py);
-  ctx.strokeStyle = 'rgba(0,200,255,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(px,py);
+  ctx.strokeStyle='rgba(0,200,255,0.3)'; ctx.lineWidth=1; ctx.stroke();
 
-  // Dot
-  ctx.beginPath(); ctx.arc(px, py, 7, 0, 2 * Math.PI);
-  ctx.fillStyle = '#ff4d6d'; ctx.fill();
-  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(px,py,7,0,2*Math.PI);
+  ctx.fillStyle='#ff4d6d'; ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
 
-  // Coords label
-  const label = `(${gr.toFixed(3)}, ${gi >= 0 ? '+' : ''}${gi.toFixed(3)}j)`;
-  ctx.fillStyle = '#e2e2e8'; ctx.font = 'bold 11px monospace';
-  let lx = px + 12, ly = py - 8;
-  if (lx + 140 > S) lx = px - 150;
-  if (ly < 16) ly = py + 18;
+  const label = `(${gr.toFixed(3)}, ${gi>=0?'+':''}${gi.toFixed(3)}j)`;
+  ctx.fillStyle='#e2e2e8'; ctx.font='bold 11px monospace';
+  let lx=px+12, ly=py-8;
+  if (lx+140>S) lx=px-150; if (ly<16) ly=py+18;
   ctx.fillText(label, lx, ly);
 }
 
 function update() {
-  const Z0 = get('iZ0');
-  const R_ = get('sR');
-  const X_ = get('sX');
-
-  document.getElementById('lR').textContent = R_ + ' Ω';
-  document.getElementById('lX').textContent = (X_ >= 0 ? '+' : '') + X_ + ' Ω';
+  const Z0=get('iZ0'), R_=get('sR'), X_=get('sX');
+  document.getElementById('lR').textContent = R_+' Ω';
+  document.getElementById('lX').textContent = (X_>=0?'+':'')+X_+' Ω';
 
   const { gr, gi } = gammaFromZ(R_, X_, Z0);
-  const gmag = Math.sqrt(gr*gr + gi*gi);
-  const gang = Math.atan2(gi, gr) * 180 / Math.PI;
-  const vswr = gmag < 1 ? (1 + gmag) / (1 - gmag) : Infinity;
-  const rl   = gmag > 0 ? -20 * Math.log10(gmag) : Infinity;
-  const r = R_ / Z0, x = X_ / Z0;
+  const gmag=Math.sqrt(gr*gr+gi*gi);
+  const gang=Math.atan2(gi,gr)*180/Math.PI;
+  const vswr = gmag<1 ? (1+gmag)/(1-gmag) : Infinity;
+  const rl   = gmag>0 ? -20*Math.log10(gmag) : Infinity;
+  const r=R_/Z0, x=X_/Z0;
 
-  document.getElementById('rZL').textContent  = R_ + (X_ >= 0 ? '+j' : '−j') + Math.abs(X_);
-  document.getElementById('rZn').textContent  = r.toFixed(3) + (x >= 0 ? '+j' : '−j') + Math.abs(x).toFixed(3);
+  document.getElementById('rZL').textContent  = R_+(X_>=0?'+j':'−j')+Math.abs(X_);
+  document.getElementById('rZn').textContent  = r.toFixed(3)+(x>=0?'+j':'−j')+Math.abs(x).toFixed(3);
   document.getElementById('rGmag').textContent = gmag.toFixed(4);
-  document.getElementById('rGang').textContent = gang.toFixed(1) + '°';
-  document.getElementById('rVSWR').textContent  = vswr === Infinity ? '∞' : vswr.toFixed(2);
-  document.getElementById('rRL').textContent    = rl   === Infinity ? '∞' : rl.toFixed(2);
+  document.getElementById('rGang').textContent = gang.toFixed(1)+'°';
+  document.getElementById('rVSWR').textContent  = vswr===Infinity ? '∞' : vswr.toFixed(2);
+  document.getElementById('rRL').textContent    = rl  ===Infinity ? '∞' : rl.toFixed(2);
   document.getElementById('rGre').textContent   = gr.toFixed(4);
-  document.getElementById('rGim').textContent   = (gi >= 0 ? '+' : '') + gi.toFixed(4);
+  document.getElementById('rGim').textContent   = (gi>=0?'+':'')+gi.toFixed(4);
+
+  // Admittance and Q
+  const Zmag2 = R_*R_ + X_*X_;
+  const G_mS  = Zmag2 > 0 ? (R_ / Zmag2 * 1000) : 0;
+  const B_mS  = Zmag2 > 0 ? (-X_ / Zmag2 * 1000) : 0;
+  const Q     = R_ > 0 ? Math.abs(X_) / R_ : Infinity;
+  const ML    = gmag < 1 ? -10*Math.log10(1 - gmag*gmag) : Infinity; // mismatch loss
+  document.getElementById('rYG').textContent = G_mS.toFixed(3);
+  document.getElementById('rYB').textContent = (B_mS>=0?'+':'')+B_mS.toFixed(3);
+  document.getElementById('rQ').textContent  = Q===Infinity ? '∞' : Q.toFixed(2);
+  document.getElementById('rML').textContent = ML===Infinity ? '∞' : ML.toFixed(2);
+
+  // L-match synthesis
+  const lBox = document.getElementById('lMatchBox');
+  if (gmag < 0.01) {
+    lBox.innerHTML = '<span style="color:#00e5a0">Already matched — no network needed.</span>';
+  } else if (R_ <= 0) {
+    lBox.innerHTML = '<span style="color:#888899">R = 0 — cannot synthesize L-match.</span>';
+  } else {
+    const lines = [];
+    // Step 1: cancel reactance with series element
+    if (Math.abs(X_) > 0.01) lines.push(`Step 1: Series ${X_>0?'C':'L'} to cancel X = ${X_>=0?'+':''}${X_.toFixed(1)}Ω (add X_s = ${(-X_).toFixed(1)}Ω)`);
+    const Reff = R_;
+    if (Math.abs(Reff - Z0) > 0.5) {
+      // Step 2: L-network to match Reff → Z0
+      if (Reff > Z0) {
+        // Shunt first (at load), series toward source
+        const Q_net = Math.sqrt(Reff/Z0 - 1);
+        const X_shunt = Reff / Q_net;    // reactive magnitude
+        const X_series = Z0 * Q_net;
+        lines.push(`Step 2 (${Reff.toFixed(0)}Ω > ${Z0}Ω): shunt-first L-net, Q = ${Q_net.toFixed(2)}`);
+        lines.push(`  Shunt at load: ±j${X_shunt.toFixed(1)}Ω  →  +j shunt = shunt C; −j shunt = shunt L`);
+        lines.push(`  Series toward Z₀: ∓j${X_series.toFixed(1)}Ω  (opposite sign to shunt)`);
+      } else {
+        // Series first (at load), shunt toward source
+        const Q_net = Math.sqrt(Z0/Reff - 1);
+        const X_series = Reff * Q_net;
+        const X_shunt  = Z0 / Q_net;
+        lines.push(`Step 2 (${Reff.toFixed(0)}Ω < ${Z0}Ω): series-first L-net, Q = ${Q_net.toFixed(2)}`);
+        lines.push(`  Series at load: ±j${X_series.toFixed(1)}Ω  →  +j series = series L; −j = series C`);
+        lines.push(`  Shunt toward Z₀: ∓j${X_shunt.toFixed(1)}Ω  (opposite sign to series)`);
+      }
+    } else {
+      lines.push('Step 2: R ≈ Z₀ after reactance cancellation — only step 1 needed.');
+    }
+    lBox.innerHTML = lines.join('<br>');
+  }
 
   drawSmith();
+
+  // Annotation
+  const matchQuality = gmag < 0.05 ? 'excellent match' : gmag < 0.2 ? 'good match' : gmag < 0.4 ? 'fair match' : 'poor match';
+  const mcol = gmag < 0.05 ? '#00e5a0' : gmag < 0.2 ? '#00e5a0' : gmag < 0.4 ? '#ffaa00' : '#ff4d6d';
+  const tip = gmag < 0.1
+    ? 'Impedance is near the chart center — minimum reflection.'
+    : X_ !== 0
+      ? `Reactive component X = ${X_>=0?'+':''}${X_}Ω is pushing the point off the real axis. A series ${X_>0?'capacitor':'inductor'} of ${Math.abs(X_).toFixed(0)}Ω would cancel the reactance.`
+      : `Pure resistive mismatch. Transform toward Z₀ = ${Z0}Ω with a matching network.`;
+  document.getElementById('annotation').innerHTML =
+    `<strong>Z_L = ${R_}${X_>=0?'+j':'−j'}${Math.abs(X_)}Ω, Z₀ = ${Z0}Ω:</strong> ` +
+    `|Γ| = <strong style="color:${mcol}">${gmag.toFixed(4)}</strong> ∠${gang.toFixed(1)}° — <strong>${matchQuality}</strong>. ` +
+    `VSWR = <strong>${vswr===Infinity?'∞':vswr.toFixed(2)}</strong>:1, RL = <strong>${rl===Infinity?'∞':rl.toFixed(2)} dB</strong>. ${tip}`;
 }
 
 function setPreset(R, X) {
-  const rMax = +document.getElementById('sR').max;
-  document.getElementById('sR').value = Math.min(R, rMax);
+  document.getElementById('sR').value = Math.min(R, 500);
   document.getElementById('sX').value = Math.max(-300, Math.min(300, X));
   update();
 }
@@ -329,6 +354,38 @@ document.getElementById('sR').addEventListener('input', update);
 document.getElementById('sX').addEventListener('input', update);
 document.getElementById('iZ0').addEventListener('input', update);
 update();
+
+// ── Toolbar ──
+function takeScreenshot(toolName) {
+  const canvases = [document.getElementById('smith')];
+  const padding = 16, titleHeight = 40;
+  const totalWidth = canvases.reduce((s,c) => s+c.width+padding, padding);
+  const maxHeight = Math.max(...canvases.map(c => c.height));
+  const out = document.createElement('canvas');
+  out.width = totalWidth; out.height = maxHeight + titleHeight + padding * 2;
+  const c = out.getContext('2d');
+  c.fillStyle='#0d0d0f'; c.fillRect(0,0,out.width,out.height);
+  c.fillStyle='#e2e2e8'; c.font='bold 14px Segoe UI, system-ui, sans-serif';
+  c.fillText(toolName+'  ·  RF Toolbox  ·  hinckster.github.io/RF-Toolbox', padding, titleHeight/2+5);
+  c.fillStyle='#888899'; c.font='11px monospace';
+  c.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC', padding, titleHeight-4);
+  let x = padding;
+  canvases.forEach(cv => { c.drawImage(cv,x,titleHeight+padding); x += cv.width+padding; });
+  const link = document.createElement('a');
+  const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+  link.download = `smith_chart_${ts}.png`; link.href = out.toDataURL('image/png'); link.click();
+}
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const btn=document.getElementById('copyBtn'), orig=btn.textContent;
+    btn.textContent='✓ Copied!'; btn.style.color='#00e5a0'; btn.style.borderColor='#00e5a0';
+    setTimeout(() => { btn.textContent=orig; btn.style.color=''; btn.style.borderColor=''; }, 2000);
+  });
+}
 </script>
 </body>
 </html>

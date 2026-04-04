@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transmission Line | RF Toolbox</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --card: #1e1e24; --border: #2a2a35;
+    --accent: #00c8ff; --accent2: #7b61ff; --text: #e2e2e8; --muted: #888899;
+    --green: #00e5a0; --orange: #ffaa00; --red: #ff4d6d;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  /* ── Toolbar ── */
+  .toolbar { position: fixed; top: 14px; right: 16px; display: flex; gap: 6px; z-index: 100; }
+  .tbtn {
+    background: var(--card); border: 1px solid var(--border); color: var(--muted);
+    border-radius: 5px; padding: 5px 10px; font-size: .75rem; cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+  .tbtn:hover { border-color: var(--accent); color: var(--accent); }
+
+  nav { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  nav a { color: var(--accent); text-decoration: none; font-size: 0.88rem; }
+  nav span { color: var(--muted); }
+  header { padding: 2rem 1.5rem 1.5rem; max-width: 1100px; margin: 0 auto; }
+  header .tag { font-size: 0.72rem; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.4rem; }
+  header h1 { font-size: 2rem; font-weight: 700; }
+  header p { color: var(--muted); margin-top: 0.4rem; }
+
+  .equation-box { max-width: 1100px; margin: 0 auto 1.5rem; padding: 0 1.5rem; }
+  .eq-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem 1.5rem; display: flex; flex-wrap: wrap; gap: 2rem; align-items: flex-start; }
+  .eq-primary { font-family: 'Courier New', monospace; font-size: 1rem; color: var(--accent); margin-bottom: 0.3rem; }
+  .eq-secondary { font-family: 'Courier New', monospace; font-size: 0.84rem; color: var(--accent2); margin-bottom: 0.15rem; }
+  .eq-note { font-size: 0.79rem; color: var(--muted); margin-top: 0.3rem; }
+
+  .layout { display: grid; grid-template-columns: 300px 1fr; gap: 1.4rem; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem; }
+  @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; display: flex; flex-direction: column; gap: 0; }
+  .panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
+
+  .slider-row { margin-bottom: 1rem; }
+  .slider-row label { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.3rem; }
+  .slider-row label span { color: var(--orange); font-family: 'Courier New', monospace; font-weight: 600; transition: all 200ms ease; }
+  input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
+  .hints { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 0.15rem; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+
+  .z0-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; font-size: 0.86rem; }
+  .z0-row input[type=number] { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 0.3rem 0.5rem; width: 80px; font-size: 0.86rem; }
+
+  .results { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem; }
+  .result-card .label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .result-card .value { font-size: 1.05rem; font-weight: 700; font-family: 'Courier New', monospace; margin-top: 0.1rem; transition: all 200ms ease; }
+  .result-card .unit { font-size: 0.67rem; color: var(--muted); }
+  .v-green { color: var(--green); } .v-accent { color: var(--accent); } .v-orange { color: var(--orange); }
+  .v-red { color: var(--red); } .v-accent2 { color: var(--accent2); }
+
+  .chart-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; display: flex; flex-direction: column; gap: 1rem; }
+  .chart-panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+  .chart-wrap { position: relative; height: 320px; }
+
+  .smith-inset-wrap { display: flex; justify-content: center; margin-top: 0.5rem; }
+  .smith-inset-label { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 0.6rem; }
+
+  .annotation {
+    border-left: 3px solid var(--accent); background: var(--surface);
+    padding: 11px 14px; border-radius: 0 8px 8px 0;
+    font-size: 0.83rem; color: var(--muted); line-height: 1.65;
+  }
+  .annotation strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="tbtn" onclick="takeScreenshot()">&#128247; Screenshot</button>
+  <button class="tbtn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">&#8856; Copy Link</button>
+</div>
+
+<nav>
+  <a href="index.html">&#8592; RF Toolbox</a>
+  <span>/</span>
+  <span>09 Transmission Line</span>
+</nav>
+
+<header>
+  <div class="tag">Tool 09</div>
+  <h1>Transmission Line</h1>
+  <p>Reflection coefficient, VSWR, and standing wave pattern along a lossless transmission line</p>
+</header>
+
+<div class="equation-box">
+  <div class="eq-card">
+    <div>
+      <div class="eq-primary">&#915;L = (ZL &#8722; Z&#8320;) / (ZL + Z&#8320;)</div>
+      <div class="eq-note">ZL = R + jX (complex load impedance)</div>
+    </div>
+    <div>
+      <div class="eq-secondary">VSWR = (1 + |&#915;|) / (1 &#8722; |&#915;|)</div>
+      <div class="eq-secondary">RL = &#8722;20&#183;log&#8321;&#8320;(|&#915;|) dB</div>
+    </div>
+    <div>
+      <div class="eq-secondary">|V(z)| = |V&#8314;|&#183;&#8730;(1+|&#915;|&#178;+2|&#915;|&#183;cos(2&#946;z+&#966;))</div>
+      <div class="eq-note">&#946; = 2&#960;/&#955;, load at z = 0, source at z = &#8722;L</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="panel">
+    <h3>Load Impedance</h3>
+
+    <div class="slider-row">
+      <label>Resistance R <span id="lR">75 &#937;</span></label>
+      <input type="range" id="sR" min="0" max="300" value="75" step="1">
+      <div class="hints"><span>0</span><span>300 &#937;</span></div>
+    </div>
+    <div class="slider-row">
+      <label>Reactance X <span id="lX">0 &#937;</span></label>
+      <input type="range" id="sX" min="-200" max="200" value="0" step="1">
+      <div class="hints"><span>&#8722;200 &#937;</span><span>+200 &#937;</span></div>
+    </div>
+
+    <div class="z0-row">
+      <label>Z&#8320; =</label>
+      <input type="number" id="iZ0" value="50" min="10" max="200" step="1">
+      <span style="color:var(--muted)">&#937;</span>
+    </div>
+
+    <div class="slider-row">
+      <label>Line length <span id="lLen">0.50&#955;</span></label>
+      <input type="range" id="sLen" min="0" max="200" value="50" step="1">
+      <div class="hints"><span>0</span><span>2&#955;</span></div>
+    </div>
+
+    <hr class="divider">
+    <h3>Metrics</h3>
+    <div class="results">
+      <div class="result-card"><div class="label">|&#915;L|</div><div class="value v-orange" id="rGmag">&#8212;</div><div class="unit">unitless</div></div>
+      <div class="result-card"><div class="label">&#8736;&#915;L</div><div class="value v-orange" id="rGang">&#8212;</div><div class="unit">degrees</div></div>
+      <div class="result-card"><div class="label">VSWR</div><div class="value v-red" id="rVSWR">&#8212;</div><div class="unit">:1</div></div>
+      <div class="result-card"><div class="label">Return Loss</div><div class="value v-green" id="rRL">&#8212;</div><div class="unit">dB</div></div>
+      <div class="result-card"><div class="label">Vmax pos.</div><div class="value v-accent" id="rVmaxPos">&#8212;</div><div class="unit">from load</div></div>
+      <div class="result-card"><div class="label">|Zin|</div><div class="value v-accent2" id="rZin">&#8212;</div><div class="unit">&#937;</div></div>
+    </div>
+  </div>
+
+  <!-- Chart panel -->
+  <div class="chart-panel">
+    <h3>Standing Wave Pattern</h3>
+    <div class="chart-wrap">
+      <canvas id="swChart"></canvas>
+    </div>
+
+    <div class="smith-inset-label">Smith Chart &#8212; &#915;L Position &amp; VSWR Circle</div>
+    <div class="smith-inset-wrap">
+      <canvas id="smithInset" width="200" height="200"></canvas>
+    </div>
+
+    <div class="annotation" id="annotation">Updating&#8230;</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function get(id)   { return +document.getElementById(id).value; }
+function setText(id, v) { document.getElementById(id).textContent = v; }
+
+function gammaFromZ(R, X, Z0) {
+  // ΓL = (ZL - Z0) / (ZL + Z0)
+  const nr = R - Z0, ni = X;
+  const dr = R + Z0, di = X;
+  const denom = dr * dr + di * di;
+  return { gr: (nr * dr + ni * di) / denom, gi: (ni * dr - nr * di) / denom };
+}
+
+// Complex multiply
+function cmul(ar, ai, br, bi) { return [ar*br - ai*bi, ar*bi + ai*br]; }
+// Complex divide
+function cdiv(ar, ai, br, bi) {
+  const d = br*br + bi*bi;
+  return [(ar*br + ai*bi)/d, (ai*br - ar*bi)/d];
+}
+
+// ── Chart.js standing wave chart ────────────────────────────────────────────
+let swChart = null;
+
+function buildStandingWaveData(R, X, Z0, lineLenLambda) {
+  const { gr, gi } = gammaFromZ(R, X, Z0);
+  const gmag = Math.sqrt(gr * gr + gi * gi);
+  const phi  = Math.atan2(gi, gr); // angle of ΓL
+
+  const N = 400;
+  const labels = [];
+  const data   = [];
+
+  for (let i = 0; i <= N; i++) {
+    const z = -(lineLenLambda * i / N); // z in wavelengths, from 0 (load) to -L
+    labels.push(z.toFixed(4));
+    // 2βz = 2*(2π/λ)*z*λ = 4π*z  (z in wavelengths)
+    const arg = 4 * Math.PI * z + phi; // cos(2βz + φL)
+    const mag = Math.sqrt(1 + gmag * gmag + 2 * gmag * Math.cos(arg));
+    data.push(+mag.toFixed(6));
+  }
+  return { labels, data, gmag, phi };
+}
+
+function initChart() {
+  const canvas = document.getElementById('swChart');
+  const ctx    = canvas.getContext('2d');
+
+  swChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: '|V(z)| / |V⁺|',
+          data: [],
+          borderColor: '#00c8ff',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.3,
+          fill: false
+        },
+        {
+          label: 'VSWR max',
+          data: [],
+          borderColor: '#ffaa00',
+          borderWidth: 1.5,
+          borderDash: [6, 3],
+          pointRadius: 0,
+          fill: false
+        },
+        {
+          label: 'VSWR min',
+          data: [],
+          borderColor: '#ffaa00',
+          borderWidth: 1.5,
+          borderDash: [6, 3],
+          pointRadius: 0,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      animation: { duration: 0 },
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          labels: { color: '#888899', font: { size: 11 } }
+        },
+        annotation: { annotations: {} },
+        tooltip: {
+          backgroundColor: '#1e1e24',
+          titleColor: '#e2e2e8',
+          bodyColor: '#888899',
+          borderColor: '#2a2a35',
+          borderWidth: 1
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: '#2a2a35' },
+          ticks: {
+            color: '#888899',
+            maxTicksLimit: 9,
+            callback: function(val, idx) {
+              // val is the index; label is the string
+              return this.getLabelForValue(val);
+            }
+          },
+          title: { display: true, text: 'Distance from load (wavelengths)', color: '#888899', font: { size: 11 } }
+        },
+        y: {
+          grid: { color: '#2a2a35' },
+          ticks: { color: '#888899' },
+          title: { display: true, text: '|V(z)| / |V⁺|', color: '#888899', font: { size: 11 } },
+          min: 0
+        }
+      }
+    }
+  });
+}
+
+function updateChart(R, X, Z0, lineLenLambda) {
+  const { labels, data, gmag } = buildStandingWaveData(R, X, Z0, lineLenLambda);
+
+  const vswr    = gmag < 1 ? (1 + gmag) / (1 - gmag) : 99;
+  const invVSWR = gmag < 1 ? (1 - gmag) / (1 + gmag) : 0;
+
+  // Thin labels to show at most ~9 ticks
+  const step = Math.max(1, Math.floor(labels.length / 9));
+  const thinLabels = labels.map((l, i) => (i % step === 0) ? parseFloat(l).toFixed(2) : '');
+
+  swChart.data.labels = thinLabels;
+  swChart.data.datasets[0].data = data;
+  swChart.data.datasets[1].data = new Array(data.length).fill(+vswr.toFixed(6));
+  swChart.data.datasets[2].data = new Array(data.length).fill(+invVSWR.toFixed(6));
+
+  // Y-axis range
+  swChart.options.scales.y.min = 0;
+  swChart.options.scales.y.max = Math.ceil((vswr + 0.2) * 10) / 10;
+
+  swChart.update('none');
+}
+
+// ── Mini Smith chart (inset) ─────────────────────────────────────────────────
+function drawSmithInset(gr, gi, gmag) {
+  const canvas = document.getElementById('smithInset');
+  const ctx    = canvas.getContext('2d');
+  const S = canvas.width;
+  const cx = S / 2, cy = S / 2;
+  const R = S / 2 - 14;
+
+  ctx.clearRect(0, 0, S, S);
+
+  // Outer circle
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI);
+  ctx.strokeStyle = '#3a3a4a'; ctx.lineWidth = 1.5; ctx.stroke();
+
+  // Constant-r circles
+  [0, 0.2, 0.5, 1, 2, 5, 10].forEach(r => {
+    const cx_ = cx + R * r / (r + 1), cr = R / (r + 1);
+    ctx.beginPath(); ctx.arc(cx_, cy, cr, 0, 2 * Math.PI);
+    ctx.strokeStyle = r === 0 ? '#3a4a5a' : '#2a3040';
+    ctx.lineWidth   = r === 1 ? 1 : 0.8;
+    ctx.stroke();
+  });
+
+  // Constant-x arcs
+  [0.2, 0.5, 1, 2, 5].forEach(x => {
+    [-x, x].forEach(xi => {
+      ctx.beginPath(); ctx.arc(cx + R, cy - R / xi, Math.abs(R / xi), 0, 2 * Math.PI);
+      ctx.strokeStyle = '#2a3040'; ctx.lineWidth = 0.8; ctx.stroke();
+    });
+  });
+
+  // Real axis
+  ctx.beginPath(); ctx.moveTo(cx - R, cy); ctx.lineTo(cx + R, cy);
+  ctx.strokeStyle = '#3a3a4a'; ctx.lineWidth = 1; ctx.stroke();
+
+  // VSWR circle
+  if (gmag < 1 && gmag > 0.001) {
+    ctx.beginPath(); ctx.arc(cx, cy, R * gmag, 0, 2 * Math.PI);
+    ctx.strokeStyle = 'rgba(255,170,0,0.45)'; ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 3]); ctx.stroke(); ctx.setLineDash([]);
+  }
+
+  // Radius line
+  const px = cx + R * gr, py = cy - R * gi;
+  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py);
+  ctx.strokeStyle = 'rgba(0,200,255,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+
+  // ΓL point
+  ctx.beginPath(); ctx.arc(px, py, 5, 0, 2 * Math.PI);
+  ctx.fillStyle = '#ff4d6d'; ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.2; ctx.stroke();
+
+  // SC / OC labels
+  ctx.fillStyle = '#444455'; ctx.font = '8px monospace';
+  ctx.fillText('SC', cx - R - 14, cy + 3);
+  ctx.fillText('OC', cx + R + 3,  cy + 3);
+}
+
+// ── Input impedance at source end ────────────────────────────────────────────
+// Zin = Z0 * (ZL + jZ0*tan(βL)) / (Z0 + jZL*tan(βL))
+function calcZin(R, X, Z0, lineLenLambda) {
+  const betaL = 2 * Math.PI * lineLenLambda; // βL in radians
+  const t = Math.tan(betaL);
+  if (!isFinite(t) || Math.abs(t) > 1e10) return Infinity; // quarter-wave singularity
+
+  // Zin = Z0 * (ZL + jZ0*t) / (Z0 + j*ZL*t)
+  // numerator: (R + jX) + j*Z0*t = R + j(X + Z0*t)
+  const nr = R, ni = X + Z0 * t;
+  // denominator: Z0 + j*(R+jX)*t = Z0 - X*t + j*R*t
+  const dr = Z0 - X * t, di = R * t;
+
+  const [zr, zi] = cdiv(Z0 * nr, Z0 * ni, dr, di);
+  return Math.sqrt(zr * zr + zi * zi);
+}
+
+// ── Find first voltage maximum position from load ────────────────────────────
+// |V(z)| max when cos(4πz + φ) = 1  =>  4πz + φ = 0  (z negative)
+// z_max = -φ / (4π)  mod (λ/2)  (closest non-negative distance from load)
+function vMaxPosition(phi) {
+  // want d >= 0 (distance from load), z = -d
+  // cos(4π*(-d) + φ) = 1  =>  -4πd + φ = 2πk
+  // d = (φ - 2πk) / (4π)
+  let d = phi / (4 * Math.PI);
+  // bring into [0, 0.5λ]
+  while (d < 0)    d += 0.5;
+  while (d >= 0.5) d -= 0.5;
+  return d; // in wavelengths
+}
+
+// ── Master update ─────────────────────────────────────────────────────────────
+function update() {
+  const R   = get('sR');
+  const X   = get('sX');
+  const Z0  = get('iZ0');
+  const lenSlider = get('sLen');   // 0–200 maps to 0–2λ
+  const lineLenLambda = lenSlider / 100;  // in wavelengths
+
+  // Live labels
+  setText('lR',   R + ' \u03A9');
+  setText('lX',   (X >= 0 ? '+' : '') + X + ' \u03A9');
+  setText('lLen', lineLenLambda.toFixed(2) + '\u03BB');
+
+  const { gr, gi } = gammaFromZ(R, X, Z0);
+  const gmag = Math.sqrt(gr * gr + gi * gi);
+  const gang = Math.atan2(gi, gr) * 180 / Math.PI;
+  const phi  = Math.atan2(gi, gr);
+
+  const vswr = gmag < 1 ? (1 + gmag) / (1 - gmag) : Infinity;
+  const rl   = gmag > 0 ? -20 * Math.log10(gmag) : Infinity;
+  const vmaxD = vMaxPosition(phi);
+  const zin   = calcZin(R, X, Z0, lineLenLambda);
+
+  // Metric cards
+  setText('rGmag',   gmag.toFixed(4));
+  setText('rGang',   gang.toFixed(1) + '\u00B0');
+  setText('rVSWR',   vswr === Infinity ? '\u221E' : vswr.toFixed(2));
+  setText('rRL',     rl   === Infinity ? '\u221E' : rl.toFixed(2));
+  setText('rVmaxPos', vmaxD.toFixed(3) + '\u03BB');
+  setText('rZin',    zin  === Infinity ? '\u221E' : zin.toFixed(1));
+
+  // Chart
+  updateChart(R, X, Z0, lineLenLambda);
+
+  // Mini Smith chart
+  drawSmithInset(gr, gi, gmag);
+
+  // Annotation
+  const isResistive = Math.abs(X) < 1;
+  const isInductive = X > 0;
+  const nature = isResistive ? 'purely resistive' : (isInductive ? 'inductive' : 'capacitive');
+  const reactNote = isResistive
+    ? 'Voltage maximum occurs at \u03BB/4 from load for purely resistive ZL when ZL < Z\u2080.'
+    : isInductive
+      ? 'Inductive reactance (X > 0) shifts the voltage maximum toward the source.'
+      : 'Capacitive reactance (X < 0) shifts the voltage maximum toward the load.';
+
+  const matchQual = gmag < 0.05 ? 'excellent match' : gmag < 0.2 ? 'good match' : gmag < 0.4 ? 'fair match' : 'poor match';
+  const mcol = gmag < 0.2 ? '#00e5a0' : gmag < 0.4 ? '#ffaa00' : '#ff4d6d';
+
+  document.getElementById('annotation').innerHTML =
+    `<strong>ZL = ${R}${X >= 0 ? '+j' : '\u2212j'}${Math.abs(X)}\u03A9, Z\u2080 = ${Z0}\u03A9</strong> (\u2009${nature}\u2009) \u2192 ` +
+    `|\u0393| = <strong style="color:${mcol}">${gmag.toFixed(4)}</strong>, ` +
+    `VSWR = <strong>${vswr === Infinity ? '\u221E' : vswr.toFixed(2)}</strong>:1, ` +
+    `RL = <strong>${rl === Infinity ? '\u221E' : rl.toFixed(2)} dB</strong>. ` +
+    `<strong>${matchQual.charAt(0).toUpperCase() + matchQual.slice(1)}.</strong> ` +
+    `Standing wave has Vmax/Vmin = VSWR = ${vswr === Infinity ? '\u221E' : vswr.toFixed(2)}. ` +
+    reactNote;
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.getElementById('sR').addEventListener('input', update);
+document.getElementById('sX').addEventListener('input', update);
+document.getElementById('iZ0').addEventListener('input', update);
+document.getElementById('sLen').addEventListener('input', update);
+
+initChart();
+update();
+
+// ── Toolbar ───────────────────────────────────────────────────────────────────
+function takeScreenshot() {
+  // Merge the Chart.js canvas and the Smith inset canvas side by side
+  const swCanvas   = document.getElementById('swChart');
+  const smithCanvas = document.getElementById('smithInset');
+
+  const padding = 16, titleH = 40;
+  const totalW = swCanvas.width + smithCanvas.width + padding * 3;
+  const totalH = Math.max(swCanvas.height, smithCanvas.height) + titleH + padding * 2;
+
+  const out = document.createElement('canvas');
+  out.width = totalW; out.height = totalH;
+  const c = out.getContext('2d');
+  c.fillStyle = '#0d0d0f'; c.fillRect(0, 0, out.width, out.height);
+  c.fillStyle = '#e2e2e8'; c.font = 'bold 14px Segoe UI, system-ui, sans-serif';
+  c.fillText('Transmission Line  \u00B7  RF Toolbox  \u00B7  hinckster.github.io/RF-Toolbox', padding, titleH / 2 + 5);
+  c.fillStyle = '#888899'; c.font = '11px monospace';
+  c.fillText(new Date().toISOString().slice(0, 19).replace('T', ' ') + ' UTC', padding, titleH - 4);
+  c.drawImage(swCanvas,    padding,                        titleH + padding);
+  c.drawImage(smithCanvas, swCanvas.width + padding * 2,  titleH + padding);
+
+  const link = document.createElement('a');
+  const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+  link.download = `transmission_line_${ts}.png`;
+  link.href = out.toDataURL('image/png');
+  link.click();
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const btn = document.getElementById('copyBtn'), orig = btn.textContent;
+    btn.textContent = '\u2713 Copied!'; btn.style.color = '#00e5a0'; btn.style.borderColor = '#00e5a0';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+  });
+}
+</script>
+</body>
+</html>

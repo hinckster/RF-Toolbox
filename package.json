@@ -1,0 +1,12 @@
+{
+  "name": "rf-toolbox-dev",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dev tooling for RF Toolbox — visual screenshot testing",
+  "scripts": {
+    "screenshot": "node screenshot.js"
+  },
+  "devDependencies": {
+    "puppeteer": "^21.0.0"
+  }
+}

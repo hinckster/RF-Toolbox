@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Link Budget Calculator — RF Toolbox</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0d0d0f;
+    --card:     #1e1e24;
+    --surface:  #16161a;
+    --border:   #2a2a35;
+    --accent:   #00c8ff;
+    --accent2:  #7b61ff;
+    --text:     #e2e2e8;
+    --muted:    #888899;
+    --green:    #00e5a0;
+    --orange:   #ffaa00;
+    --red:      #ff4d6d;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── NAV ─────────────────────────────────────────────── */
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav .nav-back { color: var(--muted); font-size: 0.85rem; }
+  nav .nav-sep  { color: var(--border); }
+  nav .nav-cur  { color: var(--text); font-size: 0.85rem; }
+
+  /* ── TOOLBAR ─────────────────────────────────────────── */
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    padding: 10px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    justify-content: flex-end;
+  }
+  .toolbar button {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .toolbar button:hover {
+    border-color: var(--accent);
+    background: var(--border);
+  }
+
+  /* ── MAIN WRAPPER ────────────────────────────────────── */
+  .main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .page-title {
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+  }
+  .page-subtitle {
+    color: var(--muted);
+    font-size: 0.88rem;
+    margin-top: 4px;
+  }
+
+  /* ── EQUATION BOX ────────────────────────────────────── */
+  .eq-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+  .eq-box .eq-title {
+    color: var(--muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  .eq-box .eq-line {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--accent2);
+    margin-bottom: 4px;
+  }
+  .eq-box .eq-line span { color: var(--accent); }
+
+  /* ── FSPL SLIDERS PANEL ──────────────────────────────── */
+  .fspl-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: center;
+  }
+  .fspl-panel .fpanel-title {
+    color: var(--muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    flex-basis: 100%;
+  }
+  .slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 220px;
+  }
+  .slider-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+  .slider-label .slider-val {
+    font-family: 'Courier New', monospace;
+    color: var(--accent);
+    font-size: 0.92rem;
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  input[type="range"]:hover::-webkit-slider-thumb { background: var(--accent2); }
+  input[type="range"]::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+  }
+  .fspl-result {
+    font-family: 'Courier New', monospace;
+    color: var(--red);
+    font-size: 1rem;
+    white-space: nowrap;
+    align-self: center;
+  }
+
+  /* ── BUDGET TABLE ────────────────────────────────────── */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    min-width: 680px;
+  }
+  thead tr {
+    background: var(--surface);
+  }
+  thead th {
+    color: var(--muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+  thead th:last-child { text-align: right; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  tbody tr:nth-child(odd)  { background: var(--card); }
+  tbody tr:nth-child(even) { background: var(--surface); }
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody tr.row-alert {
+    background: rgba(255, 77, 109, 0.12) !important;
+  }
+  tbody tr.row-alert td { border-left: 3px solid var(--red); }
+  tbody tr.row-alert td:first-child { padding-left: 11px; }
+
+  td {
+    padding: 9px 14px;
+    font-size: 0.88rem;
+    vertical-align: middle;
+  }
+  td.td-name {
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  td.td-desc {
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+  td.td-running {
+    font-family: 'Courier New', monospace;
+    text-align: right;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    padding-right: 18px;
+    color: var(--text);
+  }
+  td.td-value {
+    white-space: nowrap;
+  }
+  td.td-value .val-display {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--accent);
+  }
+  td.td-value .val-display.neg-val { color: var(--red); }
+  td.td-value .val-display.ref-val { color: var(--orange); }
+
+  input[type="number"] {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-family: 'Courier New', monospace;
+    font-size: 0.88rem;
+    width: 80px;
+    padding: 4px 8px;
+    border-radius: 5px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input[type="number"]:focus { border-color: var(--accent); }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { opacity: 0.5; }
+
+  /* FSPL row — read-only display */
+  .fspl-readonly {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--red);
+    padding: 4px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    display: inline-block;
+    min-width: 80px;
+    text-align: right;
+  }
+  .sensitivity-readonly {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--orange);
+    padding: 4px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    display: inline-block;
+    min-width: 80px;
+    text-align: right;
+  }
+
+  /* ── SUMMARY ─────────────────────────────────────────── */
+  .summary-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .summary-label {
+    color: var(--muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+  .summary-value {
+    font-family: 'Courier New', monospace;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .summary-value.green  { color: var(--green); }
+  .summary-value.orange { color: var(--orange); }
+  .summary-value.red    { color: var(--red); }
+
+  .margin-badge {
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .margin-badge.green  { background: rgba(0,229,160,0.15); color: var(--green); border: 1px solid var(--green); }
+  .margin-badge.orange { background: rgba(255,170,0,0.15);  color: var(--orange); border: 1px solid var(--orange); }
+  .margin-badge.red    { background: rgba(255,77,109,0.15); color: var(--red);    border: 1px solid var(--red); }
+
+  /* ── ANNOTATION BOX ──────────────────────────────────── */
+  .annotation-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 16px 20px;
+    font-size: 0.88rem;
+    color: var(--text);
+    line-height: 1.7;
+  }
+  .annotation-box strong { color: var(--accent); font-family: 'Courier New', monospace; }
+
+  /* ── CHART ───────────────────────────────────────────── */
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .chart-title {
+    color: var(--muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+  }
+  .chart-container {
+    position: relative;
+    height: 340px;
+  }
+
+  /* ── MOBILE ──────────────────────────────────────────── */
+  @media (max-width: 700px) {
+    .main { padding: 16px 10px 40px; gap: 18px; }
+    .toolbar { padding: 8px 10px; }
+    nav { padding: 10px 12px; }
+    .summary-box { flex-direction: column; align-items: flex-start; }
+    .fspl-panel { flex-direction: column; }
+    .slider-group { min-width: unset; width: 100%; }
+    td.td-desc { display: none; }
+    .chart-container { height: 260px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-back">← RF Toolbox</a>
+  <span class="nav-sep">/</span>
+  <span class="nav-cur">10&nbsp; Link Budget</span>
+</nav>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <button id="btn-screenshot" title="Save screenshot">📷 Screenshot</button>
+  <button id="btn-fullscreen" title="Toggle fullscreen">⛶ Fullscreen</button>
+  <button id="btn-copylink"   title="Copy link to clipboard">⎘ Copy Link</button>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="main-content">
+
+  <div>
+    <div class="page-title">Link Budget Calculator</div>
+    <div class="page-subtitle">Compute received power, link margin, and dominant loss terms for any RF link.</div>
+  </div>
+
+  <!-- EQUATION BOX -->
+  <div class="eq-box">
+    <div class="eq-title">Governing Equations</div>
+    <div class="eq-line">Margin = Pt + Gt + Gr &minus; FSPL &minus; L<sub style="font-size:0.75em">cables</sub> &minus; NF &minus; Sensitivity</div>
+    <div class="eq-line">FSPL (dB) = <span>20·log₁₀(4π·d·f / c)</span>&nbsp;&nbsp;[d in m, f in Hz, c = 3×10⁸ m/s]</div>
+    <div class="eq-line">Pr = Pt + Gt + Gr &minus; FSPL &minus; L<sub style="font-size:0.75em">cables</sub> &minus; NF</div>
+  </div>
+
+  <!-- FSPL SLIDERS -->
+  <div class="fspl-panel" id="fspl-panel">
+    <div class="fpanel-title">Free-Space Path Loss (FSPL) Parameters</div>
+
+    <div class="slider-group">
+      <div class="slider-label">
+        <span>Frequency</span>
+        <span class="slider-val" id="freq-display">2.40 GHz</span>
+      </div>
+      <input type="range" id="freq-slider" min="-1" max="2" step="0.001" value="0.3802">
+      <!-- log10 scale: 10^x GHz; 0.1→1GHz→100 → x: -1 to 2 -->
+    </div>
+
+    <div class="slider-group">
+      <div class="slider-label">
+        <span>Distance</span>
+        <span class="slider-val" id="dist-display">10.0 km</span>
+      </div>
+      <input type="range" id="dist-slider" min="-1" max="3" step="0.001" value="1">
+      <!-- log10 scale: 10^x km; 0.1→1000 → x: -1 to 3 -->
+    </div>
+
+    <div class="fspl-result" id="fspl-result-display">FSPL = — dB</div>
+  </div>
+
+  <!-- BUDGET TABLE -->
+  <div class="table-wrap">
+    <table id="budget-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Term</th>
+          <th>Value</th>
+          <th>Description</th>
+          <th style="text-align:right;padding-right:18px;">Running Total (dBm)</th>
+        </tr>
+      </thead>
+      <tbody id="budget-tbody">
+        <!-- Rows injected by JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary-box" id="summary-box">
+    <div class="summary-item">
+      <span class="summary-label">Received Power Pr</span>
+      <span class="summary-value" id="sum-pr">— dBm</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Sensitivity</span>
+      <span class="summary-value" id="sum-sens">— dBm</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Link Margin</span>
+      <span class="summary-value" id="sum-margin">— dB</span>
+    </div>
+    <div>
+      <span class="margin-badge" id="margin-badge">—</span>
+    </div>
+  </div>
+
+  <!-- ANNOTATION -->
+  <div class="annotation-box" id="annotation-box">
+    Computing…
+  </div>
+
+  <!-- CHART -->
+  <div class="chart-card">
+    <div class="chart-title">Budget Waterfall</div>
+    <div class="chart-container">
+      <canvas id="waterfall-chart"></canvas>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+/* =========================================================
+   DATA MODEL
+   ========================================================= */
+const SPEED_OF_LIGHT = 3e8; // m/s
+
+// Budget rows (non-FSPL editable, FSPL auto-computed)
+// type: 'add' | 'sub' | 'ref'
+// sign: +1 or -1 applied to running total
+// editable: false = computed from sliders
+const rows = [
+  { id: 'pt',   label: 'Tx Power (Pt)',           value: 30,    unit: 'dBm', desc: 'Transmitter output power',                   type: 'add', editable: true  },
+  { id: 'gt',   label: 'Tx Antenna Gain (Gt)',     value: 15,    unit: 'dBi', desc: 'Transmit antenna boresight gain',            type: 'add', editable: true  },
+  { id: 'ltx',  label: 'Tx Cable/Connector Loss',  value: -1,    unit: 'dB',  desc: 'Coax and connector losses at transmitter',   type: 'sub', editable: true  },
+  { id: 'fspl', label: 'Free-Space Path Loss',     value: 0,     unit: 'dB',  desc: 'FSPL — set via frequency & distance sliders', type: 'sub', editable: false },
+  { id: 'atm',  label: 'Atmospheric / Rain Loss',  value: -2,    unit: 'dB',  desc: 'Gaseous absorption, rain fade margin',       type: 'sub', editable: true  },
+  { id: 'gr',   label: 'Rx Antenna Gain (Gr)',     value: 15,    unit: 'dBi', desc: 'Receive antenna boresight gain',             type: 'add', editable: true  },
+  { id: 'lrx',  label: 'Rx Cable/Connector Loss',  value: -1,    unit: 'dB',  desc: 'Coax and connector losses at receiver',      type: 'sub', editable: true  },
+  { id: 'nf',   label: 'Noise Figure Margin (NF)', value: -5,    unit: 'dB',  desc: 'System noise figure and implementation loss', type: 'sub', editable: true  },
+  { id: 'sens', label: 'Sensitivity (floor)',       value: -100,  unit: 'dBm', desc: 'Minimum detectable signal / required SNR',  type: 'ref', editable: true  },
+];
+
+// FSPL state (log10 scale for sliders)
+let freqLog = 0.3802;  // log10(2.4) ≈ 0.3802
+let distLog = 1;       // log10(10) = 1
+
+function freqGHz() { return Math.pow(10, freqLog); }
+function distKm()  { return Math.pow(10, distLog);  }
+
+function calcFSPL(freqGHz, distKm) {
+  const f = freqGHz * 1e9;
+  const d = distKm  * 1e3;
+  return 20 * Math.log10((4 * Math.PI * d * f) / SPEED_OF_LIGHT);
+}
+
+/* =========================================================
+   BUILD TABLE ROWS
+   ========================================================= */
+function buildTable() {
+  const tbody = document.getElementById('budget-tbody');
+  tbody.innerHTML = '';
+
+  rows.forEach((row, idx) => {
+    const tr = document.createElement('tr');
+    tr.id = 'row-' + row.id;
+
+    // # cell
+    const tdNum = document.createElement('td');
+    tdNum.textContent = idx + 1;
+    tdNum.style.color = 'var(--muted)';
+    tdNum.style.fontSize = '0.78rem';
+    tr.appendChild(tdNum);
+
+    // Name
+    const tdName = document.createElement('td');
+    tdName.className = 'td-name';
+    tdName.textContent = row.label;
+    tr.appendChild(tdName);
+
+    // Value
+    const tdVal = document.createElement('td');
+    tdVal.className = 'td-value';
+
+    if (!row.editable) {
+      // FSPL — read-only display driven by sliders
+      const span = document.createElement('span');
+      span.id = 'val-' + row.id;
+      span.className = 'fspl-readonly';
+      span.textContent = '–';
+      tdVal.appendChild(span);
+    } else if (row.type === 'ref') {
+      // Sensitivity — editable number but orange styling
+      const inp = document.createElement('input');
+      inp.type  = 'number';
+      inp.id    = 'inp-' + row.id;
+      inp.value = row.value;
+      inp.step  = '1';
+      inp.style.color = 'var(--orange)';
+      inp.addEventListener('input', () => {
+        row.value = parseFloat(inp.value) || 0;
+        recalc();
+      });
+      const unitSpan = document.createElement('span');
+      unitSpan.textContent = ' ' + row.unit;
+      unitSpan.style.color = 'var(--muted)';
+      unitSpan.style.fontSize = '0.78rem';
+      unitSpan.style.marginLeft = '4px';
+      tdVal.appendChild(inp);
+      tdVal.appendChild(unitSpan);
+    } else {
+      // Editable number
+      const inp = document.createElement('input');
+      inp.type  = 'number';
+      inp.id    = 'inp-' + row.id;
+      inp.value = row.value;
+      inp.step  = '0.5';
+
+      // color based on type
+      if (row.type === 'sub') inp.style.color = 'var(--red)';
+      else inp.style.color = 'var(--green)';
+
+      inp.addEventListener('input', () => {
+        row.value = parseFloat(inp.value) || 0;
+        recalc();
+      });
+
+      const unitSpan = document.createElement('span');
+      unitSpan.textContent = ' ' + row.unit;
+      unitSpan.style.color = 'var(--muted)';
+      unitSpan.style.fontSize = '0.78rem';
+      unitSpan.style.marginLeft = '4px';
+      tdVal.appendChild(inp);
+      tdVal.appendChild(unitSpan);
+    }
+    tr.appendChild(tdVal);
+
+    // Description
+    const tdDesc = document.createElement('td');
+    tdDesc.className = 'td-desc';
+    tdDesc.textContent = row.desc;
+    tr.appendChild(tdDesc);
+
+    // Running total
+    const tdRun = document.createElement('td');
+    tdRun.className = 'td-running';
+    tdRun.id = 'run-' + row.id;
+    tdRun.textContent = '—';
+    tr.appendChild(tdRun);
+
+    tbody.appendChild(tr);
+  });
+}
+
+/* =========================================================
+   RECALCULATE
+   ========================================================= */
+let waterfallChart = null;
+
+function recalc() {
+  // Update FSPL
+  const fspl = calcFSPL(freqGHz(), distKm());
+  const fsplRow = rows.find(r => r.id === 'fspl');
+  fsplRow.value = -fspl; // stored as negative (loss)
+  const fsplDisplay = document.getElementById('val-fspl');
+  if (fsplDisplay) {
+    fsplDisplay.textContent = (−fspl).toFixed(2) + ' dB';
+    // Actually show as negative number
+    fsplDisplay.textContent = ((-fspl).toFixed(2)) + ' dB';
+  }
+  document.getElementById('fspl-result-display').textContent =
+    'FSPL = ' + fspl.toFixed(2) + ' dB';
+
+  const sensitivity = rows.find(r => r.id === 'sens').value;
+
+  // Running total (starts at 0 dBm, no offset needed — first row IS Pt in dBm)
+  // We treat Pt as absolute power. Each add/sub term modifies the running power.
+  // ref (sensitivity) row: we just display it but don't add it to running total.
+  let running = 0;
+  let pr = 0; // will be set after row 8 (index 7)
+  const runningTotals = [];
+
+  rows.forEach((row, idx) => {
+    if (row.type === 'ref') {
+      // Don't add to running total — just record current value
+      runningTotals.push(running);
+      return;
+    }
+
+    if (row.id === 'pt') {
+      // First row: running total IS Pt
+      running = row.value;
+    } else if (row.type === 'add') {
+      running += Math.abs(row.value);
+    } else if (row.type === 'sub') {
+      // value stored as negative for editable rows, FSPL stored as negative too
+      running += row.value; // value is already negative
+    }
+
+    runningTotals.push(running);
+
+    // Pr is after the NF row (idx 7, 0-based)
+    if (idx === 7) pr = running;
+  });
+
+  // Update running total cells and alert highlighting
+  rows.forEach((row, idx) => {
+    const cell = document.getElementById('run-' + row.id);
+    const tr   = document.getElementById('row-' + row.id);
+    if (!cell) return;
+
+    const val = runningTotals[idx];
+
+    if (row.type === 'ref') {
+      // Show sensitivity for ref row
+      cell.textContent = row.value.toFixed(2) + ' dBm';
+      cell.style.color = 'var(--orange)';
+      tr.classList.remove('row-alert');
+      return;
+    }
+
+    cell.textContent = val.toFixed(2) + ' dBm';
+
+    if (val < sensitivity) {
+      cell.style.color = 'var(--red)';
+      tr.classList.add('row-alert');
+    } else {
+      cell.style.color = 'var(--text)';
+      tr.classList.remove('row-alert');
+    }
+  });
+
+  // Summary
+  const margin = pr - sensitivity;
+  document.getElementById('sum-pr').textContent    = pr.toFixed(2) + ' dBm';
+  document.getElementById('sum-sens').textContent  = sensitivity.toFixed(2) + ' dBm';
+  document.getElementById('sum-margin').textContent = (margin >= 0 ? '+' : '') + margin.toFixed(2) + ' dB';
+
+  const prEl = document.getElementById('sum-pr');
+  const mEl  = document.getElementById('sum-margin');
+  const badge = document.getElementById('margin-badge');
+
+  prEl.className = 'summary-value';
+
+  if (margin >= 6) {
+    mEl.className = 'summary-value green';
+    badge.className = 'margin-badge green';
+    badge.textContent = 'Healthy';
+  } else if (margin >= 0) {
+    mEl.className = 'summary-value orange';
+    badge.className = 'margin-badge orange';
+    badge.textContent = 'Thin';
+  } else {
+    mEl.className = 'summary-value red';
+    badge.className = 'margin-badge red';
+    badge.textContent = 'Negative';
+  }
+
+  // Annotation
+  const qual = margin >= 6 ? 'healthy' : margin >= 0 ? 'thin' : 'negative';
+  const annotEl = document.getElementById('annotation-box');
+  annotEl.innerHTML =
+    'Pr = <strong>' + pr.toFixed(2) + ' dBm</strong>, ' +
+    'Sensitivity = <strong>' + sensitivity.toFixed(2) + ' dBm</strong> ' +
+    '&rarr; Margin = <strong>' + (margin >= 0 ? '+' : '') + margin.toFixed(2) + ' dB</strong>. ' +
+    'The dominant loss is FSPL = <strong>' + fspl.toFixed(2) + ' dB</strong> at ' +
+    '<strong>' + distKm().toFixed(distKm() < 10 ? 2 : 1) + ' km</strong> / ' +
+    '<strong>' + freqGHz().toFixed(freqGHz() < 10 ? 3 : 2) + ' GHz</strong>. ' +
+    'This is a <strong>' + qual + '</strong> margin. ' +
+    'To gain 6 dB: double antenna gain on each end, halve distance, or double Pt.';
+
+  // Chart
+  updateChart(pr, sensitivity, fspl);
+}
+
+/* =========================================================
+   WATERFALL CHART
+   ========================================================= */
+function buildChartData(pr, sensitivity, fspl) {
+  // Each segment: { label, start, end, color }
+  const segments = [];
+
+  const ptRow  = rows.find(r => r.id === 'pt');
+  const gtRow  = rows.find(r => r.id === 'gt');
+  const ltxRow = rows.find(r => r.id === 'ltx');
+  const atmRow = rows.find(r => r.id === 'atm');
+  const grRow  = rows.find(r => r.id === 'gr');
+  const lrxRow = rows.find(r => r.id === 'lrx');
+  const nfRow  = rows.find(r => r.id === 'nf');
+  const sensRow= rows.find(r => r.id === 'sens');
+
+  let cursor = 0;
+
+  function seg(label, delta, isGain) {
+    const start = cursor;
+    const end   = cursor + delta;
+    segments.push({ label, start, end, isGain, delta });
+    cursor = end;
+  }
+
+  // Pt: from 0 to Pt (absolute)
+  seg('Tx Power (Pt)', ptRow.value, true);
+  seg('Tx Ant. Gain', Math.abs(gtRow.value), true);
+  seg('Tx Cable Loss', ltxRow.value, false);         // negative
+  seg('FSPL', -fspl, false);                         // negative
+  seg('Atm. Loss', atmRow.value, false);             // negative
+  seg('Rx Ant. Gain', Math.abs(grRow.value), true);
+  seg('Rx Cable Loss', lrxRow.value, false);         // negative
+  seg('Noise Figure', nfRow.value, false);            // negative
+
+  return { segments, sensitivity: sensRow.value };
+}
+
+function updateChart(pr, sensitivity, fspl) {
+  const { segments } = buildChartData(pr, sensitivity, fspl);
+
+  const labels  = segments.map(s => s.label);
+  // Invisible base dataset (transparent) to float bars
+  const bases   = segments.map(s => Math.min(s.start, s.end));
+  const heights = segments.map(s => Math.abs(s.delta));
+  const colors  = segments.map(s => s.isGain
+    ? 'rgba(0,229,160,0.78)'
+    : (s.delta < -10 ? 'rgba(255,77,109,0.78)' : 'rgba(255,170,0,0.78)'));
+  const borders = segments.map(s => s.isGain ? '#00e5a0' : (s.delta < -10 ? '#ff4d6d' : '#ffaa00'));
+
+  const ctx = document.getElementById('waterfall-chart').getContext('2d');
+
+  if (waterfallChart) {
+    waterfallChart.data.labels = labels;
+    waterfallChart.data.datasets[0].data = bases;
+    waterfallChart.data.datasets[1].data = heights;
+    waterfallChart.data.datasets[1].backgroundColor = colors;
+    waterfallChart.data.datasets[1].borderColor = borders;
+    waterfallChart.options.plugins.annotation = buildAnnotationPlugin(sensitivity, pr);
+    waterfallChart.update();
+    return;
+  }
+
+  waterfallChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: '_base',
+          data: bases,
+          backgroundColor: 'transparent',
+          borderColor: 'transparent',
+          borderWidth: 0,
+          stack: 'waterfall',
+        },
+        {
+          label: 'Budget Term',
+          data: heights,
+          backgroundColor: colors,
+          borderColor: borders,
+          borderWidth: 1,
+          borderRadius: 3,
+          stack: 'waterfall',
+        }
+      ]
+    },
+    options: {
+      animation: { duration: 0 },
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              if (ctx.datasetIndex === 0) return null;
+              const seg = segments[ctx.dataIndex];
+              const sign = seg.delta >= 0 ? '+' : '';
+              return ` ${sign}${seg.delta.toFixed(2)} dB  (${seg.end.toFixed(2)} dBm)`;
+            }
+          },
+          backgroundColor: '#1e1e24',
+          borderColor: '#2a2a35',
+          borderWidth: 1,
+          titleColor: '#e2e2e8',
+          bodyColor: '#888899',
+          padding: 10,
+        },
+      },
+      scales: {
+        x: {
+          stacked: true,
+          grid:  { color: '#2a2a35' },
+          ticks: { color: '#888899', font: { family: "'Courier New', monospace", size: 11 } },
+          title: {
+            display: true,
+            text: 'Power Level (dBm)',
+            color: '#888899',
+            font: { size: 11, family: 'Segoe UI, system-ui, sans-serif' }
+          }
+        },
+        y: {
+          stacked: true,
+          grid:  { color: '#2a2a35' },
+          ticks: { color: '#888899', font: { size: 11, family: 'Segoe UI, system-ui, sans-serif' } },
+        }
+      }
+    }
+  });
+}
+
+function buildAnnotationPlugin(sensitivity, pr) {
+  // Chart.js 4 doesn't bundle annotation — we draw sensitivity line manually via afterDraw
+  return {};
+}
+
+/* =========================================================
+   SLIDER HANDLING
+   ========================================================= */
+function updateFreqDisplay() {
+  const f = freqGHz();
+  let label;
+  if (f < 1) label = (f * 1000).toFixed(0) + ' MHz';
+  else if (f < 10) label = f.toFixed(3) + ' GHz';
+  else label = f.toFixed(2) + ' GHz';
+  document.getElementById('freq-display').textContent = label;
+}
+
+function updateDistDisplay() {
+  const d = distKm();
+  let label;
+  if (d < 1) label = (d * 1000).toFixed(0) + ' m';
+  else if (d < 10) label = d.toFixed(2) + ' km';
+  else if (d < 100) label = d.toFixed(1) + ' km';
+  else label = d.toFixed(0) + ' km';
+  document.getElementById('dist-display').textContent = label;
+}
+
+document.getElementById('freq-slider').addEventListener('input', function() {
+  freqLog = parseFloat(this.value);
+  updateFreqDisplay();
+  recalc();
+});
+
+document.getElementById('dist-slider').addEventListener('input', function() {
+  distLog = parseFloat(this.value);
+  updateDistDisplay();
+  recalc();
+});
+
+/* =========================================================
+   TOOLBAR ACTIONS
+   ========================================================= */
+document.getElementById('btn-fullscreen').addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen().catch(() => {});
+  }
+});
+
+document.getElementById('btn-copylink').addEventListener('click', () => {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const btn = document.getElementById('btn-copylink');
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 1800);
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = window.location.href;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+});
+
+document.getElementById('btn-screenshot').addEventListener('click', () => {
+  // Use html2canvas if available; otherwise notify user
+  if (typeof html2canvas !== 'undefined') {
+    html2canvas(document.getElementById('main-content')).then(canvas => {
+      const a = document.createElement('a');
+      a.download = 'link-budget.png';
+      a.href = canvas.toDataURL();
+      a.click();
+    });
+  } else {
+    // Fallback: open print dialog
+    window.print();
+  }
+});
+
+/* =========================================================
+   DRAW SENSITIVITY LINE ON CHART (afterDraw plugin)
+   ========================================================= */
+const sensitivityLinePlugin = {
+  id: 'sensitivityLine',
+  afterDraw(chart) {
+    const sensVal = rows.find(r => r.id === 'sens').value;
+    const xScale = chart.scales.x;
+    if (!xScale) return;
+
+    const x = xScale.getPixelForValue(sensVal);
+    if (isNaN(x)) return;
+
+    const ctx = chart.ctx;
+    const top = chart.chartArea.top;
+    const bottom = chart.chartArea.bottom;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = '#ffaa00';
+    ctx.lineWidth = 1.5;
+    ctx.moveTo(x, top);
+    ctx.lineTo(x, bottom);
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#ffaa00';
+    ctx.font = '11px Segoe UI, system-ui, sans-serif';
+    ctx.fillText('Sensitivity', x + 5, top + 14);
+    ctx.restore();
+  }
+};
+
+Chart.register(sensitivityLinePlugin);
+
+/* =========================================================
+   INIT
+   ========================================================= */
+buildTable();
+updateFreqDisplay();
+updateDistDisplay();
+recalc();
+</script>
+</body>
+</html>

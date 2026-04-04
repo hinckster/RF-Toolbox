@@ -10,9 +10,18 @@
   :root {
     --bg: #0d0d0f; --surface: #16161a; --card: #1e1e24; --border: #2a2a35;
     --accent: #00c8ff; --accent2: #7b61ff; --text: #e2e2e8; --muted: #888899;
-    --green: #00e5a0;
+    --green: #00e5a0; --orange: #ffaa00; --red: #ff4d6d;
   }
   body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  /* ── Toolbar ── */
+  .toolbar { position: fixed; top: 14px; right: 16px; display: flex; gap: 6px; z-index: 100; }
+  .tbtn {
+    background: var(--card); border: 1px solid var(--border); color: var(--muted);
+    border-radius: 5px; padding: 5px 10px; font-size: .75rem; cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+  .tbtn:hover { border-color: var(--accent); color: var(--accent); }
 
   nav { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
   nav a { color: var(--accent); text-decoration: none; font-size: 0.88rem; }
@@ -24,17 +33,12 @@
   header h1 { font-size: 2rem; font-weight: 700; }
   header p { color: var(--muted); margin-top: 0.4rem; }
 
-  .equation-box {
-    max-width: 1100px; margin: 0 auto 1.5rem; padding: 0 1.5rem;
-  }
-  .equation-box .eq-card {
+  .equation-box { max-width: 1100px; margin: 0 auto 1.5rem; padding: 0 1.5rem; }
+  .eq-card {
     background: var(--card); border: 1px solid var(--border); border-radius: 10px;
     padding: 1.2rem 1.5rem; display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center;
   }
-  .eq-primary {
-    font-family: 'Courier New', monospace; font-size: 1.1rem; color: var(--accent);
-    flex: 1; min-width: 280px;
-  }
+  .eq-primary { font-family: 'Courier New', monospace; font-size: 1.1rem; color: var(--accent); flex: 1; min-width: 280px; }
   .eq-secondary { font-family: 'Courier New', monospace; font-size: 0.88rem; color: var(--accent2); }
   .eq-note { font-size: 0.82rem; color: var(--muted); margin-top: 0.3rem; }
 
@@ -42,25 +46,21 @@
     display: grid; grid-template-columns: 320px 1fr; gap: 1.4rem;
     max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem;
   }
-  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+  @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
 
-  .panel {
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem;
-  }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
   .panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1.1rem; }
 
   .slider-row { margin-bottom: 1.1rem; }
   .slider-row label { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.35rem; }
-  .slider-row label span { color: var(--accent); font-family: 'Courier New', monospace; font-weight: 600; }
-  input[type=range] {
-    width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer;
-  }
+  .slider-row label span { color: var(--accent); font-family: 'Courier New', monospace; font-weight: 600; transition: all 200ms ease; }
+  input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
   .slider-row .hints { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
 
   .results { margin-top: 1.4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
   .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; }
   .result-card .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-  .result-card .value { font-size: 1.3rem; font-weight: 700; color: var(--green); font-family: 'Courier New', monospace; margin-top: 0.15rem; }
+  .result-card .value { font-size: 1.3rem; font-weight: 700; color: var(--green); font-family: 'Courier New', monospace; margin-top: 0.15rem; transition: all 200ms ease; }
   .result-card .unit { font-size: 0.7rem; color: var(--muted); }
 
   .chart-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; display: flex; flex-direction: column; }
@@ -73,9 +73,23 @@
     background: var(--surface); color: var(--muted); font-size: 0.8rem; cursor: pointer; transition: 0.15s;
   }
   .sweep-btn.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+
+  /* ── Annotation box ── */
+  .annotation {
+    border-left: 3px solid var(--accent); background: var(--card);
+    padding: 11px 14px; border-radius: 0 8px 8px 0; margin-top: 1rem;
+    font-size: 0.83rem; color: var(--muted); line-height: 1.65;
+  }
+  .annotation strong { color: var(--text); }
 </style>
 </head>
 <body>
+
+<div class="toolbar">
+  <button class="tbtn" onclick="takeScreenshot('Friis Transmission')">📷 Screenshot</button>
+  <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
+</div>
 
 <nav>
   <a href="index.html">← RF Toolbox</a>
@@ -165,13 +179,13 @@
     <div class="chart-wrap">
       <canvas id="chart"></canvas>
     </div>
+    <div class="annotation" id="annotation">Updating…</div>
   </div>
 </div>
 
 <script>
 const C = 3e8;
-const REF = -90; // dBm sensitivity reference
-
+const REF = -90;
 let sweepMode = 'distance';
 
 const inputs = {
@@ -198,11 +212,8 @@ function friis(Pt, Gt, Gr, fGHz, dM) {
 
 function getVals() {
   return {
-    Pt: +inputs.Pt.value,
-    Gt: +inputs.Gt.value,
-    Gr: +inputs.Gr.value,
-    fGHz: +inputs.freq.value,
-    dM: +inputs.dist.value,
+    Pt: +inputs.Pt.value, Gt: +inputs.Gt.value, Gr: +inputs.Gr.value,
+    fGHz: +inputs.freq.value, dM: +inputs.dist.value,
   };
 }
 
@@ -211,9 +222,9 @@ function formatDist(d) { return d >= 1000 ? (d / 1000).toFixed(1) + ' km' : d.to
 
 function updateLabels() {
   const v = getVals();
-  labels.Pt.textContent = v.Pt + ' dBm';
-  labels.Gt.textContent = v.Gt + ' dBi';
-  labels.Gr.textContent = v.Gr + ' dBi';
+  labels.Pt.textContent   = v.Pt + ' dBm';
+  labels.Gt.textContent   = v.Gt + ' dBi';
+  labels.Gr.textContent   = v.Gr + ' dBi';
   labels.freq.textContent = formatFreq(v.fGHz);
   labels.dist.textContent = formatDist(v.dM);
 }
@@ -221,73 +232,68 @@ function updateLabels() {
 function updateResults() {
   const v = getVals();
   const { Pr, fspl, lambda } = friis(v.Pt, v.Gt, v.Gr, v.fGHz, v.dM);
-  document.getElementById('rPr').textContent = Pr.toFixed(1);
-  document.getElementById('rFSPL').textContent = fspl.toFixed(1);
+  const margin = Pr - REF;
+  document.getElementById('rPr').textContent     = Pr.toFixed(1);
+  document.getElementById('rFSPL').textContent   = fspl.toFixed(1);
   document.getElementById('rLambda').textContent = (lambda * 1000).toFixed(1);
-  document.getElementById('rMargin').textContent = (Pr - REF).toFixed(1);
+  document.getElementById('rMargin').textContent = margin.toFixed(1);
+
+  // colour-code margin
+  const mEl = document.getElementById('rMargin');
+  mEl.style.color = margin > 20 ? 'var(--green)' : margin > 6 ? 'var(--orange)' : 'var(--red)';
+
+  updateAnnotation(v, Pr, fspl, lambda, margin);
 }
 
-// Chart setup
-const ctx = document.getElementById('chart').getContext('2d');
-const chartData = {
-  labels: [],
-  datasets: [{
-    label: 'Received Power (dBm)',
-    data: [],
-    borderColor: '#00c8ff',
-    backgroundColor: 'rgba(0,200,255,0.08)',
-    borderWidth: 2,
-    pointRadius: 0,
-    fill: true,
-    tension: 0.3,
-  }, {
-    label: 'Sensitivity (−90 dBm)',
-    data: [],
-    borderColor: '#ff4d6d',
-    borderWidth: 1.5,
-    borderDash: [6, 4],
-    pointRadius: 0,
-    fill: false,
-  }]
-};
+function updateAnnotation(v, Pr, fspl, lambda, margin) {
+  const mc = margin > 20 ? '#00e5a0' : margin > 6 ? '#ffaa00' : '#ff4d6d';
+  const tip = margin > 20
+    ? 'Link is healthy — push range or cut Pt to find the edge.'
+    : margin > 0
+      ? 'Margin is thin — try a higher-gain antenna or shorter hop.'
+      : '<span style="color:#ff4d6d">Link is below sensitivity</span> — cut range, boost Pt, or add antenna gain.';
+  document.getElementById('annotation').innerHTML =
+    `<strong>At ${formatDist(v.dM)}, ${formatFreq(v.fGHz)}:</strong> ` +
+    `FSPL = <strong>${fspl.toFixed(1)} dB</strong>, ` +
+    `Pr = <strong>${Pr.toFixed(1)} dBm</strong>, ` +
+    `margin = <strong style="color:${mc}">${margin.toFixed(1)} dB</strong> above −90 dBm. ` +
+    `λ = ${(lambda*1000).toFixed(1)} mm. ${tip}`;
+}
 
+// Chart
+const ctx = document.getElementById('chart').getContext('2d');
 const chart = new Chart(ctx, {
   type: 'line',
-  data: chartData,
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Received Power (dBm)',
+      data: [], borderColor: '#00c8ff', backgroundColor: 'rgba(0,200,255,0.08)',
+      borderWidth: 2, pointRadius: 0, fill: true, tension: 0.3,
+    }, {
+      label: 'Sensitivity (−90 dBm)',
+      data: [], borderColor: '#ff4d6d', borderWidth: 1.5,
+      borderDash: [6,4], pointRadius: 0, fill: false,
+    }]
+  },
   options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    animation: { duration: 0 },
-    plugins: {
-      legend: { labels: { color: '#888899', font: { size: 11 } } },
-      tooltip: { mode: 'index', intersect: false }
-    },
+    responsive: true, maintainAspectRatio: false, animation: { duration: 0 },
+    plugins: { legend: { labels: { color: '#888899', font: { size: 11 } } }, tooltip: { mode: 'index', intersect: false } },
     scales: {
-      x: {
-        ticks: { color: '#888899', maxTicksLimit: 8, font: { size: 10 } },
-        grid: { color: '#2a2a35' },
-        title: { display: true, color: '#888899', font: { size: 11 } }
-      },
-      y: {
-        ticks: { color: '#888899', font: { size: 10 } },
-        grid: { color: '#2a2a35' },
-        title: { display: true, text: 'Power (dBm)', color: '#888899', font: { size: 11 } }
-      }
+      x: { ticks: { color: '#888899', maxTicksLimit: 8, font: { size: 10 } }, grid: { color: '#2a2a35' }, title: { display: true, color: '#888899', font: { size: 11 } } },
+      y: { ticks: { color: '#888899', font: { size: 10 } }, grid: { color: '#2a2a35' }, title: { display: true, text: 'Power (dBm)', color: '#888899', font: { size: 11 } } }
     }
   }
 });
 
 function buildDistanceSweep() {
-  const v = getVals();
-  const points = 120;
-  const dMax = 100000;
+  const v = getVals(); const pts = 120, dMax = 100000;
   const xs = [], ys = [], ref = [];
-  for (let i = 0; i < points; i++) {
-    const d = Math.exp(Math.log(1) + (Math.log(dMax) - Math.log(1)) * i / (points - 1));
+  for (let i = 0; i < pts; i++) {
+    const d = Math.exp(Math.log(1) + (Math.log(dMax) - Math.log(1)) * i / (pts - 1));
     const { Pr } = friis(v.Pt, v.Gt, v.Gr, v.fGHz, d);
-    xs.push(d >= 1000 ? (d / 1000).toFixed(1) + 'km' : d.toFixed(0) + 'm');
-    ys.push(Pr);
-    ref.push(REF);
+    xs.push(d >= 1000 ? (d/1000).toFixed(1)+'km' : d.toFixed(0)+'m');
+    ys.push(Pr); ref.push(REF);
   }
   chart.data.labels = xs;
   chart.data.datasets[0].data = ys;
@@ -297,15 +303,13 @@ function buildDistanceSweep() {
 }
 
 function buildFrequencySweep() {
-  const v = getVals();
-  const points = 100;
+  const v = getVals(); const pts = 100;
   const xs = [], ys = [], ref = [];
-  for (let i = 0; i < points; i++) {
-    const f = 0.1 + (100 - 0.1) * i / (points - 1);
+  for (let i = 0; i < pts; i++) {
+    const f = 0.1 + (100 - 0.1) * i / (pts - 1);
     const { Pr } = friis(v.Pt, v.Gt, v.Gr, f, v.dM);
-    xs.push(f >= 1 ? f.toFixed(1) + 'G' : (f * 1000).toFixed(0) + 'M');
-    ys.push(Pr);
-    ref.push(REF);
+    xs.push(f >= 1 ? f.toFixed(1)+'G' : (f*1000).toFixed(0)+'M');
+    ys.push(Pr); ref.push(REF);
   }
   chart.data.labels = xs;
   chart.data.datasets[0].data = ys;
@@ -314,21 +318,50 @@ function buildFrequencySweep() {
   chart.update('none');
 }
 
-function updateChart() {
-  if (sweepMode === 'distance') buildDistanceSweep();
-  else buildFrequencySweep();
-}
-
 function setSweep(mode) {
   sweepMode = mode;
   document.querySelectorAll('.sweep-btn').forEach(b => b.classList.toggle('active', b.dataset.sweep === mode));
-  updateChart();
+  if (mode === 'distance') buildDistanceSweep(); else buildFrequencySweep();
 }
 
-function onInput() { updateLabels(); updateResults(); updateChart(); }
-
+function onInput() { updateLabels(); updateResults(); if (sweepMode === 'distance') buildDistanceSweep(); else buildFrequencySweep(); }
 Object.values(inputs).forEach(el => el.addEventListener('input', onInput));
 onInput();
+
+// ── Toolbar functions ──
+function takeScreenshot(toolName) {
+  const canvases = [...document.querySelectorAll('canvas')];
+  const padding = 16, titleHeight = 40;
+  const totalWidth = canvases.reduce((s,c) => s + c.width + padding, padding);
+  const maxHeight = Math.max(...canvases.map(c => c.height));
+  const out = document.createElement('canvas');
+  out.width = totalWidth; out.height = maxHeight + titleHeight + padding * 2;
+  const c = out.getContext('2d');
+  c.fillStyle = '#0d0d0f'; c.fillRect(0, 0, out.width, out.height);
+  c.fillStyle = '#e2e2e8'; c.font = 'bold 14px Segoe UI, system-ui, sans-serif';
+  c.fillText(toolName + '  ·  RF Toolbox  ·  hinckster.github.io/RF-Toolbox', padding, titleHeight / 2 + 5);
+  c.fillStyle = '#888899'; c.font = '11px monospace';
+  c.fillText(new Date().toISOString().slice(0,19).replace('T',' ') + ' UTC', padding, titleHeight - 4);
+  let x = padding;
+  canvases.forEach(cv => { c.drawImage(cv, x, titleHeight + padding); x += cv.width + padding; });
+  const link = document.createElement('a');
+  const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+  link.download = `friis_transmission_${ts}.png`; link.href = out.toDataURL('image/png'); link.click();
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const btn = document.getElementById('copyBtn');
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!'; btn.style.color = '#00e5a0'; btn.style.borderColor = '#00e5a0';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+  });
+}
 </script>
 </body>
 </html>

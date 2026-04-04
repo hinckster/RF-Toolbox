@@ -3,268 +3,836 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IIP3 &amp; Intermod | RF Toolbox</title>
+<title>IIP3 &amp; Intermod Cascade | RF Toolbox</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0d0d0f; --surface: #16161a; --card: #1e1e24; --border: #2a2a35;
-    --accent: #00c8ff; --accent2: #7b61ff; --text: #e2e2e8; --muted: #888899;
-    --green: #00e5a0; --orange: #ffaa00; --red: #ff4d6d;
-  }
-  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
-  nav { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
-  nav a { color: var(--accent); text-decoration: none; font-size: 0.88rem; }
-  nav span { color: var(--muted); }
-  header { padding: 2rem 1.5rem 1.5rem; max-width: 1100px; margin: 0 auto; }
-  header .tag { font-size: 0.72rem; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.4rem; }
-  header h1 { font-size: 2rem; font-weight: 700; }
-  header p { color: var(--muted); margin-top: 0.4rem; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0d0d0f; --surface: #16161a; --card: #1e1e24; --border: #2a2a35;
+  --accent: #00c8ff; --accent2: #7b61ff; --text: #e2e2e8; --muted: #888899;
+  --green: #00e5a0; --orange: #ffaa00; --red: #ff4d6d; --purple: #bc8cff;
+}
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; font-size: 14px; }
 
-  .equation-box { max-width: 1100px; margin: 0 auto 1.5rem; padding: 0 1.5rem; }
-  .eq-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-    padding: 1.2rem 1.5rem; display: flex; flex-wrap: wrap; gap: 1.5rem;
-  }
-  .eq-col { min-width: 240px; }
-  .eq-primary { font-family: 'Courier New', monospace; font-size: 0.98rem; color: var(--accent); margin-bottom: 0.3rem; }
-  .eq-secondary { font-family: 'Courier New', monospace; font-size: 0.84rem; color: var(--accent2); }
-  .eq-note { font-size: 0.79rem; color: var(--muted); margin-top: 0.3rem; }
+.toolbar { position: fixed; top: 14px; right: 16px; display: flex; gap: 6px; z-index: 100; }
+.tbtn { background: var(--card); border: 1px solid var(--border); color: var(--muted); border-radius: 5px; padding: 5px 10px; font-size: .75rem; cursor: pointer; transition: border-color .15s, color .15s; }
+.tbtn:hover { border-color: var(--accent); color: var(--accent); }
 
-  .layout { display: grid; grid-template-columns: 310px 1fr; gap: 1.4rem; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem; }
-  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+nav { padding: .9rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+nav a { color: var(--accent); text-decoration: none; font-size: .88rem; }
+nav a:hover { text-decoration: underline; }
+nav span { color: var(--muted); }
 
-  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
-  .panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
+header { padding: 1.5rem 1.5rem 1rem; max-width: 1200px; margin: 0 auto; }
+header .tag { font-size: .72rem; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: .3rem; }
+header h1 { font-size: 1.7rem; font-weight: 700; }
+header p { color: var(--muted); margin-top: .3rem; font-size: .88rem; }
 
-  .slider-row { margin-bottom: 1rem; }
-  .slider-row label { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.3rem; }
-  .slider-row label span { color: var(--orange); font-family: 'Courier New', monospace; font-weight: 600; }
-  input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
-  .hints { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 0.15rem; }
+.eq-bar { max-width: 1200px; margin: 0 auto .8rem; padding: 0 1.5rem; }
+.eq-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: .9rem 1.2rem; display: flex; flex-wrap: wrap; gap: 1.5rem; }
+.eq-primary { font-family: 'Courier New', monospace; font-size: .95rem; color: var(--accent); margin-bottom: .2rem; }
+.eq-secondary { font-family: 'Courier New', monospace; font-size: .82rem; color: var(--accent2); }
+.eq-note { font-size: .76rem; color: var(--muted); margin-top: .2rem; }
 
-  .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+.ctrl-bar { max-width: 1200px; margin: 0 auto .8rem; padding: 0 1.5rem; display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; }
+.ctrl-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: .4rem .85rem; font-size: .82rem; cursor: pointer; transition: border-color .15s, color .15s; white-space: nowrap; }
+.ctrl-btn:hover { border-color: var(--accent); color: var(--accent); }
+.ctrl-btn.primary { border-color: var(--accent); color: var(--accent); }
+.ctrl-btn.danger { border-color: var(--border); color: var(--muted); }
+.ctrl-btn.danger:hover { border-color: var(--red); color: var(--red); }
+select.ctrl-select { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: .4rem .7rem; font-size: .82rem; cursor: pointer; }
+.ctrl-sep { width: 1px; background: var(--border); height: 24px; }
+label.ctrl-label { font-size: .78rem; color: var(--muted); display: flex; align-items: center; gap: .4rem; }
+label.ctrl-label input[type=number] { background: var(--surface); border: 1px solid var(--border); color: var(--accent); border-radius: 5px; padding: .3rem .45rem; font-size: .82rem; font-family: 'Courier New', monospace; width: 72px; }
 
-  .results { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.4rem; }
-  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem; }
-  .result-card .label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-  .result-card .value { font-size: 1.2rem; font-weight: 700; font-family: 'Courier New', monospace; margin-top: 0.1rem; }
-  .result-card .unit { font-size: 0.68rem; color: var(--muted); }
-  .v-green { color: var(--green); }
-  .v-orange { color: var(--orange); }
-  .v-red { color: var(--red); }
-  .v-accent { color: var(--accent); }
+.metrics-bar { max-width: 1200px; margin: 0 auto .8rem; padding: 0 1.5rem; }
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: .55rem; }
+.metric-card { background: var(--card); border: 1px solid var(--border); border-radius: 7px; padding: .6rem .8rem; }
+.metric-card .mlabel { font-size: .67rem; color: var(--muted); text-transform: uppercase; letter-spacing: .9px; }
+.metric-card .mval { font-family: 'Courier New', monospace; font-size: 1.15rem; font-weight: 700; margin-top: .15rem; transition: color 200ms ease; }
+.metric-card .munit { font-size: .67rem; color: var(--muted); }
+.good { color: var(--green); } .warn { color: var(--orange); } .bad { color: var(--red); } .info { color: var(--accent); } .info2 { color: var(--accent2); }
 
-  .chart-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
-  .chart-panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
-  .chart-wrap { position: relative; min-height: 420px; }
+.table-wrap { max-width: 1200px; margin: 0 auto .8rem; padding: 0 1.5rem; overflow-x: auto; }
+table.stages { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: .82rem; }
+table.stages thead tr { background: var(--surface); }
+table.stages th { padding: .5rem .6rem; color: var(--muted); font-size: .68rem; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--border); }
+table.stages td { padding: .35rem .4rem; border-bottom: 1px solid rgba(255,255,255,.03); vertical-align: middle; }
+table.stages tr:last-child td { border-bottom: none; }
+table.stages tr.stage-row:hover td { background: rgba(255,255,255,.025); }
+table.stages tr.stage-row.disabled td { opacity: .45; }
+
+.stage-name { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 4px; padding: .28rem .5rem; width: 120px; font-size: .82rem; }
+.stage-name:focus { outline: none; border-color: var(--accent); }
+select.stage-type { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 4px; padding: .28rem .4rem; font-size: .8rem; width: 110px; }
+.stage-num { background: var(--surface); border: 1px solid var(--border); color: var(--accent); border-radius: 4px; padding: .28rem .4rem; width: 62px; font-size: .82rem; font-family: 'Courier New', monospace; text-align: right; }
+.stage-num:focus { outline: none; border-color: var(--accent); }
+.stage-num.auto { color: var(--muted); border-style: dashed; cursor: default; pointer-events: none; }
+.cum-cell { font-family: 'Courier New', monospace; font-size: .8rem; text-align: right; padding-right: .7rem; white-space: nowrap; }
+.contrib-bar-wrap { display: flex; align-items: center; gap: .35rem; min-width: 80px; }
+.contrib-bar { height: 8px; border-radius: 3px; min-width: 2px; transition: width 200ms ease; }
+.contrib-pct { font-family: 'Courier New', monospace; font-size: .75rem; width: 38px; text-align: right; white-space: nowrap; }
+.ord-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: .7rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; transition: .15s; }
+.ord-btn:hover { border-color: var(--accent); color: var(--accent); }
+.del-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 3px; width: 22px; height: 22px; cursor: pointer; font-size: .85rem; transition: .15s; }
+.del-btn:hover { border-color: var(--red); color: var(--red); }
+.passive-note { font-size: .65rem; color: var(--muted); font-style: italic; }
+
+.charts-row { max-width: 1200px; margin: 0 auto .8rem; padding: 0 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+@media (max-width: 900px) { .charts-row { grid-template-columns: 1fr; } }
+.chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+.chart-card h3 { font-size: .72rem; font-weight: 600; color: var(--muted); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: .7rem; }
+.chart-wrap { position: relative; height: 240px; }
+
+.blocker-wrap { max-width: 1200px; margin: 0 auto .8rem; padding: 0 1.5rem; }
+.blocker-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.2rem; }
+.blocker-card h3 { font-size: .72rem; font-weight: 600; color: var(--muted); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: .8rem; }
+.blocker-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+@media (max-width: 768px) { .blocker-grid { grid-template-columns: 1fr; } }
+.sl-row { margin-bottom: .7rem; }
+.sl-row label { display: flex; justify-content: space-between; font-size: .85rem; margin-bottom: .25rem; }
+.sl-row label span { color: var(--orange); font-family: 'Courier New', monospace; font-weight: 600; transition: all 200ms ease; }
+input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
+.sl-hints { display: flex; justify-content: space-between; font-size: .68rem; color: var(--muted); margin-top: .12rem; }
+.blocker-results { display: grid; grid-template-columns: repeat(3,1fr); gap: .5rem; margin-top: .8rem; }
+@media (max-width: 768px) { .blocker-results { grid-template-columns: 1fr 1fr; } }
+.br-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: .55rem .7rem; }
+.br-card .brl { font-size: .67rem; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
+.br-card .brv { font-family: 'Courier New', monospace; font-size: 1.05rem; font-weight: 700; margin-top: .1rem; transition: color 200ms ease; }
+
+.analysis-wrap { max-width: 1200px; margin: 0 auto .8rem; padding: 0 1.5rem; }
+.analysis-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.2rem; }
+.analysis-card h3 { font-size: .72rem; font-weight: 600; color: var(--muted); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: .7rem; }
+table.whatif { width: 100%; border-collapse: collapse; font-size: .8rem; }
+table.whatif th { color: var(--muted); font-size: .68rem; text-transform: uppercase; letter-spacing: .7px; text-align: left; padding: .35rem .5rem; border-bottom: 1px solid var(--border); }
+table.whatif td { padding: .32rem .5rem; border-bottom: 1px solid rgba(255,255,255,.03); font-family: 'Courier New', monospace; }
+table.whatif tr:last-child td { border-bottom: none; }
+.lev-bar { height: 6px; border-radius: 3px; display: inline-block; vertical-align: middle; }
+
+.annotation-wrap { max-width: 1200px; margin: 0 auto 2rem; padding: 0 1.5rem; }
+.annotation { border-left: 3px solid var(--accent); background: var(--card); padding: 11px 14px; border-radius: 0 8px 8px 0; font-size: .83rem; color: var(--muted); line-height: 1.7; }
+.annotation strong { color: var(--text); }
+
+@media (max-width: 768px) { header h1 { font-size: 1.4rem; } }
+#importInput { display: none; }
 </style>
 </head>
 <body>
 
+<div class="toolbar">
+  <button class="tbtn" onclick="takeScreenshot()">📷 Screenshot</button>
+  <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
+</div>
+<input type="file" id="importInput" accept=".json" onchange="importJSON(event)">
+
 <nav>
   <a href="index.html">← RF Toolbox</a>
   <span>/</span>
-  <span>03 IIP3 &amp; Intermod</span>
+  <span>03 IIP3 &amp; Intermod Cascade</span>
 </nav>
 
 <header>
   <div class="tag">Tool 03</div>
-  <h1>IIP3 &amp; Third-Order Intermodulation</h1>
-  <p>Fundamental and IM3 spur intercept for a two-tone test</p>
+  <h1>IIP3 &amp; Intermod Cascade Analyzer</h1>
+  <p>Cascaded linearity — N stages, blocker analysis, SFDR, what-if sensitivity</p>
 </header>
 
-<div class="equation-box">
+<div class="eq-bar">
   <div class="eq-card">
-    <div class="eq-col">
-      <div class="eq-primary">P_fund(out) = G + Pin</div>
-      <div class="eq-primary">P_IM3(out) = 3·Pin − 2·IIP3 + G</div>
-      <div class="eq-note">slopes: fundamental = 1 dB/dB, IM3 = 3 dB/dB</div>
+    <div>
+      <div class="eq-primary">1/IIP3_sys = Σ G₁…ₙ₋₁ / IIP3_n</div>
+      <div class="eq-note">preceding gain amplifies each stage's nonlinearity</div>
     </div>
-    <div class="eq-col">
-      <div class="eq-secondary">OIP3 = IIP3 + G</div>
-      <div class="eq-secondary">IM3 dBc = 2·(IIP3 − Pin)</div>
-      <div class="eq-secondary">P_1dB ≈ IIP3 − 9.6 dB</div>
-      <div class="eq-note">intercept point where fund = IM3 line</div>
+    <div>
+      <div class="eq-secondary">OIP3 = IIP3_sys + G_total</div>
+      <div class="eq-secondary">P_IM3_out = 3·Pin − 2·IIP3_sys + G_total</div>
+      <div class="eq-note">IM3 slope = 3 dB/dB; fundamental = 1 dB/dB</div>
     </div>
-    <div class="eq-col">
-      <div class="eq-secondary">1/IIP3_sys = Σ Gᵢ / IIP3ᵢ</div>
-      <div class="eq-note">cascaded IIP3 (linear voltages) — later stages dominate after gain</div>
+    <div>
+      <div class="eq-secondary">SFDR = 2/3 · (OIP3 − N_floor_out)</div>
+      <div class="eq-secondary">P_blocker_IM3 = 2·Pblocker + Pdes − 2·IIP3_sys</div>
+      <div class="eq-note">unequal-tone blocker spur referred to input</div>
     </div>
   </div>
 </div>
 
-<div class="layout">
-  <div class="panel">
-    <h3>Single-Stage Parameters</h3>
-    <div class="slider-row">
-      <label>Input Power (Pin) <span id="lPin">−30 dBm</span></label>
-      <input type="range" id="sPin" min="-60" max="20" value="-30" step="1">
-      <div class="hints"><span>−60</span><span>+20 dBm</span></div>
-    </div>
-    <div class="slider-row">
-      <label>Gain (G) <span id="lG">20 dB</span></label>
-      <input type="range" id="sG" min="-10" max="40" value="20" step="0.5">
-      <div class="hints"><span>−10</span><span>40 dB</span></div>
-    </div>
-    <div class="slider-row">
-      <label>IIP3 <span id="lIIP3">+10 dBm</span></label>
-      <input type="range" id="sIIP3" min="-20" max="50" value="10" step="1">
-      <div class="hints"><span>−20</span><span>+50 dBm</span></div>
-    </div>
+<div class="ctrl-bar">
+  <select class="ctrl-select" id="presetSel" onchange="loadPreset(this.value)">
+    <option value="">— Load preset —</option>
+    <option value="generic">Generic LNA+Mixer+IF</option>
+    <option value="wlan">Wi-Fi 2.4 GHz RX</option>
+    <option value="lte">LTE 700 MHz RX</option>
+    <option value="sat">Satellite LNB Downconverter</option>
+  </select>
+  <div class="ctrl-sep"></div>
+  <button class="ctrl-btn primary" onclick="addStage()">+ Add Stage</button>
+  <button class="ctrl-btn" onclick="exportJSON()">↓ Export JSON</button>
+  <button class="ctrl-btn" onclick="document.getElementById('importInput').click()">↑ Import JSON</button>
+  <button class="ctrl-btn" onclick="copyResults()">⎘ Copy Results</button>
+  <button class="ctrl-btn danger" onclick="if(confirm('Reset to default?')) loadPreset('generic')">✕ Reset</button>
+  <div class="ctrl-sep"></div>
+  <label class="ctrl-label">BW: <input type="number" id="BW_MHz" value="10" min="0.001" max="1000" step="1"> MHz</label>
+  <label class="ctrl-label">Pin (operating): <input type="number" id="Pin_dBm" value="-40" min="-80" max="10" step="1"> dBm</label>
+</div>
 
-    <div class="results">
-      <div class="result-card"><div class="label">P_fund (out)</div><div class="value v-green" id="rPfund">—</div><div class="unit">dBm</div></div>
-      <div class="result-card"><div class="label">P_IM3 (out)</div><div class="value v-red" id="rPIM3">—</div><div class="unit">dBm</div></div>
-      <div class="result-card"><div class="label">OIP3</div><div class="value v-accent" id="rOIP3">—</div><div class="unit">dBm</div></div>
-      <div class="result-card"><div class="label">IM3 dBc</div><div class="value v-orange" id="rIM3c">—</div><div class="unit">dBc</div></div>
-      <div class="result-card"><div class="label">P_1dB (in)</div><div class="value v-accent" id="rP1dB">—</div><div class="unit">dBm</div></div>
-      <div class="result-card"><div class="label">SFDR</div><div class="value v-green" id="rSFDR">—</div><div class="unit">dB</div></div>
-    </div>
+<div class="metrics-bar">
+  <div class="metrics-grid">
+    <div class="metric-card"><div class="mlabel">IIP3 (input-ref)</div><div class="mval info" id="mIIP3">—</div><div class="munit">dBm</div></div>
+    <div class="metric-card"><div class="mlabel">OIP3 (output-ref)</div><div class="mval info2" id="mOIP3">—</div><div class="munit">dBm</div></div>
+    <div class="metric-card"><div class="mlabel">Total Gain</div><div class="mval info" id="mGain">—</div><div class="munit">dB</div></div>
+    <div class="metric-card"><div class="mlabel">Noise Figure</div><div class="mval" id="mNF">—</div><div class="munit">dB</div></div>
+    <div class="metric-card"><div class="mlabel">P1dB (input est.)</div><div class="mval warn" id="mP1dB">—</div><div class="munit">dBm</div></div>
+    <div class="metric-card"><div class="mlabel">SFDR</div><div class="mval good" id="mSFDR">—</div><div class="munit">dB</div></div>
+    <div class="metric-card"><div class="mlabel">Noise Floor (out)</div><div class="mval" id="mNfloor">—</div><div class="munit">dBm</div></div>
+    <div class="metric-card"><div class="mlabel">IM3 dBc</div><div class="mval" id="mIM3dBc">—</div><div class="munit">dBc</div></div>
+  </div>
+</div>
 
-    <hr class="divider">
-    <h3>Noise Floor for SFDR</h3>
-    <div class="slider-row">
-      <label>System NF <span id="lNF">5 dB</span></label>
-      <input type="range" id="sNF" min="0" max="20" value="5" step="0.5">
-      <div class="hints"><span>0</span><span>20 dB</span></div>
-    </div>
-    <div class="slider-row">
-      <label>Bandwidth <span id="lBW">1 MHz</span></label>
-      <input type="range" id="sBW" min="3" max="9" value="6" step="0.1">
-      <div class="hints"><span>1 kHz</span><span>1 GHz</span></div>
+<div class="table-wrap">
+  <table class="stages" id="stageTable">
+    <thead>
+      <tr>
+        <th style="width:46px"></th>
+        <th style="width:28px">#</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Gain (dB)</th>
+        <th>NF (dB)</th>
+        <th>IIP3 (dBm)</th>
+        <th>P1dB (dBm)</th>
+        <th>Cum Gain</th>
+        <th>Cum IIP3</th>
+        <th>IIP3 Contrib</th>
+        <th style="width:28px"></th>
+        <th style="width:32px"></th>
+      </tr>
+    </thead>
+    <tbody id="stageTbody"></tbody>
+  </table>
+</div>
+
+<div class="charts-row">
+  <div class="chart-card">
+    <h3>Intercept Diagram — Fundamental vs IM3</h3>
+    <div class="chart-wrap"><canvas id="chartIntercept"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>Per-Stage IIP3 Dominance (%)</h3>
+    <div class="chart-wrap"><canvas id="chartContrib"></canvas></div>
+  </div>
+</div>
+
+<div class="blocker-wrap">
+  <div class="blocker-card">
+    <h3>Blocker Analysis — Two-Tone IM3 Spur</h3>
+    <div class="blocker-grid">
+      <div>
+        <div class="sl-row">
+          <label>P_desired (in) <span id="lPdes">−50 dBm</span></label>
+          <input type="range" id="sPdes" min="-90" max="-10" value="-50" step="1" oninput="updateBlocker()">
+          <div class="sl-hints"><span>−90</span><span>−10 dBm</span></div>
+        </div>
+        <div class="sl-row">
+          <label>P_blocker (in) <span id="lPblk">−30 dBm</span></label>
+          <input type="range" id="sPblk" min="-90" max="0" value="-30" step="1" oninput="updateBlocker()">
+          <div class="sl-hints"><span>−90</span><span>0 dBm</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="blocker-results">
+          <div class="br-card"><div class="brl">P_desired out</div><div class="brv info" id="bPdesOut">—</div></div>
+          <div class="br-card"><div class="brl">P_IM3 out</div><div class="brv bad" id="bIM3out">—</div></div>
+          <div class="br-card"><div class="brl">C/I</div><div class="brv" id="bCI">—</div></div>
+          <div class="br-card"><div class="brl">Blocker vs P1dB</div><div class="brv" id="bComp">—</div></div>
+          <div class="br-card"><div class="brl">IM3 dBc</div><div class="brv" id="bIM3dBc">—</div></div>
+          <div class="br-card"><div class="brl">Regime</div><div class="brv" id="bRegime" style="font-size:.8rem">—</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="annotation" id="blockerAnnotation" style="font-size:.81rem;line-height:1.6">Updating…</div>
+      </div>
     </div>
   </div>
+</div>
 
-  <div class="chart-panel">
-    <h3>Power Transfer Plot (Two-Tone)</h3>
-    <div class="chart-wrap">
-      <canvas id="chart"></canvas>
-    </div>
+<div class="analysis-wrap">
+  <div class="analysis-card">
+    <h3>What-If Sensitivity — IIP3 &amp; Gain Leverage per Stage (+3 dB perturbation)</h3>
+    <table class="whatif">
+      <thead><tr>
+        <th>#</th><th>Stage</th>
+        <th>ΔIIP3_sys if IIP3_n +3 dB</th>
+        <th>Leverage (IIP3)</th>
+        <th>ΔIIP3_sys if Gain_n +3 dB</th>
+        <th>Leverage (Gain)</th>
+      </tr></thead>
+      <tbody id="sensitivityTbody"></tbody>
+    </table>
   </div>
+</div>
+
+<div class="annotation-wrap">
+  <div class="annotation" id="mainAnnotation">Updating…</div>
 </div>
 
 <script>
-const ids = {
-  Pin: 'sPin', G: 'sG', IIP3: 'sIIP3', NF: 'sNF', BW: 'sBW'
-};
+// ─── Constants & helpers ───────────────────────────────────────────
+const T0 = 290;
+const dBtoLin = x => Math.pow(10, x / 10);
+const linTodB = x => 10 * Math.log10(Math.max(x, 1e-20));
+const fmt1 = x => (isFinite(x) ? (x >= 0 ? '+' : '') + x.toFixed(1) : '∞');
+const fmt2 = x => (isFinite(x) ? (x >= 0 ? '+' : '') + x.toFixed(2) : '∞');
 
-function get(id) { return +document.getElementById(id).value; }
+const PASSIVE_TYPES = new Set(['filter','attenuator','switch','cable','coupler','diplexer']);
+const TYPE_OPTS = [
+  {v:'amp',      l:'Amplifier'},
+  {v:'lna',      l:'LNA'},
+  {v:'mixer',    l:'Mixer'},
+  {v:'filter',   l:'Filter (passive)'},
+  {v:'attenuator',l:'Attenuator'},
+  {v:'switch',   l:'Switch'},
+  {v:'cable',    l:'Cable/Line'},
+  {v:'coupler',  l:'Coupler/Hybrid'},
+  {v:'diplexer', l:'Diplexer'},
+  {v:'vga',      l:'VGA/Driver'},
+  {v:'if_amp',   l:'IF Amplifier'},
+];
 
-function computeChart(IIP3, G, Pin) {
-  const n = 100;
-  const pMin = -70, pMax = 30;
-  const labels = [], fund = [], im3 = [];
-  for (let i = 0; i < n; i++) {
-    const p = pMin + (pMax - pMin) * i / (n - 1);
-    labels.push(p.toFixed(1));
-    fund.push(Math.min(p + G, IIP3 + G)); // compress at OIP3
-    im3.push(3 * p - 2 * IIP3 + G);
-  }
-  return { labels, fund, im3 };
+let stages = [];
+let nextId = 1;
+
+function makeStage(o = {}) {
+  return {
+    id: nextId++,
+    name:    o.name    ?? 'Stage',
+    type:    o.type    ?? 'amp',
+    gain:    o.gain    ?? 15,
+    nf:      o.nf      ?? 3,
+    iip3:    o.iip3    ?? 10,
+    p1db:    o.p1db    ?? ((o.iip3 ?? 10) - 9.6),
+    enabled: o.enabled ?? true
+  };
 }
 
-const ctx = document.getElementById('chart').getContext('2d');
-const myChart = new Chart(ctx, {
+function effectiveNF(s) {
+  if (PASSIVE_TYPES.has(s.type)) return Math.max(0, -s.gain);
+  return s.nf ?? 3;
+}
+
+function effectiveIIP3(s) {
+  // Passive elements are very linear; approximate as very high IIP3
+  if (PASSIVE_TYPES.has(s.type)) return 40;
+  return s.iip3 ?? 10;
+}
+
+// ─── Cascade computation ───────────────────────────────────────────
+function computeCascade() {
+  const active = stages.filter(s => s.enabled);
+  if (!active.length) return null;
+
+  let cumG_lin = 1, cumG_dB = 0, inv_IIP3 = 0, F_sys = 1;
+  const rows = [];
+
+  for (let i = 0; i < active.length; i++) {
+    const s = active[i];
+    const G_lin = dBtoLin(s.gain);
+    const NF_eff = effectiveNF(s);
+    const F_i = dBtoLin(NF_eff);
+    const IIP3_eff = effectiveIIP3(s);
+    const IIP3_lin = dBtoLin(IIP3_eff);
+
+    F_sys += (F_i - 1) / cumG_lin;
+
+    const precG_lin = cumG_lin;
+    const precG_dB  = cumG_dB;
+    cumG_lin *= G_lin;
+    cumG_dB  += s.gain;
+
+    inv_IIP3 += precG_lin / IIP3_lin;
+
+    rows.push({
+      s, NF_eff, precG_dB, precG_lin,
+      cumG_dB, cumG_lin,
+      F_sys_here: F_sys,
+      NF_sys_here: linTodB(F_sys),
+      inv_IIP3_here: inv_IIP3
+    });
+  }
+
+  const NF_sys        = linTodB(F_sys);
+  const IIP3_sys_dBm  = inv_IIP3 > 0 ? linTodB(1 / inv_IIP3) : Infinity;
+  const OIP3_sys_dBm  = isFinite(IIP3_sys_dBm) ? IIP3_sys_dBm + cumG_dB : Infinity;
+
+  // Per-stage IIP3 contribution (% of total 1/IIP3_sys)
+  rows.forEach(r => {
+    const IIP3_lin_s = dBtoLin(effectiveIIP3(r.s));
+    const term = r.precG_lin / IIP3_lin_s;
+    r.iip3_contrib_pct = inv_IIP3 > 0 ? term / inv_IIP3 * 100 : 0;
+  });
+
+  return { rows, active, NF_sys, IIP3_sys_dBm, OIP3_sys_dBm, cumG_dB, F_sys };
+}
+
+// ─── Sensitivity: Δ system IIP3 if stage param changes by EPS ─────
+const EPS = 3.0; // dB
+
+function sensitivityAnalysis(base) {
+  if (!base) return [];
+  return base.active.map((s, idx) => {
+    // IIP3 sensitivity
+    const origIIP3 = s.iip3;
+    s.iip3 = origIIP3 + EPS;
+    const altI = computeCascade();
+    const deltaIIP3 = (altI ? altI.IIP3_sys_dBm : base.IIP3_sys_dBm) - base.IIP3_sys_dBm;
+    s.iip3 = origIIP3;
+
+    // Gain sensitivity (increasing gain of non-first stages raises IIP3 via preceding gain)
+    const origGain = s.gain;
+    s.gain = origGain + EPS;
+    const altG = computeCascade();
+    const deltaGain = (altG ? altG.IIP3_sys_dBm : base.IIP3_sys_dBm) - base.IIP3_sys_dBm;
+    s.gain = origGain;
+
+    return { s, idx, deltaIIP3, deltaGain };
+  });
+}
+
+// ─── Presets ──────────────────────────────────────────────────────
+const PRESETS = {
+  generic: [
+    { name:'LNA',       type:'lna',       gain:15,  nf:1.5, iip3:-5,   p1db:-15  },
+    { name:'BPF',       type:'filter',    gain:-2,  nf:2,   iip3:40,   p1db:30   },
+    { name:'Mixer',     type:'mixer',     gain:7,   nf:8,   iip3:12,   p1db:2    },
+    { name:'IF Amp',    type:'if_amp',    gain:20,  nf:5,   iip3:20,   p1db:10   },
+  ],
+  wlan: [
+    { name:'Ant Switch',type:'switch',    gain:-1,  nf:1,   iip3:40,   p1db:30   },
+    { name:'LNA',       type:'lna',       gain:14,  nf:2.0, iip3:-3,   p1db:-13  },
+    { name:'BPF',       type:'filter',    gain:-2,  nf:2,   iip3:40,   p1db:30   },
+    { name:'Mixer',     type:'mixer',     gain:6,   nf:9,   iip3:10,   p1db:0    },
+    { name:'IF Filter', type:'filter',    gain:-3,  nf:3,   iip3:40,   p1db:30   },
+    { name:'IF Amp',    type:'if_amp',    gain:22,  nf:6,   iip3:18,   p1db:8    },
+  ],
+  lte: [
+    { name:'Duplexer',  type:'diplexer',  gain:-2,  nf:2,   iip3:40,   p1db:30   },
+    { name:'LNA',       type:'lna',       gain:16,  nf:1.2, iip3:-8,   p1db:-18  },
+    { name:'BPF',       type:'filter',    gain:-1.5,nf:1.5, iip3:40,   p1db:30   },
+    { name:'Mixer',     type:'mixer',     gain:5,   nf:10,  iip3:8,    p1db:-2   },
+    { name:'IF Amp',    type:'if_amp',    gain:25,  nf:7,   iip3:15,   p1db:5    },
+  ],
+  sat: [
+    { name:'LNB LNA',   type:'lna',       gain:50,  nf:0.5, iip3:-20,  p1db:-30  },
+    { name:'BPF',       type:'filter',    gain:-1,  nf:1,   iip3:40,   p1db:30   },
+    { name:'Downconv.', type:'mixer',     gain:4,   nf:11,  iip3:15,   p1db:4    },
+    { name:'IF Cable',  type:'cable',     gain:-3,  nf:3,   iip3:40,   p1db:30   },
+    { name:'IF Amp',    type:'if_amp',    gain:18,  nf:4,   iip3:22,   p1db:12   },
+  ]
+};
+
+function loadPreset(key) {
+  if (!key) return;
+  nextId = 1; stages = [];
+  if (PRESETS[key]) PRESETS[key].forEach(o => stages.push(makeStage(o)));
+  document.getElementById('presetSel').value = '';
+  render();
+}
+
+// ─── Stage mutations ──────────────────────────────────────────────
+function addStage() {
+  stages.push(makeStage({ name: 'Stage ' + stages.length }));
+  render();
+}
+
+function deleteStage(id) {
+  stages = stages.filter(s => s.id !== id);
+  render();
+}
+
+function moveStage(id, dir) {
+  const i = stages.findIndex(s => s.id === id);
+  const j = i + dir;
+  if (j < 0 || j >= stages.length) return;
+  [stages[i], stages[j]] = [stages[j], stages[i]];
+  render();
+}
+
+function setField(id, field, val) {
+  const s = stages.find(s => s.id === id);
+  if (!s) return;
+  s[field] = val;
+  // Auto-update P1dB if iip3 changes and p1db was tracking it
+  if (field === 'iip3' && !PASSIVE_TYPES.has(s.type)) {
+    // Only sync p1db if it's close to iip3-9.6 (still tracking default)
+    if (Math.abs(s.p1db - (val - 9.6 + EPS*0)) < 2) s.p1db = val - 9.6;
+  }
+  if (field === 'type') {
+    // Update P1dB default for passive
+    if (PASSIVE_TYPES.has(val)) s.p1db = 30;
+    else if (s.p1db === 30 && !PASSIVE_TYPES.has(s.type)) s.p1db = s.iip3 - 9.6;
+  }
+  render();
+}
+
+function toggleEnabled(id) {
+  const s = stages.find(s => s.id === id);
+  if (s) { s.enabled = !s.enabled; render(); }
+}
+
+// ─── Charts ───────────────────────────────────────────────────────
+const ctxI = document.getElementById('chartIntercept').getContext('2d');
+const chartIntercept = new Chart(ctxI, {
   type: 'line',
-  data: {
-    labels: [],
-    datasets: [
-      {
-        label: 'Fundamental Output',
-        data: [], borderColor: '#00c8ff', borderWidth: 2.5,
-        pointRadius: 0, fill: false, tension: 0,
-      },
-      {
-        label: 'IM3 Product',
-        data: [], borderColor: '#ff4d6d', borderWidth: 2,
-        pointRadius: 0, fill: false, tension: 0, borderDash: [5,3],
-      },
-      {
-        label: 'Operating Point',
-        data: [], borderColor: '#ffaa00', borderWidth: 0,
-        pointRadius: 8, pointBackgroundColor: '#ffaa00',
-        showLine: false, fill: false,
-      },
-      {
-        label: 'OIP3 / IIP3',
-        data: [], borderColor: '#7b61ff', borderWidth: 0,
-        pointRadius: 8, pointBackgroundColor: '#7b61ff', pointStyle: 'crossRot',
-        showLine: false, fill: false,
-      },
-      {
-        label: 'Noise Floor',
-        data: [], borderColor: '#444466', borderWidth: 1.5,
-        pointRadius: 0, fill: false, tension: 0, borderDash: [2,4],
-      }
-    ]
-  },
+  data: { labels: [], datasets: [
+    { label: 'Fundamental out', data: [], borderColor: '#00c8ff', borderWidth: 2.5, pointRadius: 0, fill: false, tension: 0 },
+    { label: 'IM3 out',         data: [], borderColor: '#ff4d6d', borderWidth: 2, pointRadius: 0, fill: false, tension: 0, borderDash: [5,3] },
+    { label: 'Noise floor out', data: [], borderColor: '#444466', borderWidth: 1.5, pointRadius: 0, fill: false, tension: 0, borderDash: [2,4] },
+    { label: 'Op point',        data: [], borderColor: '#ffaa00', borderWidth: 0, pointRadius: 7, pointBackgroundColor: '#ffaa00', showLine: false },
+    { label: 'OIP3',            data: [], borderColor: '#7b61ff', borderWidth: 0, pointRadius: 8, pointBackgroundColor: '#7b61ff', pointStyle: 'crossRot', showLine: false },
+  ]},
   options: {
-    responsive: true, maintainAspectRatio: false, animation: { duration: 0 },
-    plugins: { legend: { labels: { color: '#888899', font: { size: 11 } } }, tooltip: { mode: 'index', intersect: false } },
+    animation: { duration: 0 }, responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: '#888899', font: { size: 10 } } }, tooltip: { mode: 'index', intersect: false } },
     scales: {
-      x: {
-        ticks: { color: '#888899', maxTicksLimit: 10, font: { size: 10 } },
-        grid: { color: '#2a2a35' },
-        title: { display: true, text: 'Input Power (dBm)', color: '#888899', font: { size: 11 } }
-      },
-      y: {
-        ticks: { color: '#888899', font: { size: 10 } },
-        grid: { color: '#2a2a35' },
-        min: -150, max: 60,
-        title: { display: true, text: 'Output Power (dBm)', color: '#888899', font: { size: 11 } }
-      }
+      x: { ticks: { color: '#888899', maxTicksLimit: 10, font: { size: 10 } }, grid: { color: '#2a2a35' }, title: { display: true, text: 'Input Power (dBm)', color: '#888899', font: { size: 11 } } },
+      y: { ticks: { color: '#888899', font: { size: 10 } }, grid: { color: '#2a2a35' }, min: -160, max: 60, title: { display: true, text: 'Output Power (dBm)', color: '#888899', font: { size: 11 } } }
     }
   }
 });
 
-function update() {
-  const Pin  = get('sPin');
-  const G    = get('sG');
-  const IIP3 = get('sIIP3');
-  const NF   = get('sNF');
-  const BWlog = get('sBW'); // log10 of BW in Hz: 3=1kHz, 6=1MHz, 9=1GHz
-  const BW_Hz = Math.pow(10, BWlog);
+const ctxC = document.getElementById('chartContrib').getContext('2d');
+const chartContrib = new Chart(ctxC, {
+  type: 'bar',
+  data: { labels: [], datasets: [{ label: 'IIP3 Dominance (%)', data: [], backgroundColor: [], borderColor: [], borderWidth: 1.5 }] },
+  options: {
+    animation: { duration: 0 }, responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: '#888899', font: { size: 10 } } }, tooltip: { callbacks: { label: ctx => ' ' + parseFloat(ctx.raw).toFixed(1) + '%' } } },
+    scales: {
+      x: { ticks: { color: '#888899', font: { size: 10 } }, grid: { color: '#2a2a35' } },
+      y: { ticks: { color: '#888899', font: { size: 10 } }, grid: { color: '#2a2a35' }, max: 100, title: { display: true, text: '% of 1/IIP3_sys', color: '#888899', font: { size: 11 } } }
+    }
+  }
+});
 
-  document.getElementById('lPin').textContent  = (Pin >= 0 ? '+' : '') + Pin + ' dBm';
-  document.getElementById('lG').textContent    = G + ' dB';
-  document.getElementById('lIIP3').textContent = (IIP3 >= 0 ? '+' : '') + IIP3 + ' dBm';
-  document.getElementById('lNF').textContent   = NF + ' dB';
-  const bwLabel = BW_Hz >= 1e9 ? '1 GHz' : BW_Hz >= 1e6 ? (BW_Hz/1e6).toFixed(1)+' MHz' : BW_Hz >= 1e3 ? (BW_Hz/1e3).toFixed(1)+' kHz' : BW_Hz+'Hz';
-  document.getElementById('lBW').textContent   = bwLabel;
+const CHART_COLORS = ['#00c8ff','#00e5a0','#ffaa00','#ff4d6d','#bc8cff','#7b61ff','#58d9a0','#ff8b50'];
 
-  const OIP3 = IIP3 + G;
-  const Pfund = Pin + G;
-  const PIM3  = 3 * Pin - 2 * IIP3 + G;
-  const IM3c  = PIM3 - Pfund;
-  const P1dBin = IIP3 - 9.6;
-  const noiseFloor_dBm = -174 + NF + 10 * Math.log10(BW_Hz);
-  // SFDR = 2/3 * (OIP3 - noiseFloor)
-  const SFDR = (2/3) * (OIP3 - noiseFloor_dBm);
-
-  document.getElementById('rPfund').textContent = Pfund.toFixed(1);
-  document.getElementById('rPIM3').textContent  = PIM3.toFixed(1);
-  document.getElementById('rOIP3').textContent  = OIP3.toFixed(1);
-  document.getElementById('rIM3c').textContent  = IM3c.toFixed(1);
-  document.getElementById('rP1dB').textContent  = P1dBin.toFixed(1);
-  document.getElementById('rSFDR').textContent  = SFDR.toFixed(1);
-
-  const { labels, fund, im3 } = computeChart(IIP3, G, Pin);
-  const nFloorArr = labels.map(() => noiseFloor_dBm);
-
-  myChart.data.labels = labels;
-  myChart.data.datasets[0].data = fund;
-  myChart.data.datasets[1].data = im3;
-  // Operating point
-  myChart.data.datasets[2].data = [{ x: Pin.toFixed(1), y: Pfund }];
-  // OIP3/IIP3 intercept mark
-  myChart.data.datasets[3].data = [{ x: IIP3.toFixed(1), y: OIP3 }];
-  myChart.data.datasets[4].data = nFloorArr;
-  myChart.update('none');
+// ─── Main render ──────────────────────────────────────────────────
+function render() {
+  const res = computeCascade();
+  updateMetrics(res);
+  renderTable(res);
+  updateCharts(res);
+  updateBlocker(res);
+  updateSensitivity(res);
+  updateAnnotation(res);
 }
 
-document.querySelectorAll('input[type=range]').forEach(el => el.addEventListener('input', update));
-update();
+function updateMetrics(res) {
+  const BW_MHz = +document.getElementById('BW_MHz').value || 10;
+  const BW_Hz  = BW_MHz * 1e6;
+  const Pin    = +document.getElementById('Pin_dBm').value;
+
+  if (!res) {
+    ['mIIP3','mOIP3','mGain','mNF','mP1dB','mSFDR','mNfloor','mIM3dBc'].forEach(id => { document.getElementById(id).textContent = '—'; });
+    return;
+  }
+
+  const { IIP3_sys_dBm, OIP3_sys_dBm, cumG_dB, NF_sys } = res;
+  const nfloor_dBm     = -174 + NF_sys + linTodB(BW_Hz);
+  const nfloor_out_dBm = nfloor_dBm + cumG_dB;
+  const SFDR           = isFinite(OIP3_sys_dBm) ? (2/3) * (OIP3_sys_dBm - nfloor_out_dBm) : null;
+  const P1dB_in        = isFinite(IIP3_sys_dBm) ? IIP3_sys_dBm - 9.6 : null;
+  const Pfund_out      = Pin + cumG_dB;
+  const PIM3_out       = isFinite(IIP3_sys_dBm) ? 3 * Pin - 2 * IIP3_sys_dBm + cumG_dB : null;
+  const IM3dBc         = PIM3_out !== null ? PIM3_out - Pfund_out : null;
+
+  const setM = (id, val, cls) => { const el = document.getElementById(id); el.textContent = val; el.className = 'mval ' + (cls || ''); };
+
+  setM('mIIP3', isFinite(IIP3_sys_dBm) ? fmt1(IIP3_sys_dBm) : '∞', 'info');
+  setM('mOIP3', isFinite(OIP3_sys_dBm) ? fmt1(OIP3_sys_dBm) : '∞', 'info2');
+  setM('mGain', fmt1(cumG_dB), 'info');
+  setM('mNF',   fmt1(NF_sys), NF_sys < 3 ? 'good' : NF_sys < 8 ? 'warn' : 'bad');
+  setM('mP1dB', P1dB_in !== null ? fmt1(P1dB_in) : '—', 'warn');
+  setM('mSFDR', SFDR !== null ? SFDR.toFixed(1) : '—', SFDR > 60 ? 'good' : SFDR > 40 ? 'warn' : 'bad');
+  setM('mNfloor', nfloor_out_dBm.toFixed(1), '');
+  setM('mIM3dBc', IM3dBc !== null ? IM3dBc.toFixed(1) : '—', IM3dBc < -40 ? 'good' : IM3dBc < -20 ? 'warn' : 'bad');
+}
+
+function renderTable(res) {
+  const tbody = document.getElementById('stageTbody');
+  const activeMap = {};
+  if (res) res.rows.forEach(r => { activeMap[r.s.id] = r; });
+  const maxContrib = res ? Math.max(...res.rows.map(r => r.iip3_contrib_pct), 1) : 1;
+
+  tbody.innerHTML = stages.map((s, idx) => {
+    const r   = activeMap[s.id];
+    const NF  = effectiveNF(s);
+    const isP = PASSIVE_TYPES.has(s.type);
+
+    const cumG      = r ? r.cumG_dB.toFixed(1) : '—';
+    const cumIIP3   = r ? linTodB(1 / r.inv_IIP3_here).toFixed(1) : '—';
+    const contPct   = r ? r.iip3_contrib_pct.toFixed(1) : '—';
+    const contCol   = r ? (r.iip3_contrib_pct > 50 ? '#ff4d6d' : r.iip3_contrib_pct > 20 ? '#ffaa00' : '#00e5a0') : '#888899';
+    const barW      = r ? Math.max(2, (r.iip3_contrib_pct / maxContrib) * 90) : 0;
+
+    const typeOpts = TYPE_OPTS.map(t => `<option value="${t.v}"${s.type===t.v?' selected':''}>${t.l}</option>`).join('');
+    const iip3Field = isP
+      ? `<input class="stage-num auto" value="~+40" readonly title="Passive — treated as ~+40 dBm">`
+      : `<input class="stage-num" type="number" value="${s.iip3}" step="0.5" onchange="setField(${s.id},'iip3',+this.value)" style="width:62px">`;
+    const p1dbField = isP
+      ? `<input class="stage-num auto" value="~+30" readonly>`
+      : `<input class="stage-num" type="number" value="${s.p1db.toFixed(1)}" step="0.5" onchange="setField(${s.id},'p1db',+this.value)" style="width:62px">`;
+
+    return `<tr class="stage-row${s.enabled?'':' disabled'}" data-id="${s.id}">
+      <td style="white-space:nowrap">
+        <button class="ord-btn" onclick="moveStage(${s.id},-1)" title="Move up">▲</button>
+        <button class="ord-btn" onclick="moveStage(${s.id}, 1)" title="Move down">▼</button>
+      </td>
+      <td style="color:var(--muted);font-size:.78rem;padding:.35rem .5rem">${idx+1}</td>
+      <td><input class="stage-name" value="${s.name}" oninput="setField(${s.id},'name',this.value)"></td>
+      <td><select class="stage-type" onchange="setField(${s.id},'type',this.value)">${typeOpts}</select></td>
+      <td><input class="stage-num" type="number" value="${s.gain}" step="0.5" onchange="setField(${s.id},'gain',+this.value)" style="width:62px"></td>
+      <td>${isP
+        ? `<input class="stage-num auto" value="${NF.toFixed(2)}" readonly title="Auto = insertion loss"><br><span class="passive-note">= loss</span>`
+        : `<input class="stage-num" type="number" value="${s.nf}" step="0.1" onchange="setField(${s.id},'nf',+this.value)" style="width:62px">`
+      }</td>
+      <td>${iip3Field}</td>
+      <td>${p1dbField}</td>
+      <td class="cum-cell" style="color:var(--accent)">${cumG} dB</td>
+      <td class="cum-cell" style="color:var(--accent2)">${cumIIP3 !== '—' ? fmt1(+cumIIP3) : '—'}</td>
+      <td>
+        <div class="contrib-bar-wrap">
+          <div class="contrib-bar" style="width:${barW}px;background:${contCol}"></div>
+          <span class="contrib-pct" style="color:${contCol}">${contPct}%</span>
+        </div>
+      </td>
+      <td><input type="checkbox" ${s.enabled?'checked':''} onchange="toggleEnabled(${s.id})" title="Enable/disable stage"></td>
+      <td><button class="del-btn" onclick="deleteStage(${s.id})" title="Remove stage">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function updateCharts(res) {
+  const Pin_op = +document.getElementById('Pin_dBm').value;
+  const BW_MHz = +document.getElementById('BW_MHz').value || 10;
+  const BW_Hz  = BW_MHz * 1e6;
+
+  if (!res || !isFinite(res.IIP3_sys_dBm)) {
+    chartIntercept.data.labels = [];
+    chartIntercept.data.datasets.forEach(d => d.data = []);
+    chartIntercept.update('none');
+    chartContrib.data.labels = [];
+    chartContrib.data.datasets[0].data = [];
+    chartContrib.update('none');
+    return;
+  }
+
+  const { IIP3_sys_dBm, OIP3_sys_dBm, cumG_dB, NF_sys } = res;
+  const nfloor_out = -174 + NF_sys + linTodB(BW_Hz) + cumG_dB;
+
+  const n = 80, pMin = -80, pMax = 30;
+  const labels = [], fund = [], im3 = [], nfl = [];
+  for (let i = 0; i < n; i++) {
+    const p = pMin + (pMax - pMin) * i / (n - 1);
+    labels.push(p.toFixed(0));
+    fund.push(+(p + cumG_dB).toFixed(2));
+    im3.push(+(3*p - 2*IIP3_sys_dBm + cumG_dB).toFixed(2));
+    nfl.push(+nfloor_out.toFixed(2));
+  }
+
+  chartIntercept.data.labels = labels;
+  chartIntercept.data.datasets[0].data = fund;
+  chartIntercept.data.datasets[1].data = im3;
+  chartIntercept.data.datasets[2].data = nfl;
+  chartIntercept.data.datasets[3].data = [{ x: Pin_op.toFixed(0), y: +(Pin_op + cumG_dB).toFixed(2) }];
+  chartIntercept.data.datasets[4].data = [{ x: IIP3_sys_dBm.toFixed(0), y: +OIP3_sys_dBm.toFixed(2) }];
+  chartIntercept.update('none');
+
+  // Contrib bar chart
+  chartContrib.data.labels = res.rows.map(r => r.s.name);
+  chartContrib.data.datasets[0].data = res.rows.map(r => +r.iip3_contrib_pct.toFixed(2));
+  chartContrib.data.datasets[0].backgroundColor = res.rows.map((r,i) =>
+    r.iip3_contrib_pct > 50 ? 'rgba(255,77,109,.75)' : r.iip3_contrib_pct > 20 ? 'rgba(255,170,0,.75)' : CHART_COLORS[i % CHART_COLORS.length] + 'cc');
+  chartContrib.data.datasets[0].borderColor = res.rows.map((r,i) =>
+    r.iip3_contrib_pct > 50 ? '#ff4d6d' : r.iip3_contrib_pct > 20 ? '#ffaa00' : CHART_COLORS[i % CHART_COLORS.length]);
+  chartContrib.update('none');
+}
+
+function updateBlocker(res) {
+  if (res === undefined) res = computeCascade();
+  const Pdes = +document.getElementById('sPdes').value;
+  const Pblk = +document.getElementById('sPblk').value;
+  document.getElementById('lPdes').textContent = Pdes + ' dBm';
+  document.getElementById('lPblk').textContent = Pblk + ' dBm';
+
+  if (!res || !isFinite(res.IIP3_sys_dBm)) {
+    ['bPdesOut','bIM3out','bCI','bComp','bIM3dBc','bRegime'].forEach(id => { document.getElementById(id).textContent = '—'; document.getElementById(id).className = 'brv'; });
+    document.getElementById('blockerAnnotation').innerHTML = 'No active stages.';
+    return;
+  }
+
+  const { IIP3_sys_dBm, OIP3_sys_dBm, cumG_dB } = res;
+  const P1dB_in = IIP3_sys_dBm - 9.6;
+
+  const Pdes_out  = Pdes + cumG_dB;
+  // 2f_blocker - f_desired product, input referred
+  const PIM3_in   = 2 * Pblk + Pdes - 2 * IIP3_sys_dBm;
+  const PIM3_out  = PIM3_in + cumG_dB;
+  const CI        = Pdes_out - PIM3_out;
+  const margin    = P1dB_in - Pblk; // positive = not compressed
+  const IM3dBc_bl = PIM3_out - Pdes_out;
+
+  const regime = Pblk > P1dB_in ? 'Compressed' : CI < 10 ? 'IM3-limited' : 'Linear';
+
+  const setB = (id, txt, cls) => { document.getElementById(id).textContent = txt; document.getElementById(id).className = 'brv ' + cls; };
+  setB('bPdesOut', Pdes_out.toFixed(1) + ' dBm', 'info');
+  setB('bIM3out',  PIM3_out.toFixed(1) + ' dBm', 'bad');
+  setB('bCI',      CI.toFixed(1) + ' dB', CI > 30 ? 'good' : CI > 10 ? 'warn' : 'bad');
+  setB('bComp',    (margin >= 0 ? '+' : '') + margin.toFixed(1) + ' dB', margin > 6 ? 'good' : margin > 0 ? 'warn' : 'bad');
+  setB('bIM3dBc',  IM3dBc_bl.toFixed(1) + ' dBc', IM3dBc_bl < -40 ? 'good' : IM3dBc_bl < -20 ? 'warn' : 'bad');
+  setB('bRegime',  regime, regime === 'Linear' ? 'good' : regime === 'Compressed' ? 'bad' : 'warn');
+
+  const tip = regime === 'Compressed'
+    ? `<span style="color:var(--red)">Blocker (${Pblk} dBm) exceeds P1dB (${P1dB_in.toFixed(1)} dBm) — gain compression active.</span> Increase IIP3/P1dB or add input filtering.`
+    : CI < 10
+    ? `C/I = ${CI.toFixed(1)} dB — <span style="color:var(--orange)">marginal linearity</span>. Improve IIP3 of dominant stage or attenuate blocker.`
+    : `System is in the linear region. Blocker is ${margin.toFixed(1)} dB below P1dB. IM3 spur at <strong>${PIM3_out.toFixed(1)} dBm out</strong> (${IM3dBc_bl.toFixed(1)} dBc).`;
+  document.getElementById('blockerAnnotation').innerHTML = tip;
+}
+
+function updateSensitivity(res) {
+  const tbody = document.getElementById('sensitivityTbody');
+  if (!res) { tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);padding:.5rem">No stages.</td></tr>'; return; }
+  const sens = sensitivityAnalysis(res);
+  const maxDI = Math.max(...sens.map(s => Math.abs(s.deltaIIP3)), 0.01);
+  const maxDG = Math.max(...sens.map(s => Math.abs(s.deltaGain)), 0.01);
+
+  tbody.innerHTML = sens.map((r, i) => {
+    const dI = r.deltaIIP3, dG = r.deltaGain;
+    const wI = Math.max(2, Math.abs(dI) / maxDI * 80);
+    const wG = Math.max(2, Math.abs(dG) / maxDG * 80);
+    const cI = dI > 0 ? '#00e5a0' : dI < 0 ? '#ff4d6d' : '#888899';
+    const cG = dG > 0 ? '#00e5a0' : dG < 0 ? '#ff4d6d' : '#888899';
+    return `<tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td>${r.s.name}</td>
+      <td><span style="color:${cI}">${dI >= 0 ? '+' : ''}${dI.toFixed(2)} dB</span></td>
+      <td><span class="lev-bar" style="width:${wI}px;background:${cI}"></span></td>
+      <td><span style="color:${cG}">${dG >= 0 ? '+' : ''}${dG.toFixed(2)} dB</span></td>
+      <td><span class="lev-bar" style="width:${wG}px;background:${cG}"></span></td>
+    </tr>`;
+  }).join('');
+}
+
+function updateAnnotation(res) {
+  const el = document.getElementById('mainAnnotation');
+  if (!res) { el.innerHTML = 'Add stages to begin analysis.'; return; }
+
+  const { IIP3_sys_dBm, OIP3_sys_dBm, cumG_dB, NF_sys } = res;
+  const Pin   = +document.getElementById('Pin_dBm').value;
+  const BW    = +document.getElementById('BW_MHz').value || 10;
+  const BW_Hz = BW * 1e6;
+  const nfl   = -174 + NF_sys + linTodB(BW_Hz);
+  const SFDR  = isFinite(OIP3_sys_dBm) ? (2/3) * (OIP3_sys_dBm - (nfl + cumG_dB)) : null;
+  const IM3c  = isFinite(IIP3_sys_dBm) ? 2 * (IIP3_sys_dBm - Pin) : null;
+
+  const dominant = res.rows.reduce((a,b) => b.iip3_contrib_pct > a.iip3_contrib_pct ? b : a, res.rows[0]);
+  const tip = SFDR && SFDR < 40
+    ? `<span style="color:var(--orange)">SFDR ${SFDR.toFixed(1)} dB is limited</span> — improve OIP3 or reduce NF.`
+    : SFDR && SFDR > 70 ? 'Excellent SFDR for the specified bandwidth.' : '';
+
+  el.innerHTML =
+    `<strong>System:</strong> Gain = <strong>${cumG_dB.toFixed(1)} dB</strong>, ` +
+    `IIP3 = <strong>${fmt1(IIP3_sys_dBm)} dBm</strong>, ` +
+    `OIP3 = <strong>${fmt1(OIP3_sys_dBm)} dBm</strong>, ` +
+    `NF = <strong>${NF_sys.toFixed(2)} dB</strong>. ` +
+    (dominant ? `<strong>${dominant.s.name}</strong> dominates IIP3 budget (${dominant.iip3_contrib_pct.toFixed(0)}%). ` : '') +
+    (IM3c !== null ? `At Pin = ${Pin} dBm: IM3 dBc = <strong>${IM3c.toFixed(1)} dBc</strong>. ` : '') +
+    (SFDR !== null ? `SFDR = <strong>${SFDR.toFixed(1)} dB</strong> in ${BW} MHz BW. ` : '') +
+    tip;
+}
+
+// ─── JSON import/export ───────────────────────────────────────────
+function exportJSON() {
+  const data = { tool: 'IIP3 Cascade', version: 1, stages: stages.map(s => ({ ...s })) };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'iip3_cascade.json'; a.click();
+}
+
+function importJSON(ev) {
+  const file = ev.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.stages) throw new Error('No stages array');
+      nextId = 1; stages = [];
+      data.stages.forEach(o => stages.push(makeStage(o)));
+      render();
+    } catch (err) { alert('Import failed: ' + err.message); }
+  };
+  reader.readAsText(file);
+  ev.target.value = '';
+}
+
+function copyResults() {
+  const res = computeCascade();
+  if (!res) { alert('No stages defined.'); return; }
+  const { IIP3_sys_dBm, OIP3_sys_dBm, cumG_dB, NF_sys } = res;
+  const BW = +document.getElementById('BW_MHz').value || 10;
+  const SFDR = isFinite(OIP3_sys_dBm) ? (2/3) * (OIP3_sys_dBm - (-174 + NF_sys + linTodB(BW*1e6) + cumG_dB)) : null;
+  const lines = [
+    'IIP3 Cascade Summary — RF Toolbox',
+    '─'.repeat(40),
+    `IIP3 (input-ref):  ${fmt1(IIP3_sys_dBm)} dBm`,
+    `OIP3 (output-ref): ${fmt1(OIP3_sys_dBm)} dBm`,
+    `Total Gain:        ${cumG_dB.toFixed(1)} dB`,
+    `System NF:         ${NF_sys.toFixed(2)} dB`,
+    `P1dB (input est.): ${(IIP3_sys_dBm - 9.6).toFixed(1)} dBm`,
+    SFDR !== null ? `SFDR (${BW} MHz BW):  ${SFDR.toFixed(1)} dB` : '',
+    '', 'Stage breakdown:',
+    ...res.rows.map((r, i) => `  ${i+1}. ${r.s.name.padEnd(16)} IIP3 contrib: ${r.iip3_contrib_pct.toFixed(1)}%  CumG: ${r.cumG_dB.toFixed(1)} dB`)
+  ];
+  navigator.clipboard.writeText(lines.filter(Boolean).join('\n')).then(() => alert('Results copied to clipboard.'));
+}
+
+// ─── Toolbar ──────────────────────────────────────────────────────
+function takeScreenshot() {
+  const canvases = [...document.querySelectorAll('canvas')];
+  const p = 16, tH = 40;
+  const W = canvases.reduce((s,c) => s + c.width + p, p);
+  const H = Math.max(...canvases.map(c => c.height)) + tH + p * 2;
+  const out = document.createElement('canvas'); out.width = W; out.height = H;
+  const c = out.getContext('2d');
+  c.fillStyle = '#0d0d0f'; c.fillRect(0,0,W,H);
+  c.fillStyle = '#e2e2e8'; c.font = 'bold 14px Segoe UI,sans-serif';
+  c.fillText('IIP3 & Intermod Cascade  ·  RF Toolbox', p, tH/2+5);
+  c.fillStyle = '#888899'; c.font = '11px monospace';
+  c.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC', p, tH-4);
+  let x = p; canvases.forEach(cv => { c.drawImage(cv,x,tH+p); x += cv.width+p; });
+  const a = document.createElement('a');
+  a.download = 'iip3_cascade_' + new Date().toISOString().slice(0,19).replace(/[:T]/g,'-') + '.png';
+  a.href = out.toDataURL('image/png'); a.click();
+}
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const btn = document.getElementById('copyBtn'), orig = btn.textContent;
+    btn.textContent = '✓ Copied!'; btn.style.color='#00e5a0'; btn.style.borderColor='#00e5a0';
+    setTimeout(() => { btn.textContent = orig; btn.style.color=''; btn.style.borderColor=''; }, 2000);
+  });
+}
+
+// ─── Wire up live controls ────────────────────────────────────────
+document.getElementById('BW_MHz').addEventListener('input', render);
+document.getElementById('Pin_dBm').addEventListener('input', render);
+
+// ─── Bootstrap ────────────────────────────────────────────────────
+loadPreset('generic');
 </script>
 </body>
 </html>

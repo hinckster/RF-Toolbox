@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superheterodyne Receiver | RF Toolbox</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --card: #1e1e24; --border: #2a2a35;
+    --accent: #00c8ff; --accent2: #7b61ff; --text: #e2e2e8; --muted: #888899;
+    --green: #00e5a0; --orange: #ffaa00; --red: #ff4d6d;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  /* ── Toolbar ── */
+  .toolbar { position: fixed; top: 14px; right: 16px; display: flex; gap: 6px; z-index: 100; }
+  .tbtn {
+    background: var(--card); border: 1px solid var(--border); color: var(--muted);
+    border-radius: 5px; padding: 5px 10px; font-size: .75rem; cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+  .tbtn:hover { border-color: var(--accent); color: var(--accent); }
+
+  nav { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  nav a { color: var(--accent); text-decoration: none; font-size: 0.88rem; }
+  nav a:hover { text-decoration: underline; }
+  nav span { color: var(--muted); }
+
+  header { padding: 2rem 1.5rem 1.5rem; max-width: 1100px; margin: 0 auto; }
+  header .tag { font-size: 0.72rem; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.4rem; }
+  header h1 { font-size: 2rem; font-weight: 700; }
+  header p { color: var(--muted); margin-top: 0.4rem; }
+
+  .equation-box { max-width: 1100px; margin: 0 auto 1.5rem; padding: 0 1.5rem; }
+  .eq-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1.2rem 1.5rem; display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-start;
+  }
+  .eq-primary { font-family: 'Courier New', monospace; font-size: 1.05rem; color: var(--accent); flex: 1; min-width: 260px; }
+  .eq-secondary { font-family: 'Courier New', monospace; font-size: 0.88rem; color: var(--accent2); margin-top: 0.35rem; }
+  .eq-note { font-size: 0.82rem; color: var(--muted); margin-top: 0.3rem; }
+
+  /* ── Main layout ── */
+  .layout {
+    display: grid; grid-template-columns: 300px 1fr; gap: 1.4rem;
+    max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem;
+  }
+  @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
+  .panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1.1rem; }
+
+  .slider-row { margin-bottom: 1.1rem; }
+  .slider-row label { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.35rem; }
+  .slider-row label span { color: var(--accent); font-family: 'Courier New', monospace; font-weight: 600; }
+  input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
+  .slider-row .hints { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
+
+  /* ── Toggle button ── */
+  .toggle-row { margin-bottom: 1.1rem; }
+  .toggle-row .tog-label { font-size: 0.88rem; margin-bottom: 0.4rem; display: block; }
+  .toggle-btn {
+    display: inline-flex; border-radius: 20px; overflow: hidden;
+    border: 1px solid var(--border); background: var(--surface);
+  }
+  .toggle-btn button {
+    padding: 0.35rem 1rem; border: none; background: transparent;
+    color: var(--muted); font-size: 0.82rem; cursor: pointer; transition: 0.15s;
+  }
+  .toggle-btn button.active { background: var(--accent); color: #000; font-weight: 600; }
+
+  /* ── Metric cards ── */
+  .results { margin-top: 1.4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; }
+  .result-card .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .result-card .value { font-size: 1.2rem; font-weight: 700; font-family: 'Courier New', monospace; margin-top: 0.15rem; transition: color 0.2s; }
+  .result-card .unit { font-size: 0.7rem; color: var(--muted); }
+
+  /* ── Right column ── */
+  .chart-col { display: flex; flex-direction: column; gap: 1.2rem; }
+
+  .chart-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; display: flex; flex-direction: column; }
+  .chart-panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
+  .chart-wrap { position: relative; min-height: 220px; }
+
+  /* ── Block diagram ── */
+  .block-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem 1.4rem; }
+  .block-panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 0.9rem; }
+  .block-chain {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 0; overflow-x: auto; padding-bottom: 0.5rem;
+  }
+  .block-box {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    padding: 0.55rem 0.75rem; font-size: 0.78rem; text-align: center; min-width: 70px;
+    position: relative; white-space: nowrap; flex-shrink: 0;
+  }
+  .block-box .bname { font-weight: 600; color: var(--text); }
+  .block-box .bsub { font-size: 0.68rem; color: var(--muted); font-family: 'Courier New', monospace; margin-top: 0.2rem; white-space: nowrap; }
+  .block-box.highlight-mixer { border-color: var(--orange); }
+  .block-box.highlight-mixer .bname { color: var(--orange); }
+  .block-box.highlight-bpf { border-color: var(--accent); }
+  .block-arrow { color: var(--muted); font-size: 1rem; padding: 0 0.3rem; flex-shrink: 0; user-select: none; }
+  .image-badge {
+    position: absolute; bottom: -1.7rem; left: 50%; transform: translateX(-50%);
+    font-size: 0.65rem; color: var(--red); white-space: nowrap;
+    font-family: 'Courier New', monospace; pointer-events: none;
+  }
+  .block-chain-wrap { padding-bottom: 2rem; }
+
+  /* ── Annotation ── */
+  .annotation {
+    border-left: 3px solid var(--accent); background: var(--card);
+    padding: 11px 14px; border-radius: 0 8px 8px 0;
+    font-size: 0.83rem; color: var(--muted); line-height: 1.65;
+  }
+  .annotation strong { color: var(--text); }
+
+  /* ── Full-width bottom section ── */
+  .bottom-section { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2.5rem; }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="tbtn" onclick="takeScreenshot('Superheterodyne Receiver')">&#128247; Screenshot</button>
+  <button class="tbtn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">&#8856; Copy Link</button>
+</div>
+
+<nav>
+  <a href="index.html">&#8592; RF Toolbox</a>
+  <span>/</span>
+  <span>07 Superheterodyne</span>
+</nav>
+
+<header>
+  <div class="tag">Tool 07</div>
+  <h1>Superheterodyne Receiver</h1>
+  <p>LO planning, image frequency, and image rejection vs IF bandwidth</p>
+</header>
+
+<div class="equation-box">
+  <div class="eq-card">
+    <div>
+      <div class="eq-primary">f_LO = f_RF + f_IF &nbsp;(high-side injection)</div>
+      <div class="eq-secondary">f_LO = f_RF &minus; f_IF &nbsp;(low-side injection)</div>
+      <div class="eq-note">LO mixes with RF to down-convert to IF; injection side sets image location</div>
+    </div>
+    <div>
+      <div class="eq-primary">f_image = f_RF + 2&middot;f_IF &nbsp;(high-side)</div>
+      <div class="eq-secondary">f_image = f_RF &minus; 2&middot;f_IF &nbsp;(low-side)</div>
+      <div class="eq-note">Image is 2&middot;f_IF away; preselector BPF must reject it</div>
+    </div>
+    <div>
+      <div class="eq-primary">IRR &asymp; 20&middot;log&#8321;&#8320;(f_image / BW_IF)</div>
+      <div class="eq-note">Conceptual rejection model — wider IF BW = harder image rejection</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- ── Sidebar ── -->
+  <div class="panel">
+    <h3>Parameters</h3>
+
+    <div class="slider-row">
+      <label>RF Frequency <span id="lRF">900 MHz</span></label>
+      <input type="range" id="sRF" min="0.1" max="6" value="0.9" step="0.01">
+      <div class="hints"><span>100 MHz</span><span>6 GHz</span></div>
+    </div>
+
+    <div class="slider-row">
+      <label>IF Frequency <span id="lIF">70 MHz</span></label>
+      <input type="range" id="sIF" min="10" max="500" value="70" step="1">
+      <div class="hints"><span>10 MHz</span><span>500 MHz</span></div>
+    </div>
+
+    <div class="toggle-row">
+      <span class="tog-label">LO Injection Side</span>
+      <div class="toggle-btn">
+        <button id="btnHigh" class="active" onclick="setInjection('high')">High-side</button>
+        <button id="btnLow" onclick="setInjection('low')">Low-side</button>
+      </div>
+    </div>
+
+    <div class="results">
+      <div class="result-card">
+        <div class="label">f_LO</div>
+        <div class="value" id="rLO" style="color: var(--orange);">—</div>
+        <div class="unit" id="uLO">GHz</div>
+      </div>
+      <div class="result-card">
+        <div class="label">f_image</div>
+        <div class="value" id="rImage" style="color: var(--red);">—</div>
+        <div class="unit" id="uImage">GHz</div>
+      </div>
+      <div class="result-card">
+        <div class="label">Image Sep. 2&middot;f_IF</div>
+        <div class="value" id="rSep" style="color: var(--accent2);">—</div>
+        <div class="unit">MHz</div>
+      </div>
+      <div class="result-card">
+        <div class="label">IF Frequency</div>
+        <div class="value" id="rIF" style="color: var(--accent);">—</div>
+        <div class="unit">MHz</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Right column ── -->
+  <div class="chart-col">
+
+    <!-- Spectrum diagram -->
+    <div class="chart-panel">
+      <h3>Frequency Spectrum Diagram</h3>
+      <div class="chart-wrap" style="min-height: 220px;">
+        <canvas id="spectrumChart"></canvas>
+      </div>
+    </div>
+
+    <!-- IRR vs BW chart -->
+    <div class="chart-panel">
+      <h3>Image Rejection vs IF Bandwidth</h3>
+      <div class="chart-wrap" style="min-height: 220px;">
+        <canvas id="irrChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Block diagram (full width below layout) -->
+<div class="bottom-section">
+  <div class="block-panel">
+    <h3>Receiver Block Diagram</h3>
+    <div class="block-chain-wrap">
+      <div class="block-chain" id="blockChain">
+        <div class="block-box">
+          <div class="bname">Antenna</div>
+          <div class="bsub">all freqs</div>
+        </div>
+        <div class="block-arrow">&#8594;</div>
+        <div class="block-box highlight-bpf" id="bBPF">
+          <div class="bname">BPF</div>
+          <div class="bsub" id="bBPFsub">preselector</div>
+          <div class="image-badge" id="imgBadge">image: —</div>
+        </div>
+        <div class="block-arrow">&#8594;</div>
+        <div class="block-box">
+          <div class="bname">LNA</div>
+          <div class="bsub">low-noise amp</div>
+        </div>
+        <div class="block-arrow">&#8594;</div>
+        <div class="block-box highlight-mixer" id="bMixer">
+          <div class="bname">Mixer</div>
+          <div class="bsub" id="bMixerSub">LO: —</div>
+        </div>
+        <div class="block-arrow">&#8594;</div>
+        <div class="block-box">
+          <div class="bname">IF Filter</div>
+          <div class="bsub" id="bIFFilter">BW: —</div>
+        </div>
+        <div class="block-arrow">&#8594;</div>
+        <div class="block-box">
+          <div class="bname">IF Amp</div>
+          <div class="bsub" id="bIFAmp">— MHz</div>
+        </div>
+        <div class="block-arrow">&#8594;</div>
+        <div class="block-box">
+          <div class="bname">Demod</div>
+          <div class="bsub">baseband</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation" id="annotation" style="margin-top: 1.2rem;">Updating&hellip;</div>
+</div>
+
+<script>
+// ── State ──
+let injection = 'high'; // 'high' or 'low'
+
+const sRF = document.getElementById('sRF');
+const sIF = document.getElementById('sIF');
+
+function setInjection(side) {
+  injection = side;
+  document.getElementById('btnHigh').classList.toggle('active', side === 'high');
+  document.getElementById('btnLow').classList.toggle('active', side === 'low');
+  update();
+}
+
+// ── Helpers ──
+function fmtFreq(fGHz) {
+  if (fGHz >= 1) return { val: fGHz.toFixed(3), unit: 'GHz' };
+  return { val: (fGHz * 1000).toFixed(1), unit: 'MHz' };
+}
+function fmtFreqShort(fGHz) {
+  if (fGHz >= 1) return fGHz.toFixed(3) + ' GHz';
+  return (fGHz * 1000).toFixed(1) + ' MHz';
+}
+function fmtMHz(mhz) { return mhz.toFixed(1) + ' MHz'; }
+
+// ── Compute ──
+function compute() {
+  const rfGHz = +sRF.value;            // GHz
+  const ifMHz = +sIF.value;            // MHz
+  const ifGHz = ifMHz / 1000;          // GHz
+
+  let loGHz, imageGHz;
+  if (injection === 'high') {
+    loGHz    = rfGHz + ifGHz;
+    imageGHz = rfGHz + 2 * ifGHz;
+  } else {
+    loGHz    = rfGHz - ifGHz;
+    imageGHz = rfGHz - 2 * ifGHz;
+  }
+  if (imageGHz < 0) imageGHz = 0;
+
+  const sepMHz = 2 * ifMHz;
+  return { rfGHz, ifMHz, ifGHz, loGHz, imageGHz, sepMHz };
+}
+
+// ── Chart: Spectrum ──
+const specCtx = document.getElementById('spectrumChart').getContext('2d');
+const specChart = new Chart(specCtx, {
+  type: 'bar',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Signal level (relative)',
+      data: [],
+      backgroundColor: [],
+      borderColor: [],
+      borderWidth: 1.5,
+      borderRadius: 3,
+    }]
+  },
+  options: {
+    animation: { duration: 0 },
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: ctx => ctx[0].label,
+          label: ctx => ctx.dataset.backgroundColor[ctx.dataIndex] === '#ff4d6d'
+            ? 'Image frequency (interference)'
+            : ctx.raw.toFixed(0) + ' (relative height)'
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { color: '#888899', font: { size: 10 }, maxRotation: 30 },
+        grid: { color: '#2a2a35' },
+        title: { display: true, text: 'Frequency', color: '#888899', font: { size: 11 } }
+      },
+      y: {
+        ticks: { color: '#888899', font: { size: 10 } },
+        grid: { color: '#2a2a35' },
+        title: { display: true, text: 'Relative Level', color: '#888899', font: { size: 11 } },
+        min: 0, max: 110,
+      }
+    }
+  }
+});
+
+// ── Chart: IRR vs BW ──
+const irrCtx = document.getElementById('irrChart').getContext('2d');
+const irrChart = new Chart(irrCtx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Image Rejection (dB)',
+      data: [],
+      borderColor: '#00c8ff',
+      backgroundColor: 'rgba(0,200,255,0.08)',
+      borderWidth: 2,
+      pointRadius: 0,
+      fill: true,
+      tension: 0.3,
+    }, {
+      label: 'Current IF BW (IF freq)',
+      data: [],
+      borderColor: '#ffaa00',
+      borderWidth: 2,
+      borderDash: [6, 4],
+      pointRadius: 0,
+      fill: false,
+    }]
+  },
+  options: {
+    animation: { duration: 0 },
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#888899', font: { size: 11 } } },
+      tooltip: { mode: 'index', intersect: false }
+    },
+    scales: {
+      x: {
+        ticks: { color: '#888899', maxTicksLimit: 10, font: { size: 10 } },
+        grid: { color: '#2a2a35' },
+        title: { display: true, text: 'IF Bandwidth (MHz)', color: '#888899', font: { size: 11 } }
+      },
+      y: {
+        ticks: { color: '#888899', font: { size: 10 } },
+        grid: { color: '#2a2a35' },
+        title: { display: true, text: 'Image Rejection (dB)', color: '#888899', font: { size: 11 } },
+        min: 0, max: 85,
+      }
+    }
+  }
+});
+
+// ── Update all ──
+function update() {
+  const d = compute();
+
+  // Labels
+  document.getElementById('lRF').textContent = fmtFreqShort(d.rfGHz);
+  document.getElementById('lIF').textContent = d.ifMHz.toFixed(0) + ' MHz';
+
+  // Metric cards
+  const lo = fmtFreq(d.loGHz);
+  document.getElementById('rLO').textContent = lo.val;
+  document.getElementById('uLO').textContent = lo.unit;
+
+  const img = fmtFreq(d.imageGHz);
+  document.getElementById('rImage').textContent = img.val;
+  document.getElementById('uImage').textContent = img.unit;
+
+  document.getElementById('rSep').textContent = d.sepMHz.toFixed(1);
+  document.getElementById('rIF').textContent  = d.ifMHz.toFixed(1);
+
+  // Block diagram labels
+  document.getElementById('bMixerSub').textContent  = 'LO: ' + fmtFreqShort(d.loGHz);
+  document.getElementById('bIFFilter').textContent  = 'pass: ' + d.ifMHz.toFixed(0) + ' MHz';
+  document.getElementById('bIFAmp').textContent     = d.ifMHz.toFixed(0) + ' MHz';
+  document.getElementById('bBPFsub').textContent    = 'center ' + fmtFreqShort(d.rfGHz);
+  document.getElementById('imgBadge').textContent   = 'image: ' + fmtFreqShort(d.imageGHz);
+
+  // Spectrum chart
+  // Sort bars by frequency for clarity
+  const entries = [
+    { label: 'f_image\n' + fmtFreqShort(d.imageGHz), freq: d.imageGHz, height: 70, color: '#ff4d6d',  border: '#ff4d6d' },
+    { label: 'f_RF\n'    + fmtFreqShort(d.rfGHz),    freq: d.rfGHz,    height: 95, color: '#00e5a0',  border: '#00e5a0' },
+    { label: 'f_LO\n'    + fmtFreqShort(d.loGHz),    freq: d.loGHz,    height: 85, color: '#ffaa00',  border: '#ffaa00' },
+    { label: 'f_IF out\n'+ d.ifMHz.toFixed(0)+' MHz', freq: d.ifGHz,   height: 80, color: '#7b61ff',  border: '#7b61ff' },
+  ].sort((a, b) => a.freq - b.freq);
+
+  specChart.data.labels                        = entries.map(e => e.label);
+  specChart.data.datasets[0].data             = entries.map(e => e.height);
+  specChart.data.datasets[0].backgroundColor  = entries.map(e => e.color + '55');
+  specChart.data.datasets[0].borderColor      = entries.map(e => e.border);
+  specChart.update('none');
+
+  // IRR vs BW chart
+  const N = 100;
+  const bwLabels = [], irrData = [], currentLine = [];
+  const fImgMHz = d.imageGHz * 1000;
+  for (let i = 0; i < N; i++) {
+    const bw = 1 + (499) * i / (N - 1); // 1..500 MHz
+    const rawIRR = 20 * Math.log10(Math.max(fImgMHz, 1) / Math.max(bw, 0.001));
+    const irr = Math.min(Math.max(rawIRR, 0), 80);
+    bwLabels.push(bw.toFixed(0));
+    irrData.push(irr);
+    currentLine.push(null); // placeholder
+  }
+  // Mark current IF frequency as vertical reference — use a full-height line via dataset
+  const currentIRR = Math.min(Math.max(20 * Math.log10(Math.max(fImgMHz, 1) / Math.max(d.ifMHz, 0.001)), 0), 80);
+  const curIdx = Math.round((d.ifMHz - 1) / 499 * (N - 1));
+  for (let i = 0; i < N; i++) currentLine[i] = (i === curIdx) ? 82 : null;
+  // Use a scatter point instead
+  irrChart.data.labels = bwLabels;
+  irrChart.data.datasets[0].data = irrData;
+  // Marker dataset: vertical dashed line approximation — use sparse data
+  const markerData = bwLabels.map(() => null);
+  if (curIdx >= 0 && curIdx < N) markerData[curIdx] = currentIRR;
+  irrChart.data.datasets[1].data = bwLabels.map((_, i) => {
+    // draw a thin vertical via full-column value
+    return i === curIdx ? 82 : null;
+  });
+  irrChart.update('none');
+
+  // Annotation
+  const injStr = injection === 'high' ? 'high-side' : 'low-side';
+  const irrAtIF = Math.min(Math.max(20 * Math.log10(Math.max(fImgMHz, 1) / Math.max(d.ifMHz, 0.001)), 0), 80);
+  const advIRR = irrAtIF < 20 ? 40 : Math.ceil(irrAtIF);
+  document.getElementById('annotation').innerHTML =
+    `<strong>RF = ${fmtFreqShort(d.rfGHz)}, IF = ${d.ifMHz.toFixed(0)} MHz</strong> ` +
+    `&rarr; LO = <strong>${fmtFreqShort(d.loGHz)}</strong> (${injStr} injection). ` +
+    `Image = <strong style="color:var(--red)">${fmtFreqShort(d.imageGHz)}</strong>, ` +
+    `which is <strong>${d.sepMHz.toFixed(0)} MHz</strong> away from RF. ` +
+    `A wider IF bandwidth makes image rejection harder &mdash; use a preselector BPF with ` +
+    `<strong>&gt;${advIRR.toFixed(0)} dB</strong> rejection at the image frequency.`;
+}
+
+// ── Event listeners ──
+sRF.addEventListener('input', update);
+sIF.addEventListener('input', update);
+
+// ── Initial render ──
+update();
+
+// ── Toolbar functions ──
+function takeScreenshot(toolName) {
+  const canvases = [...document.querySelectorAll('canvas')];
+  const padding = 16, titleHeight = 40;
+  const totalWidth = Math.max(800, canvases.reduce((s, c) => s + c.width + padding, padding));
+  const maxHeight = canvases.reduce((s, c) => s + c.height + padding, 0);
+  const out = document.createElement('canvas');
+  out.width = totalWidth;
+  out.height = maxHeight + titleHeight + padding * 2;
+  const c = out.getContext('2d');
+  c.fillStyle = '#0d0d0f';
+  c.fillRect(0, 0, out.width, out.height);
+  c.fillStyle = '#e2e2e8';
+  c.font = 'bold 14px Segoe UI, system-ui, sans-serif';
+  c.fillText(toolName + '  ·  RF Toolbox', padding, titleHeight / 2 + 5);
+  c.fillStyle = '#888899';
+  c.font = '11px monospace';
+  c.fillText(new Date().toISOString().slice(0, 19).replace('T', ' ') + ' UTC', padding, titleHeight - 4);
+  let y = titleHeight + padding;
+  canvases.forEach(cv => {
+    c.drawImage(cv, padding, y);
+    y += cv.height + padding;
+  });
+  const link = document.createElement('a');
+  const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+  link.download = `superheterodyne_${ts}.png`;
+  link.href = out.toDataURL('image/png');
+  link.click();
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const btn = document.getElementById('copyBtn');
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    btn.style.color = '#00e5a0';
+    btn.style.borderColor = '#00e5a0';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+  });
+}
+</script>
+</body>
+</html>
