@@ -421,6 +421,7 @@
 <!-- TOOLBAR -->
 <div class="toolbar">
   <button id="btn-screenshot" title="Save screenshot">📷 Screenshot</button>
+  <button id="btn-exportcsv" title="Export CSV" onclick="exportCSV()">⬇ Export CSV</button>
   <button id="btn-fullscreen" title="Toggle fullscreen">⛶ Fullscreen</button>
   <button id="btn-copylink"   title="Copy link to clipboard">⎘ Copy Link</button>
 </div>
@@ -956,6 +957,24 @@ document.getElementById('dist-slider').addEventListener('input', function() {
 /* =========================================================
    TOOLBAR ACTIONS
    ========================================================= */
+function exportCSV() {
+  var g = function(id){ var el = document.getElementById(id); return el ? el.textContent.trim() : ''; };
+  var lines = ['PARAMETERS', 'Parameter,Value',
+    'Frequency,' + g('freq-display'),
+    'Distance,' + g('dist-display'),
+  ];
+  rows.forEach(function(row) {
+    if (row.editable) lines.push(row.label + ',' + row.value + ' ' + row.unit);
+  });
+  lines.push('', 'RESULTS', 'Result,Value',
+    'Received Power (Pr),' + g('sum-pr'),
+    'Sensitivity,' + g('sum-sens'),
+    'Link Margin,' + g('sum-margin'),
+  );
+  var blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'rf_toolbox_link_budget_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
+}
 document.getElementById('btn-fullscreen').addEventListener('click', () => {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen().catch(() => {});

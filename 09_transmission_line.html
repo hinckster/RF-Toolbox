@@ -89,7 +89,8 @@
 <body>
 
 <div class="toolbar">
-  <button class="tbtn" onclick="takeScreenshot()">&#128247; Screenshot</button>
+  <button class="tbtn" onclick="takeScreenshot()"><button class="tbtn" onclick="takeScreenshot()">&#128247; Screenshot</button>#128247; Screenshot</button>
+  <button class="tbtn" onclick="exportCSV()"><button class="tbtn" onclick="takeScreenshot()">&#128247; Screenshot</button>#11015; Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
   <button class="tbtn" id="copyBtn" onclick="copyLink()">&#8856; Copy Link</button>
 </div>
@@ -522,6 +523,25 @@ function takeScreenshot() {
   link.click();
 }
 
+function exportCSV() {
+  var g = function(id){ var el = document.getElementById(id); return el ? el.textContent.trim() : ''; };
+  var lines = ['PARAMETERS', 'Parameter,Value',
+    'Load Resistance RL,' + g('lR'),
+    'Load Reactance XL,' + g('lX'),
+    'Characteristic Impedance Z0,' + document.getElementById('iZ0').value + ' ohm',
+    'Line Length,' + g('lLen'),
+    '', 'RESULTS', 'Result,Value',
+    'Reflection Coefficient |G|,' + g('rGmag'),
+    'Reflection Phase angle-G,' + g('rGang') + ' deg',
+    'VSWR,' + g('rVSWR'),
+    'Return Loss,' + g('rRL') + ' dB',
+    'Vmax Position,' + g('rVmaxPos'),
+    'Input Impedance Zin,' + g('rZin'),
+  ];
+  var blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'rf_toolbox_transmission_line_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
+}
 function toggleFullscreen() {
   if (!document.fullscreenElement) document.documentElement.requestFullscreen();
   else document.exitFullscreen();

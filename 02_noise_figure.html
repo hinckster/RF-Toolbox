@@ -122,6 +122,7 @@ table.whatif tr:last-child td { border-bottom: none; }
 
 <div class="toolbar">
   <button class="tbtn" onclick="takeScreenshot()">📷 Screenshot</button>
+  <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
   <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
 </div>
@@ -831,6 +832,34 @@ function takeScreenshot() {
   const lnk = document.createElement('a');
   lnk.download = 'noise_figure_'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.png';
   lnk.href = out.toDataURL('image/png'); lnk.click();
+}
+function exportCSV() {
+  var g = function(id){ var el = document.getElementById(id); return el ? el.textContent.trim() : ''; };
+  var res = computeCascade();
+  var lines = ['PARAMETERS', 'Parameter,Value',
+    'Bandwidth (BW),' + document.getElementById('bwInput').value + ' MHz',
+    'Reference Temp (T0),' + document.getElementById('t0Input').value + ' K',
+    'SNR_min,' + document.getElementById('snrMinInput').value + ' dB',
+    '', 'STAGES', '#,Name,Type,Gain (dB),NF (dB),IIP3 (dBm),Cum NF (dB)',
+  ];
+  if (res) res.rows.forEach(function(r, i) {
+    lines.push((i+1) + ',' + r.s.name + ',' + r.s.type + ',' + r.s.gain.toFixed(1) + ',' + r.NF_eff.toFixed(2) + ',' + r.s.iip3 + ',' + r.NF_sys_here.toFixed(2));
+  });
+  lines.push('', 'RESULTS', 'Result,Value');
+  if (res) {
+    lines.push('System NF,' + res.NF_sys.toFixed(2) + ' dB');
+    lines.push('Total Gain,' + res.cumG_dB.toFixed(1) + ' dB');
+    lines.push('Noise Temperature,' + res.T_eq.toFixed(0) + ' K');
+    lines.push('Noise Floor,' + res.nfloor_dBm.toFixed(1) + ' dBm');
+    lines.push('Cascaded IIP3,' + (isFinite(res.IIP3_sys_dBm) ? res.IIP3_sys_dBm.toFixed(1) : 'inf') + ' dBm');
+    lines.push('Cascaded OIP3,' + (isFinite(res.OIP3_sys_dBm) ? res.OIP3_sys_dBm.toFixed(1) : 'inf') + ' dBm');
+    lines.push('SFDR,' + (res.SFDR !== null ? res.SFDR.toFixed(1) : '') + ' dB');
+    var snrMin = parseFloat(document.getElementById('snrMinInput').value) || 10;
+    lines.push('MDS,' + (res.nfloor_dBm + snrMin).toFixed(1) + ' dBm');
+  }
+  var blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'rf_toolbox_receiver_chain_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
 }
 function toggleFullscreen() {
   if (!document.fullscreenElement) document.documentElement.requestFullscreen();

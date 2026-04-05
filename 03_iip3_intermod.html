@@ -76,6 +76,7 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 
 <div class="toolbar">
   <button class="tbtn" onclick="takeScreenshot('IIP3 Intermodulation')">📷 Screenshot</button>
+  <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
   <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
 </div>
@@ -352,6 +353,29 @@ function update(){
 ].forEach(s=>s.addEventListener('input',update));
 
 function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#8b949e';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`iip3_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
+function exportCSV() {
+  var g = function(id){ var el = document.getElementById(id); return el ? el.textContent.trim() : ''; };
+  var lines = ['PARAMETERS', 'Parameter,Value',
+    'Coefficient a1,' + g('vA1'),
+    'Coefficient a2,' + g('vA2'),
+    'Coefficient a3,' + g('vA3'),
+    'Input Power (Pin),' + g('vPin'),
+    'Center Freq (f0),' + g('vF0'),
+    'Tone Spacing (Df),' + g('vDf'),
+    '', 'RESULTS', 'Result,Value',
+    'IIP3,' + g('mIIP3') + ' dBm',
+    'OIP3,' + g('mOIP3') + ' dBm',
+    'IIP2,' + g('mIIP2') + ' dBm',
+    'Linear Gain,' + g('mGain') + ' dB',
+    'P1dB (input),' + g('mP1dB') + ' dBm',
+    'IM3 Level,' + g('mIM3') + ' dBm',
+    'IM3 Relative,' + g('mIM3rel') + ' dBc',
+    'IM2 Level,' + g('mIM2') + ' dBm',
+  ];
+  var blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'rf_toolbox_iip3_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
+}
 function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
 function copyLink() {
   var params = new URLSearchParams({
