@@ -33,11 +33,11 @@ header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 
 /* Equation box */
 .eq-box{max-width:1180px;margin:0 auto .9rem;padding:0 1.5rem}
-.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.4rem;display:flex;flex-wrap:wrap;gap:1.5rem;align-items:flex-start}
-.eq-col{flex:1;min-width:260px}
-.eq-label{font-size:.68rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
-.eq-primary{font-family:'Courier New',monospace;font-size:.95rem;color:var(--blue);line-height:1.9}
-.eq-secondary{font-family:'Courier New',monospace;font-size:.82rem;color:var(--pur);line-height:1.9}
+.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.1rem 1.75rem;display:flex;flex-wrap:wrap;gap:1.5rem;align-items:flex-start}
+.eq-col{flex:1;min-width:310px}
+.eq-label{font-size:.7rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-primary{font-family:'Courier New',monospace;font-size:1.05rem;color:var(--t1);line-height:1.9}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.9rem;color:var(--pur);line-height:1.9}
 .eq-note{font-size:.76rem;color:var(--tm);margin-top:.35rem}
 .var{display:inline-block;padding:0 3px;border-radius:3px;font-family:'Courier New',monospace}
 .var.hi{background:rgba(230,197,71,.18);color:var(--yel)}
@@ -95,7 +95,7 @@ table.budget tr.total td:first-child{color:var(--t1);font-family:'Segoe UI',syst
 .chart-wrap{position:relative;min-height:260px}
 
 /* Annotation */
-.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;margin-top:.8rem;font-size:.82rem;color:var(--tm);line-height:1.7}
+.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;margin-top:.8rem;font-size:.88rem;color:var(--tm);line-height:1.75}
 .annotation strong{color:var(--t1)}
 .annotation b{color:var(--blue)}
 </style>
@@ -291,8 +291,8 @@ const chart = new Chart(ctx, {
   type:'line',
   data:{
     datasets:[
-      {label:'Link Margin',data:[],borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,.08)',borderWidth:2,pointRadius:0,fill:true},
-      {label:'Friis (no extra losses)',data:[],borderColor:'#bc8cff',backgroundColor:'transparent',borderWidth:1.5,borderDash:[5,4],pointRadius:0},
+      {label:'Link Margin',data:[],borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,.08)',borderWidth:3,pointRadius:0,fill:{value:0,above:'rgba(63,185,80,.08)',below:'rgba(248,81,73,.08)'}},
+      {label:'Friis (no extra losses)',data:[],borderColor:'#bc8cff',backgroundColor:'transparent',borderWidth:2,borderDash:[5,4],pointRadius:0},
       {label:'Operating Point',data:[],borderColor:'#3fb950',backgroundColor:'#3fb950',pointRadius:6,pointHoverRadius:8,showLine:false}
     ]
   },
