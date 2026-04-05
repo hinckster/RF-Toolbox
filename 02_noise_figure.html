@@ -110,6 +110,12 @@ table.whatif tr:last-child td { border-bottom: none; }
 
 /* ── Hidden file input ── */
 #importInput { display: none; }
+
+/* ── Swap row ── */
+.swap-row { max-width: 1200px; margin: 0 auto .5rem; padding: 0 1.5rem; display: flex; gap: .5rem; align-items: center; }
+.swap-row span { font-size: .73rem; color: var(--muted); margin-right: .25rem; }
+.swap-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: .28rem .65rem; font-size: .78rem; cursor: pointer; transition: .15s; }
+.swap-btn:hover { border-color: var(--accent2); color: var(--accent2); }
 </style>
 </head>
 <body>
@@ -170,6 +176,9 @@ table.whatif tr:last-child td { border-bottom: none; }
   <div class="ctrl-sep"></div>
   <label class="ctrl-label">BW <input type="number" id="bwInput" value="10" min="0.001" step="1"> MHz</label>
   <label class="ctrl-label">T₀ <input type="number" id="t0Input" value="290" min="1" step="10"> K</label>
+  <label class="ctrl-label">SNR_min <input type="number" id="snrMinInput" value="10" min="0" step="1"> dB</label>
+  <div class="ctrl-sep"></div>
+  <button class="ctrl-btn" id="teqToggle" onclick="toggleTeqMode()">NF (dB)</button>
   <div class="ctrl-sep"></div>
   <button class="ctrl-btn danger" onclick="resetChain()">↺ Reset</button>
 </div>
@@ -185,6 +194,7 @@ table.whatif tr:last-child td { border-bottom: none; }
     <div class="metric-card"><div class="mlabel">Cascaded OIP3</div><div class="mval warn" id="mOIP3">—</div><div class="munit">dBm (output)</div></div>
     <div class="metric-card"><div class="mlabel">SFDR</div><div class="mval good" id="mSFDR">—</div><div class="munit">dB</div></div>
     <div class="metric-card"><div class="mlabel">P1dB est.</div><div class="mval" id="mP1dB" style="color:var(--muted)">—</div><div class="munit">dBm input (≈IIP3−9.6)</div></div>
+    <div class="metric-card"><div class="mlabel">MDS</div><div class="mval" id="mMDS" style="color:var(--purple)">—</div><div class="munit">dBm (NF floor + SNR_min)</div></div>
   </div>
 </div>
 
@@ -198,7 +208,7 @@ table.whatif tr:last-child td { border-bottom: none; }
         <th>Name</th>
         <th>Type</th>
         <th>Gain (dB)</th>
-        <th>NF (dB)</th>
+        <th id="thNF">NF (dB)</th>
         <th>IIP3 (dBm)</th>
         <th class="cum-cell">Cum Gain</th>
         <th class="cum-cell">Cum NF</th>
@@ -211,10 +221,19 @@ table.whatif tr:last-child td { border-bottom: none; }
   </table>
 </div>
 
+<!-- Swap row -->
+<div class="swap-row">
+  <span>Quick swap:</span>
+  <button class="swap-btn" onclick="swapStages(0,1)">1 ↔ 2</button>
+  <button class="swap-btn" onclick="swapStages(1,2)">2 ↔ 3</button>
+  <button class="swap-btn" onclick="swapStages(2,3)">3 ↔ 4</button>
+  <button class="swap-btn" onclick="swapStages(3,4)">4 ↔ 5</button>
+</div>
+
 <!-- Charts -->
 <div class="charts-row">
   <div class="chart-card">
-    <h3>Cumulative NF along chain (dB)</h3>
+    <h3 id="hChartNF">Noise Floor at input (dBm) + MDS threshold</h3>
     <div class="chart-wrap"><canvas id="chartNF"></canvas></div>
   </div>
   <div class="chart-card">
@@ -458,13 +477,16 @@ const CHART_COLORS = ['#00c8ff','#00e5a0','#ffaa00','#ff4d6d','#bc8cff','#7b61ff
 const ctxNF = document.getElementById('chartNF').getContext('2d');
 const chartNF = new Chart(ctxNF, {
   type: 'line',
-  data: { labels: [], datasets: [{ label: 'Cum. NF (dB)', data: [], borderColor: '#00c8ff', backgroundColor: 'rgba(0,200,255,.1)', borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: '#00c8ff', fill: true }] },
+  data: { labels: [], datasets: [
+    { label: 'Noise Floor (dBm)', data: [], borderColor: '#00c8ff', backgroundColor: 'rgba(0,200,255,.1)', borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: '#00c8ff', fill: true },
+    { label: 'MDS threshold (dBm)', data: [], borderColor: '#bc8cff', backgroundColor: 'transparent', borderWidth: 1.5, borderDash: [6,3], pointRadius: 0, fill: false }
+  ] },
   options: {
     animation: { duration: 0 }, responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { labels: { color: '#888899', font: { size: 11 } } }, tooltip: { callbacks: { label: ctx => ' ' + parseFloat(ctx.raw).toFixed(3) + ' dB' } } },
+    plugins: { legend: { labels: { color: '#888899', font: { size: 11 } } }, tooltip: { callbacks: { label: ctx => ' ' + parseFloat(ctx.raw).toFixed(1) + ' dBm' } } },
     scales: {
       x: { ticks: { color: '#888899', font: { size: 10 } }, grid: { color: '#2a2a35' } },
-      y: { ticks: { color: '#888899', font: { size: 10 } }, grid: { color: '#2a2a35' }, title: { display: true, text: 'NF (dB)', color: '#888899', font: { size: 11 } } }
+      y: { ticks: { color: '#888899', font: { size: 10 } }, grid: { color: '#2a2a35' }, title: { display: true, text: 'dBm', color: '#888899', font: { size: 11 } } }
     }
   }
 });
@@ -520,7 +542,9 @@ function renderTable(res) {
       <td>
         ${isP
           ? `<input class="stage-num auto" value="${NF.toFixed(2)}" readonly title="Auto = insertion loss"><br><span class="passive-note">= loss</span>`
-          : `<input class="stage-num" type="number" value="${s.nf??3}" step="0.1" onchange="setField(${s.id},'nf',+this.value)" style="width:62px">`}
+          : teqMode
+            ? (function(){ var T0 = parseFloat(document.getElementById('t0Input').value)||290; var teqV = T0*(dBtoLin(s.nf??3)-1); return `<input class="stage-num" type="number" value="${teqV.toFixed(0)}" step="10" onchange="setFieldTeq(${s.id},+this.value)" style="width:72px"> <span style="font-size:.72rem;color:var(--muted)">K</span>`; })()
+            : `<input class="stage-num" type="number" value="${s.nf??3}" step="0.1" onchange="setField(${s.id},'nf',+this.value)" style="width:62px">`}
       </td>
       <td><input class="stage-num" type="number" value="${s.iip3}" step="1" onchange="setField(${s.id},'iip3',+this.value)" style="width:62px"></td>
       <td class="cum-cell" style="color:var(--accent)">${cumGain} dB</td>
@@ -569,17 +593,27 @@ function renderMetrics(res) {
   } else {
     el('mSFDR').textContent = '—';
   }
+  const SNR_min = parseFloat(document.getElementById('snrMinInput').value) || 10;
+  const mds_dBm = nfloor_dBm + SNR_min;
+  el('mMDS').textContent = mds_dBm.toFixed(1);
 }
 
 function renderCharts(res) {
-  if (!res || !res.rows.length) { chartNF.data.labels=[]; chartNF.data.datasets[0].data=[]; chartNF.update('none'); return; }
-  const labels    = res.rows.map(r => r.s.name.length > 14 ? r.s.name.slice(0,12)+'…' : r.s.name);
-  const cumNFdata = res.rows.map(r => +r.NF_sys_here.toFixed(3));
-  const contribDB = res.rows.map(r => +r.contrib_dB.toFixed(3));
-  const colors    = res.rows.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]);
+  if (!res || !res.rows.length) {
+    chartNF.data.labels=[]; chartNF.data.datasets[0].data=[]; chartNF.data.datasets[1].data=[];
+    chartNF.update('none'); return;
+  }
+  const labels     = res.rows.map(r => r.s.name.length > 14 ? r.s.name.slice(0,12)+'…' : r.s.name);
+  const SNR_min    = parseFloat(document.getElementById('snrMinInput').value) || 10;
+  const nfloorData = res.rows.map(r => +(-174 + r.NF_sys_here + 10*Math.log10(res.BW_Hz)).toFixed(1));
+  const mdsVal     = nfloorData[nfloorData.length - 1] + SNR_min;
+  const mdsData    = nfloorData.map(() => +mdsVal.toFixed(1));
+  const contribDB  = res.rows.map(r => +r.contrib_dB.toFixed(3));
+  const colors     = res.rows.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]);
 
   chartNF.data.labels = labels;
-  chartNF.data.datasets[0].data = cumNFdata;
+  chartNF.data.datasets[0].data = nfloorData;
+  chartNF.data.datasets[1].data = mdsData;
   chartNF.update('none');
 
   chartContrib.data.labels = labels;
@@ -647,6 +681,31 @@ function renderAnnotation(res) {
 // ─────────────────────────────────────────────────────────────────
 // STAGE MUTATIONS
 // ─────────────────────────────────────────────────────────────────
+let teqMode = false;
+
+function toggleTeqMode() {
+  teqMode = !teqMode;
+  var btn = document.getElementById('teqToggle');
+  btn.textContent = teqMode ? 'Teq (K)' : 'NF (dB)';
+  btn.style.borderColor = teqMode ? 'var(--accent2)' : '';
+  btn.style.color = teqMode ? 'var(--accent2)' : '';
+  var th = document.getElementById('thNF');
+  if (th) th.textContent = teqMode ? 'Teq (K)' : 'NF (dB)';
+  refresh();
+}
+
+function swapStages(i, j) {
+  if (i < 0 || j >= stages.length || i >= stages.length || j < 0) return;
+  var tmp = stages[i]; stages[i] = stages[j]; stages[j] = tmp;
+  refresh();
+}
+
+function setFieldTeq(id, K_val) {
+  var T0 = parseFloat(document.getElementById('t0Input').value) || 290;
+  var nf_dB = linTodB(1 + K_val / T0);
+  setField(id, 'nf', nf_dB);
+}
+
 function setField(id, field, value) {
   const s = stages.find(s => s.id === id);
   if (!s) return;
@@ -744,9 +803,10 @@ function refresh() {
   renderAnnotation(res);
 }
 
-// Wire up BW / T0 inputs
+// Wire up BW / T0 / SNR_min inputs
 document.getElementById('bwInput').addEventListener('input', refresh);
 document.getElementById('t0Input').addEventListener('input', refresh);
+document.getElementById('snrMinInput').addEventListener('input', refresh);
 
 refresh();
 
