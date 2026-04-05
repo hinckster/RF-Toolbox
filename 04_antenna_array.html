@@ -28,11 +28,11 @@ header h1{font-size:1.7rem;font-weight:700;color:var(--t1)}
 header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 
 .eq-box{max-width:1180px;margin:0 auto .9rem;padding:0 1.5rem}
-.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.4rem;display:flex;flex-wrap:wrap;gap:1.5rem}
-.eq-col{flex:1;min-width:230px}
-.eq-label{font-size:.68rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
-.eq-primary{font-family:'Courier New',monospace;font-size:.9rem;color:var(--blue);line-height:2}
-.eq-secondary{font-family:'Courier New',monospace;font-size:.8rem;color:var(--pur);line-height:2}
+.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.1rem 1.75rem;display:flex;flex-wrap:wrap;gap:1.5rem}
+.eq-col{flex:1;min-width:310px}
+.eq-label{font-size:.7rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-primary{font-family:'Courier New',monospace;font-size:1.05rem;color:var(--t1);line-height:2}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.9rem;color:var(--pur);line-height:2}
 .eq-note{font-size:.74rem;color:var(--tm);margin-top:.25rem}
 
 .layout{display:grid;grid-template-columns:300px 1fr;gap:1.2rem;max-width:1180px;margin:0 auto;padding:0 1.5rem 2rem}
@@ -67,7 +67,7 @@ select.sel{width:100%;background:var(--deep);border:1px solid var(--bdr);color:v
 .cmp-box{background:rgba(188,140,255,.06);border:1px solid rgba(188,140,255,.25);border-radius:7px;padding:.7rem .9rem;margin-top:.8rem}
 .cmp-box h4{font-size:.7rem;color:var(--pur);text-transform:uppercase;letter-spacing:1px;margin-bottom:.5rem}
 
-.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.82rem;color:var(--tm);line-height:1.7}
+.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.88rem;color:var(--tm);line-height:1.75}
 .annotation strong{color:var(--t1)}
 .annotation b{color:var(--blue)}
 </style>
@@ -329,8 +329,8 @@ function initChart(){
     mainChart=new Chart(ctx,{
       type:'line',
       data:{datasets:[
-        {label:'Array A',data:[],borderColor:'#58a6ff',borderWidth:2,pointRadius:0,fill:false},
-        {label:'Array B',data:[],borderColor:'#bc8cff',borderDash:[4,3],borderWidth:1.5,pointRadius:0,fill:false}
+        {label:'Array A',data:[],borderColor:'#58a6ff',borderWidth:2.5,pointRadius:0,fill:'origin',backgroundColor:'rgba(88,166,255,.06)'},
+        {label:'Array B',data:[],borderColor:'#bc8cff',borderDash:[4,3],borderWidth:2.5,pointRadius:0,fill:false}
       ]},
       options:{
         animation:{duration:0},responsive:true,
@@ -412,7 +412,7 @@ function update(){
     glAngles.forEach((g,i)=>{
       mainChart.data.datasets.push({
         label:i===0?'Grating Lobe':'',data:[{x:g,y:-60},{x:g,y:0}],
-        borderColor:'rgba(248,81,73,.6)',borderDash:[3,3],borderWidth:1.5,pointRadius:0,showLine:true,fill:false
+        borderColor:'rgba(248,81,73,.85)',borderDash:[4,4],borderWidth:2,pointRadius:0,showLine:true,fill:false
       });
     });
   } else {
