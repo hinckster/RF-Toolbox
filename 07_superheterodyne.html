@@ -28,11 +28,11 @@ header h1{font-size:1.7rem;font-weight:700;color:var(--t1)}
 header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 
 .eq-box{max-width:1200px;margin:0 auto .9rem;padding:0 1.5rem}
-.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.4rem;display:flex;flex-wrap:wrap;gap:1.5rem}
-.eq-col{flex:1;min-width:220px}
-.eq-label{font-size:.68rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
-.eq-primary{font-family:'Courier New',monospace;font-size:.88rem;color:var(--blue);line-height:2}
-.eq-secondary{font-family:'Courier New',monospace;font-size:.79rem;color:var(--pur);line-height:2}
+.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.1rem 1.75rem;display:flex;flex-wrap:wrap;gap:1.5rem}
+.eq-col{flex:1;min-width:310px}
+.eq-label{font-size:.7rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-primary{font-family:'Courier New',monospace;font-size:1.05rem;color:var(--t1);line-height:2}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.9rem;color:var(--pur);line-height:2}
 .eq-note{font-size:.73rem;color:var(--tm);margin-top:.25rem}
 
 .layout{display:grid;grid-template-columns:290px 1fr;gap:1.2rem;max-width:1200px;margin:0 auto;padding:0 1.5rem 2rem}
@@ -82,7 +82,7 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 .chart-panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.8rem}
 .chart-wrap{position:relative;min-height:220px}
 
-.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.82rem;color:var(--tm);line-height:1.7}
+.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.88rem;color:var(--tm);line-height:1.75}
 .annotation strong{color:var(--t1)}
 .annotation b{color:var(--blue)}
 
@@ -249,7 +249,7 @@ const irrCtx=document.getElementById('chartIRR').getContext('2d');
 
 const chartSpec=new Chart(specCtx,{
   type:'bar',
-  data:{labels:[],datasets:[{label:'Frequency components',data:[],backgroundColor:[],borderWidth:0,barPercentage:.5}]},
+  data:{labels:[],datasets:[{label:'Frequency components',data:[],backgroundColor:[],borderWidth:0,barPercentage:.65}]},
   options:{
     animation:{duration:0},responsive:true,
     plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed.y.toFixed(1)} dBm`}}},
@@ -344,7 +344,11 @@ function update(){
   components.sort((a,b)=>a.f-b.f);
   chartSpec.data.labels=components.map(c=>c.label);
   chartSpec.data.datasets[0].data=components.map(c=>c.lev);
-  chartSpec.data.datasets[0].backgroundColor=components.map(c=>c.col+'bb');
+  chartSpec.data.datasets[0].backgroundColor=components.map(c=>{
+    // Full opacity for RF signal and image bars; others at 73%
+    if(c.col==='#58a6ff'||c.col==='#f85149') return c.col;
+    return c.col+'bb';
+  });
   chartSpec.update();
 
   // IRR vs IF frequency chart
