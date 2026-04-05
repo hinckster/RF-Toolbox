@@ -401,10 +401,16 @@ function toggleFullscreen() {
   else document.exitFullscreen();
 }
 function copyLink() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    const btn=document.getElementById('copyBtn'), orig=btn.textContent;
-    btn.textContent='✓ Copied!'; btn.style.color='#00e5a0'; btn.style.borderColor='#00e5a0';
-    setTimeout(() => { btn.textContent=orig; btn.style.color=''; btn.style.borderColor=''; }, 2000);
+  var params = new URLSearchParams({
+    rl: document.getElementById('sR').value,
+    xl: document.getElementById('sX').value,
+    z0: document.getElementById('iZ0').value
+  });
+  var url = location.href.split('?')[0] + '?' + params.toString();
+  navigator.clipboard.writeText(url).then(function() {
+    var btn = document.getElementById('copyBtn'), orig = btn.textContent;
+    btn.textContent = '✓ Copied!'; btn.style.color = '#00e5a0'; btn.style.borderColor = '#00e5a0';
+    setTimeout(function() { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
   });
 }
 
@@ -445,6 +451,25 @@ function loadPreset(key) {
     if (ann) ann.innerHTML += '<br><span style="color:#58a6ff;font-size:.82rem">Loaded: ' + p.note + '</span>';
   }, 220);
 }
+
+(function() {
+  var p = new URLSearchParams(location.search);
+  if (p.has('rl')) {
+    var r = parseFloat(p.get('rl'));
+    var el = document.getElementById('sR');
+    if (r > parseFloat(el.max)) el.max = Math.ceil(r * 1.1);
+    el.value = r;
+  }
+  if (p.has('xl')) {
+    var x = parseFloat(p.get('xl'));
+    var el2 = document.getElementById('sX');
+    if (x < parseFloat(el2.min)) el2.min = Math.floor(x * 1.1);
+    if (x > parseFloat(el2.max)) el2.max = Math.ceil(x * 1.1);
+    el2.value = x;
+  }
+  if (p.has('z0')) document.getElementById('iZ0').value = p.get('z0');
+  if ([...p.keys()].length > 0) update();
+})();
 </script>
 </body>
 </html>

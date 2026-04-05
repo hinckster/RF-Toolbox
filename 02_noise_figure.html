@@ -777,12 +777,39 @@ function toggleFullscreen() {
   else document.exitFullscreen();
 }
 function copyLink() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    const btn = document.getElementById('copyBtn'), orig = btn.textContent;
+  var bw = document.getElementById('bwInput').value;
+  var prm = { bw: bw };
+  var sfxs = ['1','2','3','4'];
+  stages.slice(0,4).forEach(function(s, i) {
+    prm['nf'  + sfxs[i]] = s.nf   !== null ? s.nf.toFixed(2)   : 0;
+    prm['g'   + sfxs[i]] = s.gain.toFixed(2);
+    prm['iip' + sfxs[i]] = s.iip3 !== null ? s.iip3.toFixed(1) : 30;
+  });
+  var url = location.href.split('?')[0] + '?' + new URLSearchParams(prm).toString();
+  navigator.clipboard.writeText(url).then(function() {
+    var btn = document.getElementById('copyBtn'), orig = btn.textContent;
     btn.textContent = '✓ Copied!'; btn.style.color='#00e5a0'; btn.style.borderColor='#00e5a0';
-    setTimeout(() => { btn.textContent=orig; btn.style.color=''; btn.style.borderColor=''; }, 2000);
+    setTimeout(function() { btn.textContent=orig; btn.style.color=''; btn.style.borderColor=''; }, 2000);
   });
 }
+
+(function() {
+  var p = new URLSearchParams(location.search);
+  var any = false;
+  if (p.has('bw')) { document.getElementById('bwInput').value = p.get('bw'); any = true; }
+  var stageParams = [
+    ['nf1','g1','iip1'], ['nf2','g2','iip2'], ['nf3','g3','iip3'], ['nf4','g4','iip4']
+  ];
+  stageParams.forEach(function(keys, idx) {
+    if (stages[idx] && (p.has(keys[0]) || p.has(keys[1]) || p.has(keys[2]))) {
+      if (p.has(keys[0])) stages[idx].nf   = parseFloat(p.get(keys[0]));
+      if (p.has(keys[1])) stages[idx].gain = parseFloat(p.get(keys[1]));
+      if (p.has(keys[2])) stages[idx].iip3 = parseFloat(p.get(keys[2]));
+      any = true;
+    }
+  });
+  if (any) refresh();
+})();
 </script>
 </body>
 </html>

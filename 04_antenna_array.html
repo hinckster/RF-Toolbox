@@ -469,7 +469,21 @@ document.getElementById('selTaperB').addEventListener('change',update);
 
 function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#8b949e';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`array_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
 function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
-function copyLink(){navigator.clipboard.writeText(window.location.href).then(()=>{const b=document.getElementById('copyBtn');const o=b.textContent;b.textContent='✓ Copied!';b.style.color='#3fb950';b.style.borderColor='#3fb950';setTimeout(()=>{b.textContent=o;b.style.color='';b.style.borderColor='';},2000);});}
+function copyLink() {
+  var params = new URLSearchParams({
+    n:     document.getElementById('sN').value,
+    dl:    document.getElementById('sD').value,
+    steer: document.getElementById('sTheta').value,
+    taper: document.getElementById('selTaper').value,
+    elem:  document.getElementById('selElem').value
+  });
+  var url = location.href.split('?')[0] + '?' + params.toString();
+  navigator.clipboard.writeText(url).then(function() {
+    var btn = document.getElementById('copyBtn'), orig = btn.textContent;
+    btn.textContent = '✓ Copied!'; btn.style.color = '#3fb950'; btn.style.borderColor = '#3fb950';
+    setTimeout(function() { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+  });
+}
 
 function animateTo(id, target, dur) {
   dur = dur || 200;
@@ -509,6 +523,16 @@ function loadPreset(key) {
 
 initChart();
 update();
+
+(function() {
+  var p = new URLSearchParams(location.search);
+  if (p.has('n'))     document.getElementById('sN').value       = p.get('n');
+  if (p.has('dl'))    document.getElementById('sD').value       = p.get('dl');
+  if (p.has('steer')) document.getElementById('sTheta').value   = p.get('steer');
+  if (p.has('taper')) document.getElementById('selTaper').value = p.get('taper');
+  if (p.has('elem'))  document.getElementById('selElem').value  = p.get('elem');
+  if ([...p.keys()].length > 0) update();
+})();
 </script>
 </body>
 </html>

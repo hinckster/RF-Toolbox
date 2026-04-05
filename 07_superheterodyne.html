@@ -391,7 +391,19 @@ function update(){
 
 function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#8b949e';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`superhet_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
 function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
-function copyLink(){navigator.clipboard.writeText(window.location.href).then(()=>{const b=document.getElementById('copyBtn');const o=b.textContent;b.textContent='✓ Copied!';b.style.color='#3fb950';b.style.borderColor='#3fb950';setTimeout(()=>{b.textContent=o;b.style.color='';b.style.borderColor='';},2000);});}
+function copyLink() {
+  var params = new URLSearchParams({
+    frf: document.getElementById('sRF').value,
+    fif: document.getElementById('sIF').value,
+    bw:  document.getElementById('sBW').value
+  });
+  var url = location.href.split('?')[0] + '?' + params.toString();
+  navigator.clipboard.writeText(url).then(function() {
+    var b = document.getElementById('copyBtn'), o = b.textContent;
+    b.textContent = '✓ Copied!'; b.style.color = '#3fb950'; b.style.borderColor = '#3fb950';
+    setTimeout(function() { b.textContent = o; b.style.color = ''; b.style.borderColor = ''; }, 2000);
+  });
+}
 
 function animateTo(id, target, dur) {
   dur = dur || 200;
@@ -432,6 +444,14 @@ function loadPreset(key) {
 }
 
 update();
+
+(function() {
+  var p = new URLSearchParams(location.search);
+  if (p.has('frf')) document.getElementById('sRF').value = p.get('frf');
+  if (p.has('fif')) document.getElementById('sIF').value = p.get('fif');
+  if (p.has('bw'))  document.getElementById('sBW').value = p.get('bw');
+  if ([...p.keys()].length > 0) update();
+})();
 </script>
 </body>
 </html>

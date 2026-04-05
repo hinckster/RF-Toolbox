@@ -964,16 +964,22 @@ document.getElementById('btn-fullscreen').addEventListener('click', () => {
   }
 });
 
-document.getElementById('btn-copylink').addEventListener('click', () => {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    const btn = document.getElementById('btn-copylink');
-    const orig = btn.textContent;
+document.getElementById('btn-copylink').addEventListener('click', function() {
+  var params = new URLSearchParams({
+    freq: freqLog.toFixed(4),
+    dist: distLog.toFixed(4)
+  });
+  rows.forEach(function(row) {
+    if (row.editable) params.set(row.id, row.value);
+  });
+  var url = location.href.split('?')[0] + '?' + params.toString();
+  navigator.clipboard.writeText(url).then(function() {
+    var btn = document.getElementById('btn-copylink'), orig = btn.textContent;
     btn.textContent = '✓ Copied!';
-    setTimeout(() => { btn.textContent = orig; }, 1800);
-  }).catch(() => {
-    // Fallback
-    const ta = document.createElement('textarea');
-    ta.value = window.location.href;
+    setTimeout(function() { btn.textContent = orig; }, 1800);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = url;
     document.body.appendChild(ta);
     ta.select();
     document.execCommand('copy');
@@ -1091,6 +1097,37 @@ buildTable();
 updateFreqDisplay();
 updateDistDisplay();
 recalc();
+
+(function() {
+  var p = new URLSearchParams(location.search);
+  if (![...p.keys()].length) return;
+  if (p.has('freq')) {
+    freqLog = parseFloat(p.get('freq'));
+    var fEl = document.getElementById('freq-slider');
+    if (freqLog < parseFloat(fEl.min)) fEl.min = Math.floor(freqLog - 0.1);
+    if (freqLog > parseFloat(fEl.max)) fEl.max = Math.ceil(freqLog + 0.1);
+    fEl.value = freqLog;
+    updateFreqDisplay();
+  }
+  if (p.has('dist')) {
+    distLog = parseFloat(p.get('dist'));
+    var dEl = document.getElementById('dist-slider');
+    if (distLog < parseFloat(dEl.min)) dEl.min = Math.floor(distLog - 0.1);
+    if (distLog > parseFloat(dEl.max)) dEl.max = Math.ceil(distLog + 0.1);
+    dEl.value = distLog;
+    updateDistDisplay();
+  }
+  ['pt','gt','ltx','atm','gr','lrx','nf','sens'].forEach(function(id) {
+    if (p.has(id)) {
+      var inp = document.getElementById('inp-' + id);
+      var row = rows.find(function(r) { return r.id === id; });
+      var val = parseFloat(p.get(id));
+      if (inp) inp.value = val;
+      if (row) row.value = val;
+    }
+  });
+  recalc();
+})();
 </script>
 </body>
 </html>

@@ -140,6 +140,7 @@
         <option value="bt">Bluetooth — 2.4 GHz 10 m</option>
       </select>
     </div>
+    <a href="#" onclick="sendToRadar(); return false;" style="display:block;text-align:right;color:#58a6ff;font-size:.75rem;text-decoration:none;margin-top:.2rem;margin-bottom:.6rem">→ Open in Radar Tool</a>
 
     <div class="slider-row">
       <label>Tx Power (Pt) <span id="lPt">20 dBm</span></label>
@@ -376,11 +377,13 @@ function toggleFullscreen() {
 }
 
 function copyLink() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    const btn = document.getElementById('copyBtn');
-    const orig = btn.textContent;
+  var v = getVals();
+  var params = new URLSearchParams({ pt: v.Pt, freq: v.fGHz, dist: v.dM, gt: v.Gt, gr: v.Gr });
+  var url = location.href.split('?')[0] + '?' + params.toString();
+  navigator.clipboard.writeText(url).then(function() {
+    var btn = document.getElementById('copyBtn'), orig = btn.textContent;
     btn.textContent = '✓ Copied!'; btn.style.color = '#00e5a0'; btn.style.borderColor = '#00e5a0';
-    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+    setTimeout(function() { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
   });
 }
 
@@ -419,6 +422,29 @@ function loadPreset(key) {
     if (ann) ann.innerHTML += '<br><span style="color:#58a6ff;font-size:.82rem">Loaded: ' + p.note + '</span>';
   }, 220);
 }
+
+function sendToRadar() {
+  var v = getVals();
+  var ptW = Math.pow(10, (v.Pt - 30) / 10);
+  var ptLog = Math.log10(Math.max(ptW, 1e-6));
+  var params = new URLSearchParams({ pt: ptLog.toFixed(4), gt: v.Gt, gr: v.Gr, freq: v.fGHz });
+  window.open('06_radar_range.html?' + params.toString(), '_blank');
+}
+
+(function() {
+  var p = new URLSearchParams(location.search);
+  if (p.has('pt'))   document.getElementById('sPt').value   = p.get('pt');
+  if (p.has('freq')) document.getElementById('sFreq').value = p.get('freq');
+  if (p.has('dist')) {
+    var d = parseFloat(p.get('dist'));
+    var el = document.getElementById('sDist');
+    if (d > parseFloat(el.max)) el.max = Math.ceil(d * 1.1);
+    el.value = d;
+  }
+  if (p.has('gt'))   document.getElementById('sGt').value = p.get('gt');
+  if (p.has('gr'))   document.getElementById('sGr').value = p.get('gr');
+  if ([...p.keys()].length > 0) onInput();
+})();
 </script>
 </body>
 </html>
