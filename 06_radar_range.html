@@ -28,11 +28,11 @@ header h1{font-size:1.7rem;font-weight:700;color:var(--t1)}
 header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 
 .eq-box{max-width:1180px;margin:0 auto .9rem;padding:0 1.5rem}
-.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.4rem;display:flex;flex-wrap:wrap;gap:1.5rem}
-.eq-col{flex:1;min-width:220px}
-.eq-label{font-size:.68rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
-.eq-primary{font-family:'Courier New',monospace;font-size:.88rem;color:var(--blue);line-height:2}
-.eq-secondary{font-family:'Courier New',monospace;font-size:.79rem;color:var(--pur);line-height:2}
+.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.1rem 1.75rem;display:flex;flex-wrap:wrap;gap:1.5rem}
+.eq-col{flex:1;min-width:310px}
+.eq-label{font-size:.7rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-primary{font-family:'Courier New',monospace;font-size:1.05rem;color:var(--t1);line-height:2}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.9rem;color:var(--pur);line-height:2}
 .eq-note{font-size:.73rem;color:var(--tm);margin-top:.25rem}
 
 .layout{display:grid;grid-template-columns:290px 1fr;gap:1.2rem;max-width:1180px;margin:0 auto;padding:0 1.5rem 2rem}
@@ -59,7 +59,7 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 .chart-panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.8rem}
 .chart-wrap{position:relative;min-height:240px}
 
-.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.82rem;color:var(--tm);line-height:1.7}
+.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.88rem;color:var(--tm);line-height:1.75}
 .annotation strong{color:var(--t1)}
 .annotation b{color:var(--blue)}
 
@@ -221,7 +221,7 @@ const ctxPrvsR=document.getElementById('chartPrvsR').getContext('2d');
 const chartRvsRCS=new Chart(ctxRvsRCS,{
   type:'line',
   data:{datasets:[
-    {label:'Max Range (uncompressed)',data:[],borderColor:'#58a6ff',borderWidth:2.5,pointRadius:0,fill:false},
+    {label:'Max Range (uncompressed)',data:[],borderColor:'#58a6ff',borderWidth:3,pointRadius:0,fill:false},
     {label:'Max Range (pulse comp.)',data:[],borderColor:'#3fb950',borderDash:[5,3],borderWidth:2,pointRadius:0,fill:false},
     {label:'Target RCS',data:[],borderColor:'#f85149',backgroundColor:'#f85149',pointRadius:6,showLine:false}
   ]},
@@ -240,7 +240,8 @@ const chartPrvsR=new Chart(ctxPrvsR,{
   data:{datasets:[
     {label:'Received Power',data:[],borderColor:'#58a6ff',borderWidth:2.5,pointRadius:0,fill:false},
     {label:'S_min threshold',data:[],borderColor:'#f85149',borderDash:[5,4],borderWidth:1.5,pointRadius:0,showLine:true,fill:false},
-    {label:'Operating Point',data:[],borderColor:'#3fb950',backgroundColor:'#3fb950',pointRadius:6,showLine:false}
+    {label:'Operating Point',data:[],borderColor:'#3fb950',backgroundColor:'#3fb950',pointRadius:6,showLine:false},
+    {label:'R_max',data:[],borderColor:'rgba(63,185,80,.65)',borderDash:[4,4],borderWidth:1.5,pointRadius:0,showLine:true,fill:false}
   ]},
   options:{
     animation:{duration:0},responsive:true,
@@ -325,6 +326,9 @@ function update(){
   chartPrvsR.data.datasets[1].data=[{x:rMin,y:Smin_dBm},{x:rMax,y:Smin_dBm}];
   const Pr_at_Rmax=10*Math.log10(Pr(Pt_W,Gt_lin,f_Hz,sigma_m2,Rmax,L_lin)*1e3);
   chartPrvsR.data.datasets[2].data=[{x:Rmax_km,y:Pr_at_Rmax}];
+  const prMin=Math.min(...prArr.filter(isFinite));
+  chartPrvsR.data.datasets[3].data=[{x:Rmax_km,y:prMin},{x:Rmax_km,y:Smin_dBm+5}];
+  chartPrvsR.data.datasets[3].label=`R_max = ${Rmax_km.toFixed(1)} km`;
   chartPrvsR.options.scales.x.min=rMin;
   chartPrvsR.options.scales.x.max=rMax;
   chartPrvsR.update();
