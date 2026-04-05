@@ -279,13 +279,15 @@ function computeAF(N, d_lam, theta_deg_0, theta_arr, taperType, elemType){
 function dB(v){ return v<=0?-60:Math.max(-60, 20*Math.log10(v)); }
 
 function findHPBW(thArr, patNorm){
-  let half=-1,halfR=-1;
+  let half=null, halfR=null;
   const pk=thArr[patNorm.indexOf(Math.max(...patNorm))];
   for(let i=1;i<thArr.length;i++){
-    if(patNorm[i-1]>0.707 && patNorm[i]<=0.707 && thArr[i]<pk && half<0) half=thArr[i];
-    if(patNorm[i-1]<=0.707 && patNorm[i]>0.707 && thArr[i]>pk && halfR<0) halfR=thArr[i];
+    // Left half-power: rising edge (pattern going UP through −3 dB) at angle ≤ peak
+    if(patNorm[i-1]<=0.707 && patNorm[i]>0.707 && thArr[i]<=pk && half===null) half=thArr[i];
+    // Right half-power: falling edge (pattern going DOWN through −3 dB) at angle ≥ peak
+    if(patNorm[i-1]>0.707 && patNorm[i]<=0.707 && thArr[i]>=pk && halfR===null) halfR=thArr[i];
   }
-  return (half>=0&&halfR>=0)?halfR-half:null;
+  return (half!==null && halfR!==null) ? halfR-half : null;
 }
 
 function findSLL(thArr, patdB, theta0){
