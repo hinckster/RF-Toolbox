@@ -75,6 +75,16 @@
     font-size: 0.83rem; color: var(--muted); line-height: 1.65;
   }
   .annotation strong { color: var(--text); }
+
+  .preset-row { margin-bottom: 1rem; }
+  .preset-row label { font-size: .76rem; color: #8b949e; display: block; margin-bottom: .3rem; }
+  .preset-select {
+    width: 100%; background: #0d1117; border: 1px solid #30363d;
+    color: #c9d1d9; border-radius: 6px; padding: 6px 8px;
+    font-size: .78rem; font-family: 'Segoe UI', system-ui, sans-serif; cursor: pointer;
+  }
+  .preset-select:focus { outline: none; border-color: #58a6ff; }
+  .preset-select option { background: #0d1117; }
 </style>
 </head>
 <body>
@@ -119,6 +129,17 @@
 <div class="layout">
   <div class="panel">
     <h3>Load Impedance</h3>
+
+    <div class="preset-row">
+      <label>Load Scenario</label>
+      <select class="preset-select" id="presetSel" onchange="loadPreset(this.value)">
+        <option value="">— Load Scenario —</option>
+        <option value="inductive">Antenna — inductive load</option>
+        <option value="cap">Coax to antenna — capacitive</option>
+        <option value="near">Nearly matched</option>
+        <option value="severe">Severe mismatch — open</option>
+      </select>
+    </div>
 
     <div class="z0-row">
       <label>Z₀ =</label>
@@ -385,6 +406,44 @@ function copyLink() {
     btn.textContent='✓ Copied!'; btn.style.color='#00e5a0'; btn.style.borderColor='#00e5a0';
     setTimeout(() => { btn.textContent=orig; btn.style.color=''; btn.style.borderColor=''; }, 2000);
   });
+}
+
+function animateTo(id, target, dur) {
+  dur = dur || 200;
+  var el = document.getElementById(id);
+  if (!el) return;
+  var start = parseFloat(el.value);
+  var t0 = performance.now();
+  (function step(now) {
+    var p = Math.min((now - t0) / dur, 1);
+    var e = p < 0.5 ? 2*p*p : -1+(4-2*p)*p;
+    el.value = start + (target - start) * e;
+    el.dispatchEvent(new Event('input'));
+    if (p < 1) requestAnimationFrame(step);
+  })(performance.now());
+}
+
+var PRESETS_SMITH = {
+  inductive: { r:100, x:50,    z0:50,  note:'Antenna mismatch — inductive load (100+j50 Ω). Needs series capacitor to cancel reactance, then shunt matching.' },
+  cap:       { r:75,  x:-30,   z0:50,  note:'Coax to antenna — capacitive load (75−j30 Ω into 50 Ω). Cable TV impedance with capacitive reactance.' },
+  near:      { r:55,  x:5,     z0:50,  note:'Nearly matched (55+j5 Ω). Small reactance and resistance offset; simple L-network will close the margin.' },
+  severe:    { r:9999,x:0,     z0:50,  note:'Severe mismatch — near open circuit (10 kΩ). Γ ≈ +1; large VSWR; antenna is effectively disconnected.' },
+};
+function loadPreset(key) {
+  var p = PRESETS_SMITH[key]; if (!p) return;
+  var rEl = document.getElementById('sR');
+  var xEl = document.getElementById('sX');
+  var z0El = document.getElementById('iZ0');
+  if (rEl && p.r > parseFloat(rEl.max)) rEl.max = Math.ceil(p.r * 1.1);
+  if (xEl && p.x < parseFloat(xEl.min)) xEl.min = Math.floor(p.x * 1.1);
+  if (xEl && p.x > parseFloat(xEl.max)) xEl.max = Math.ceil(p.x * 1.1);
+  if (z0El) { z0El.value = p.z0; z0El.dispatchEvent(new Event('input')); }
+  animateTo('sR', p.r);
+  animateTo('sX', p.x);
+  setTimeout(function() {
+    var ann = document.getElementById('annotation');
+    if (ann) ann.innerHTML += '<br><span style="color:#58a6ff;font-size:.82rem">Loaded: ' + p.note + '</span>';
+  }, 220);
 }
 </script>
 </body>

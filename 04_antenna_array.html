@@ -70,6 +70,11 @@ select.sel{width:100%;background:var(--deep);border:1px solid var(--bdr);color:v
 .annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.88rem;color:var(--tm);line-height:1.75}
 .annotation strong{color:var(--t1)}
 .annotation b{color:var(--blue)}
+.preset-row{margin-bottom:1rem}
+.preset-row label{font-size:.76rem;color:#8b949e;display:block;margin-bottom:.3rem}
+.preset-select{width:100%;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;border-radius:6px;padding:6px 8px;font-size:.78rem;font-family:'Segoe UI',system-ui,sans-serif;cursor:pointer}
+.preset-select:focus{outline:none;border-color:#58a6ff}
+.preset-select option{background:#0d1117}
 </style>
 </head>
 <body>
@@ -123,6 +128,16 @@ select.sel{width:100%;background:var(--deep);border:1px solid var(--bdr);color:v
   <div>
     <div class="panel" style="margin-bottom:1rem">
       <h3>Array A (primary — blue)</h3>
+      <div class="preset-row">
+        <label>Load Scenario</label>
+        <select class="preset-select" id="presetSel" onchange="loadPreset(this.value)">
+          <option value="">— Load Scenario —</option>
+          <option value="radar_broad">Phased array radar — broadside</option>
+          <option value="radar_scan">Phased array radar — 30° scan</option>
+          <option value="wifi">WiFi patch array</option>
+          <option value="cellular">Cellular sector — 120° coverage</option>
+        </select>
+      </div>
       <div class="sr">
         <label>Elements N <span id="vN">16</span></label>
         <input type="range" id="sN" min="2" max="64" step="1" value="16">
@@ -455,6 +470,42 @@ document.getElementById('selTaperB').addEventListener('change',update);
 function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#8b949e';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`array_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
 function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
 function copyLink(){navigator.clipboard.writeText(window.location.href).then(()=>{const b=document.getElementById('copyBtn');const o=b.textContent;b.textContent='✓ Copied!';b.style.color='#3fb950';b.style.borderColor='#3fb950';setTimeout(()=>{b.textContent=o;b.style.color='';b.style.borderColor='';},2000);});}
+
+function animateTo(id, target, dur) {
+  dur = dur || 200;
+  var el = document.getElementById(id);
+  if (!el) return;
+  var start = parseFloat(el.value);
+  var t0 = performance.now();
+  (function step(now) {
+    var p = Math.min((now - t0) / dur, 1);
+    var e = p < 0.5 ? 2*p*p : -1+(4-2*p)*p;
+    el.value = start + (target - start) * e;
+    el.dispatchEvent(new Event('input'));
+    if (p < 1) requestAnimationFrame(step);
+  })(performance.now());
+}
+
+var PRESETS_ARRAY = {
+  radar_broad: { n:16, d:0.5, theta:0,  taper:'cheby',   elem:'patch',  note:'Phased array radar broadside — N=16, d=0.5λ, Chebyshev taper for equiripple sidelobes.' },
+  radar_scan:  { n:16, d:0.5, theta:30, taper:'cheby',   elem:'patch',  note:'Phased array radar 30° scan — same aperture, squinted beam, slightly wider HPBW.' },
+  wifi:        { n:4,  d:0.5, theta:0,  taper:'uniform', elem:'patch',  note:'WiFi patch array — N=4 elements, uniform taper, broadside for 2.4/5 GHz coverage.' },
+  cellular:    { n:8,  d:0.6, theta:0,  taper:'taylor',  elem:'patch',  note:'Cellular sector — N=8, d=0.6λ, Taylor taper; wider spacing trades grating lobes for gain.' },
+};
+function loadPreset(key) {
+  var p = PRESETS_ARRAY[key]; if (!p) return;
+  animateTo('sN',    p.n);
+  animateTo('sD',    p.d);
+  animateTo('sTheta',p.theta);
+  var selTaper = document.getElementById('selTaper');
+  if (selTaper) { selTaper.value = p.taper; selTaper.dispatchEvent(new Event('change')); }
+  var selElem = document.getElementById('selElem');
+  if (selElem) { selElem.value = p.elem; selElem.dispatchEvent(new Event('change')); }
+  setTimeout(function() {
+    var ann = document.getElementById('annotation');
+    if (ann) ann.innerHTML += '<br><span style="color:#58a6ff;font-size:.82rem">Loaded: ' + p.note + '</span>';
+  }, 220);
+}
 
 initChart();
 update();

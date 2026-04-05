@@ -81,6 +81,16 @@
     font-size: 0.83rem; color: var(--muted); line-height: 1.65;
   }
   .annotation strong { color: var(--text); }
+
+  .preset-row { margin-bottom: 1rem; }
+  .preset-row label { font-size: .76rem; color: #8b949e; display: block; margin-bottom: .3rem; }
+  .preset-select {
+    width: 100%; background: #0d1117; border: 1px solid #30363d;
+    color: #c9d1d9; border-radius: 6px; padding: 6px 8px;
+    font-size: .78rem; font-family: 'Segoe UI', system-ui, sans-serif; cursor: pointer;
+  }
+  .preset-select:focus { outline: none; border-color: #58a6ff; }
+  .preset-select option { background: #0d1117; }
 </style>
 </head>
 <body>
@@ -119,6 +129,17 @@
 <div class="layout">
   <div class="panel">
     <h3>Parameters</h3>
+
+    <div class="preset-row">
+      <label>Load Scenario</label>
+      <select class="preset-select" id="presetSel" onchange="loadPreset(this.value)">
+        <option value="">— Load Scenario —</option>
+        <option value="wifi6">WiFi 6 — 2.4 GHz indoor 50 m</option>
+        <option value="mmwave">5G mmWave — 28 GHz urban 200 m</option>
+        <option value="leo">LEO Satellite downlink 550 km</option>
+        <option value="bt">Bluetooth — 2.4 GHz 10 m</option>
+      </select>
+    </div>
 
     <div class="slider-row">
       <label>Tx Power (Pt) <span id="lPt">20 dBm</span></label>
@@ -361,6 +382,42 @@ function copyLink() {
     btn.textContent = '✓ Copied!'; btn.style.color = '#00e5a0'; btn.style.borderColor = '#00e5a0';
     setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
   });
+}
+
+function animateTo(id, target, dur) {
+  dur = dur || 200;
+  var el = document.getElementById(id);
+  if (!el) return;
+  var start = parseFloat(el.value);
+  var t0 = performance.now();
+  (function step(now) {
+    var p = Math.min((now - t0) / dur, 1);
+    var e = p < 0.5 ? 2*p*p : -1+(4-2*p)*p;
+    el.value = start + (target - start) * e;
+    el.dispatchEvent(new Event('input'));
+    if (p < 1) requestAnimationFrame(step);
+  })(performance.now());
+}
+
+var PRESETS_FRIIS = {
+  wifi6:  { pt:20,  freq:2.4,  dist:50,     gt:3,  gr:3,  note:'WiFi 6 — 2.4 GHz indoor 50 m. License-free band, typical omnidirectional APs.' },
+  mmwave: { pt:23,  freq:28,   dist:200,    gt:25, gr:10, note:'5G mmWave — 28 GHz urban 200 m. High Tx directivity; large FSPL at mmWave.' },
+  leo:    { pt:30,  freq:12,   dist:550000, gt:30, gr:40, note:'LEO Satellite — 550 km orbit, Ku-band. Large dish (40 dBi) required to close the link.' },
+  bt:     { pt:0,   freq:2.4,  dist:10,     gt:0,  gr:0,  note:'Bluetooth — 2.4 GHz 10 m, 0 dBm class 2 device. Omnidirectional BLE scenario.' },
+};
+function loadPreset(key) {
+  var p = PRESETS_FRIIS[key]; if (!p) return;
+  var distEl = document.getElementById('sDist');
+  if (p.dist > parseFloat(distEl.max)) distEl.max = Math.ceil(p.dist * 1.1);
+  animateTo('sPt',   p.pt);
+  animateTo('sFreq', p.freq);
+  animateTo('sDist', p.dist);
+  animateTo('sGt',   p.gt);
+  animateTo('sGr',   p.gr);
+  setTimeout(function() {
+    var ann = document.getElementById('annotation');
+    if (ann) ann.innerHTML += '<br><span style="color:#58a6ff;font-size:.82rem">Loaded: ' + p.note + '</span>';
+  }, 220);
 }
 </script>
 </body>

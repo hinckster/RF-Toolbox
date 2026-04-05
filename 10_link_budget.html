@@ -385,6 +385,17 @@
     height: 340px;
   }
 
+  /* ── PRESETS ─────────────────────────────────────────── */
+  .preset-row { margin-bottom: 1rem; }
+  .preset-row label { font-size: .76rem; color: #8b949e; display: block; margin-bottom: .3rem; }
+  .preset-select {
+    width: 100%; background: #0d1117; border: 1px solid #30363d;
+    color: #c9d1d9; border-radius: 6px; padding: 6px 8px;
+    font-size: .78rem; font-family: 'Segoe UI', system-ui, sans-serif; cursor: pointer;
+  }
+  .preset-select:focus { outline: none; border-color: #58a6ff; }
+  .preset-select option { background: #0d1117; }
+
   /* ── MOBILE ──────────────────────────────────────────── */
   @media (max-width: 700px) {
     .main { padding: 16px 10px 40px; gap: 18px; }
@@ -433,6 +444,17 @@
   <!-- FSPL SLIDERS -->
   <div class="fspl-panel" id="fspl-panel">
     <div class="fpanel-title">Free-Space Path Loss (FSPL) Parameters</div>
+
+    <div class="preset-row" style="flex-basis:100%">
+      <label>Load Scenario</label>
+      <select class="preset-select" id="presetSel" onchange="loadPreset(this.value)">
+        <option value="">— Load Scenario —</option>
+        <option value="wifi6">WiFi 6 — 2.4 GHz indoor 50 m</option>
+        <option value="mmwave">5G mmWave — 28 GHz urban 200 m</option>
+        <option value="leo">LEO Satellite downlink 550 km</option>
+        <option value="bt">Bluetooth — 2.4 GHz 10 m</option>
+      </select>
+    </div>
 
     <div class="slider-group">
       <div class="slider-label">
@@ -1009,6 +1031,58 @@ const sensitivityLinePlugin = {
 };
 
 Chart.register(sensitivityLinePlugin);
+
+/* =========================================================
+   PRESETS
+   ========================================================= */
+function animateSliderTo(slider, globalVarName, target, dur, afterFn) {
+  dur = dur || 200;
+  var start = parseFloat(slider.value);
+  var t0 = performance.now();
+  (function step(now) {
+    var p = Math.min((now - t0) / dur, 1);
+    var e = p < 0.5 ? 2*p*p : -1+(4-2*p)*p;
+    slider.value = start + (target - start) * e;
+    slider.dispatchEvent(new Event('input'));
+    if (p < 1) requestAnimationFrame(step);
+    else if (afterFn) afterFn();
+  })(performance.now());
+}
+
+var PRESETS_LB = {
+  wifi6:  { freqLog: Math.log10(2.4),    distLog: Math.log10(0.05),  pt:20, gt:3,  ltx:-1, atm:-1, gr:3,  lrx:-1, nf:-5,  sens:-85,  note:'WiFi 6 — 2.4 GHz, 50 m indoor. License-free band, typical omnidirectional APs.' },
+  mmwave: { freqLog: Math.log10(28),     distLog: Math.log10(0.2),   pt:23, gt:25, ltx:-1, atm:-3, gr:10, lrx:-1, nf:-7,  sens:-80,  note:'5G mmWave — 28 GHz, 200 m urban. High Tx directivity; large FSPL at mmWave.' },
+  leo:    { freqLog: Math.log10(12),     distLog: Math.log10(550),   pt:30, gt:30, ltx:-2, atm:-2, gr:40, lrx:-2, nf:-3,  sens:-100, note:'LEO Satellite — 550 km orbit, Ku-band. Large dish (40 dBi) required to close the link.' },
+  bt:     { freqLog: Math.log10(2.4),    distLog: Math.log10(0.01),  pt:0,  gt:0,  ltx:-1, atm:-1, gr:0,  lrx:-1, nf:-5,  sens:-85,  note:'Bluetooth — 2.4 GHz, 10 m, 0 dBm class 2 device. Omnidirectional BLE scenario.' },
+};
+
+function loadPreset(key) {
+  var p = PRESETS_LB[key]; if (!p) return;
+  // Expand dist-slider range if needed
+  var dSlider = document.getElementById('dist-slider');
+  if (dSlider && p.distLog < parseFloat(dSlider.min)) dSlider.min = (p.distLog * 1.2).toFixed(3);
+  // Animate frequency and distance sliders
+  animateSliderTo(document.getElementById('freq-slider'), 'freqLog', p.freqLog);
+  animateSliderTo(document.getElementById('dist-slider'), 'distLog', p.distLog);
+  // Update freqLog/distLog globals and displays
+  freqLog = p.freqLog;
+  distLog = p.distLog;
+  // Set number inputs
+  var fields = { pt: p.pt, gt: p.gt, ltx: p.ltx, atm: p.atm, gr: p.gr, lrx: p.lrx, nf: p.nf, sens: p.sens };
+  Object.keys(fields).forEach(function(id) {
+    var inp = document.getElementById('inp-' + id);
+    if (inp) {
+      inp.value = fields[id];
+      var row = rows.find(function(r) { return r.id === id; });
+      if (row) row.value = fields[id];
+    }
+  });
+  recalc();
+  setTimeout(function() {
+    var ann = document.getElementById('annotation-box');
+    if (ann) ann.innerHTML += '<br><span style="color:#58a6ff;font-size:.82rem">Loaded: ' + p.note + '</span>';
+  }, 220);
+}
 
 /* =========================================================
    INIT

@@ -62,6 +62,11 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 .annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.88rem;color:var(--tm);line-height:1.75}
 .annotation strong{color:var(--t1)}
 .annotation b{color:var(--blue)}
+.preset-row{margin-bottom:1rem}
+.preset-row label{font-size:.76rem;color:#8b949e;display:block;margin-bottom:.3rem}
+.preset-select{width:100%;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;border-radius:6px;padding:6px 8px;font-size:.78rem;font-family:'Segoe UI',system-ui,sans-serif;cursor:pointer}
+.preset-select:focus{outline:none;border-color:#58a6ff}
+.preset-select option{background:#0d1117}
 
 .freq-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem}
 .ftag{font-size:.68rem;padding:.15rem .5rem;border-radius:10px;font-family:'Courier New',monospace}
@@ -117,6 +122,15 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
   <div>
     <div class="panel" style="margin-bottom:1rem">
       <h3>Device Polynomial Coefficients</h3>
+      <div class="preset-row">
+        <label>Load Scenario</label>
+        <select class="preset-select" id="presetSel" onchange="loadPreset(this.value)">
+          <option value="">— Load Scenario —</option>
+          <option value="lna">LNA at −20 dBm input</option>
+          <option value="mixer">Mixer near compression</option>
+          <option value="pa">PA at backed-off power</option>
+        </select>
+      </div>
       <div class="sr">
         <label>a₁ — linear gain <span id="vA1">5.0</span></label>
         <input type="range" id="sA1" min="0.1" max="20" step="0.1" value="5">
@@ -339,6 +353,40 @@ function update(){
 function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#8b949e';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`iip3_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
 function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
 function copyLink(){navigator.clipboard.writeText(window.location.href).then(()=>{const b=document.getElementById('copyBtn');const o=b.textContent;b.textContent='✓ Copied!';b.style.color='#3fb950';b.style.borderColor='#3fb950';setTimeout(()=>{b.textContent=o;b.style.color='';b.style.borderColor='';},2000);});}
+
+function animateTo(id, target, dur) {
+  dur = dur || 200;
+  var el = document.getElementById(id);
+  if (!el) return;
+  var start = parseFloat(el.value);
+  var t0 = performance.now();
+  (function step(now) {
+    var p = Math.min((now - t0) / dur, 1);
+    var e = p < 0.5 ? 2*p*p : -1+(4-2*p)*p;
+    el.value = start + (target - start) * e;
+    el.dispatchEvent(new Event('input'));
+    if (p < 1) requestAnimationFrame(step);
+  })(performance.now());
+}
+
+var PRESETS_IIP3 = {
+  lna:   { a1:5,  a2:0.5, a3:-0.3, pin:-20, f0:2400, df:1,  note:'LNA at −20 dBm — low-level linear region, well-backed-off from compression.' },
+  mixer: { a1:2,  a2:1.0, a3:-0.8, pin:-5,  f0:1900, df:1,  note:'Mixer near compression at −5 dBm — nonlinear products are significant; IIP3 critical.' },
+  pa:    { a1:10, a2:0.2, a3:-0.1, pin:-10, f0:900,  df:5,  note:'PA at backed-off power — large linear gain, gentle nonlinearity for efficient operation.' },
+};
+function loadPreset(key) {
+  var p = PRESETS_IIP3[key]; if (!p) return;
+  animateTo('sA1',  p.a1);
+  animateTo('sA2',  p.a2);
+  animateTo('sA3',  p.a3);
+  animateTo('sPin', p.pin);
+  animateTo('sF0',  p.f0);
+  animateTo('sDf',  p.df);
+  setTimeout(function() {
+    var ann = document.getElementById('annotation');
+    if (ann) ann.innerHTML += '<br><span style="color:#58a6ff;font-size:.82rem">Loaded: ' + p.note + '</span>';
+  }, 220);
+}
 
 update();
 </script>

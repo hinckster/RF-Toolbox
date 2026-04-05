@@ -74,6 +74,16 @@
     font-size: 0.83rem; color: var(--muted); line-height: 1.65;
   }
   .annotation strong { color: var(--text); }
+
+  .preset-row { margin-bottom: 1rem; }
+  .preset-row label { font-size: .76rem; color: #8b949e; display: block; margin-bottom: .3rem; }
+  .preset-select {
+    width: 100%; background: #0d1117; border: 1px solid #30363d;
+    color: #c9d1d9; border-radius: 6px; padding: 6px 8px;
+    font-size: .78rem; font-family: 'Segoe UI', system-ui, sans-serif; cursor: pointer;
+  }
+  .preset-select:focus { outline: none; border-color: #58a6ff; }
+  .preset-select option { background: #0d1117; }
 </style>
 </head>
 <body>
@@ -117,6 +127,16 @@
   <!-- Sidebar -->
   <div class="panel">
     <h3>Load Impedance</h3>
+
+    <div class="preset-row">
+      <label>Load Scenario</label>
+      <select class="preset-select" id="presetSel" onchange="loadPreset(this.value)">
+        <option value="">— Load Scenario —</option>
+        <option value="dipole">Dipole antenna feed</option>
+        <option value="cabletv">Cable TV 75&#937; system</option>
+        <option value="patch">Microstrip patch</option>
+      </select>
+    </div>
 
     <div class="slider-row">
       <label>Resistance R <span id="lR">75 &#937;</span></label>
@@ -513,6 +533,43 @@ function copyLink() {
     btn.textContent = '\u2713 Copied!'; btn.style.color = '#00e5a0'; btn.style.borderColor = '#00e5a0';
     setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
   });
+}
+
+function animateTo(id, target, dur) {
+  dur = dur || 200;
+  var el = document.getElementById(id);
+  if (!el) return;
+  var start = parseFloat(el.value);
+  var t0 = performance.now();
+  (function step(now) {
+    var p = Math.min((now - t0) / dur, 1);
+    var e = p < 0.5 ? 2*p*p : -1+(4-2*p)*p;
+    el.value = start + (target - start) * e;
+    el.dispatchEvent(new Event('input'));
+    if (p < 1) requestAnimationFrame(step);
+  })(performance.now());
+}
+
+var PRESETS_TL = {
+  dipole:  { r:73,   x:42,   z0:50,  len:90,  note:'Dipole antenna feed — 73+j42 \u03A9 terminal impedance. Standard half-wave dipole into 50 \u03A9 coax.' },
+  cabletv: { r:100,  x:0,    z0:75,  len:90,  note:'Cable TV 75 \u03A9 system — 100 \u03A9 load, 75 \u03A9 line. Modest mismatch; balun or 75-to-75 \u03A9 matching may be needed.' },
+  patch:   { r:200,  x:-50,  z0:50,  len:90,  note:'Microstrip patch — 200\u2212j50 \u03A9 near resonance. Quarter-wave transformer typical to match to 50 \u03A9 feed.' },
+};
+function loadPreset(key) {
+  var p = PRESETS_TL[key]; if (!p) return;
+  var rEl = document.getElementById('sR');
+  var xEl = document.getElementById('sX');
+  if (rEl && p.r > parseFloat(rEl.max)) rEl.max = Math.ceil(p.r * 1.1);
+  if (xEl && p.x < parseFloat(xEl.min)) xEl.min = Math.floor(p.x * 1.1);
+  var z0El = document.getElementById('iZ0');
+  if (z0El) { z0El.value = p.z0; z0El.dispatchEvent(new Event('input')); }
+  animateTo('sR',   p.r);
+  animateTo('sX',   p.x);
+  animateTo('sLen', p.len);
+  setTimeout(function() {
+    var ann = document.getElementById('annotation');
+    if (ann) ann.innerHTML += '<br><span style="color:#58a6ff;font-size:.82rem">Loaded: ' + p.note + '</span>';
+  }, 220);
 }
 </script>
 </body>
