@@ -652,8 +652,6 @@ function recalc() {
   fsplRow.value = -fspl; // stored as negative (loss)
   const fsplDisplay = document.getElementById('val-fspl');
   if (fsplDisplay) {
-    fsplDisplay.textContent = (−fspl).toFixed(2) + ' dB';
-    // Actually show as negative number
     fsplDisplay.textContent = ((-fspl).toFixed(2)) + ' dB';
   }
   document.getElementById('fspl-result-display').textContent =
