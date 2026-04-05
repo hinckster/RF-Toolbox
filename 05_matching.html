@@ -28,11 +28,11 @@ header h1{font-size:1.7rem;font-weight:700;color:var(--t1)}
 header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 
 .eq-box{max-width:1200px;margin:0 auto .9rem;padding:0 1.5rem}
-.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.4rem;display:flex;flex-wrap:wrap;gap:1.5rem}
-.eq-col{flex:1;min-width:220px}
-.eq-label{font-size:.68rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
-.eq-primary{font-family:'Courier New',monospace;font-size:.88rem;color:var(--blue);line-height:2}
-.eq-secondary{font-family:'Courier New',monospace;font-size:.79rem;color:var(--pur);line-height:2}
+.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.1rem 1.75rem;display:flex;flex-wrap:wrap;gap:1.5rem}
+.eq-col{flex:1;min-width:310px}
+.eq-label{font-size:.7rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-primary{font-family:'Courier New',monospace;font-size:1.05rem;color:var(--t1);line-height:2}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.9rem;color:var(--pur);line-height:2}
 .eq-note{font-size:.73rem;color:var(--tm);margin-top:.25rem}
 
 .layout{display:grid;grid-template-columns:280px 1fr;gap:1.2rem;max-width:1200px;margin:0 auto;padding:0 1.5rem 2rem}
@@ -70,7 +70,7 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 .chart-panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.7rem}
 .chart-wrap{position:relative;min-height:200px}
 
-.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;margin-top:1rem;font-size:.82rem;color:var(--tm);line-height:1.7}
+.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;margin-top:1rem;font-size:.88rem;color:var(--tm);line-height:1.75}
 .annotation strong{color:var(--t1)}
 .annotation b{color:var(--blue)}
 
@@ -299,8 +299,8 @@ function drawSmith(gL, gAtLine, stubs){
   if(magL>0.01){
     ctx.beginPath();
     ctx.arc(cx,cy,magL*R,0,2*PI);
-    ctx.strokeStyle='rgba(248,81,73,.4)';
-    ctx.lineWidth=1.2;
+    ctx.strokeStyle='rgba(240,136,62,.6)';
+    ctx.lineWidth=1.5;
     ctx.setLineDash([4,3]);
     ctx.stroke();
     ctx.setLineDash([]);
@@ -331,7 +331,10 @@ function drawSmith(gL, gAtLine, stubs){
 
   // Load point (original)
   const pl=toXY(gL);
-  ctx.beginPath();ctx.arc(pl.x,pl.y,5,0,2*PI);
+  // Γ vector from center to load
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(pl.x,pl.y);
+  ctx.strokeStyle='rgba(88,166,255,.7)';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.beginPath();ctx.arc(pl.x,pl.y,7,0,2*PI);
   ctx.fillStyle='#f85149';ctx.fill();
 
   // Labels
@@ -349,8 +352,8 @@ const tlCtx=document.getElementById('chartTL').getContext('2d');
 const tlChart=new Chart(tlCtx,{
   type:'line',
   data:{datasets:[
-    {label:'|V(z)/V⁺|',data:[],borderColor:'#58a6ff',borderWidth:2,pointRadius:0,fill:false},
-    {label:'|I(z)/I⁺|·Z₀',data:[],borderColor:'#bc8cff',borderDash:[4,3],borderWidth:1.5,pointRadius:0,fill:false},
+    {label:'|V(z)/V⁺|',data:[],borderColor:'#58a6ff',borderWidth:2.5,pointRadius:0,fill:'origin',backgroundColor:'rgba(88,166,255,.08)'},
+    {label:'|I(z)/I⁺|·Z₀',data:[],borderColor:'#bc8cff',borderDash:[4,3],borderWidth:2,pointRadius:0,fill:false},
     {label:'Load Plane',data:[],borderColor:'rgba(248,81,73,.7)',borderDash:[3,3],borderWidth:1.5,pointRadius:0,showLine:true,fill:false}
   ]},
   options:{
