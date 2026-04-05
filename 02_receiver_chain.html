@@ -28,11 +28,11 @@ header h1{font-size:1.7rem;font-weight:700;color:var(--t1)}
 header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 
 .eq-box{max-width:1200px;margin:0 auto .9rem;padding:0 1.5rem}
-.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.4rem;display:flex;flex-wrap:wrap;gap:1.5rem}
-.eq-col{flex:1;min-width:230px}
-.eq-label{font-size:.68rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
-.eq-primary{font-family:'Courier New',monospace;font-size:.9rem;color:var(--blue);line-height:2}
-.eq-secondary{font-family:'Courier New',monospace;font-size:.8rem;color:var(--pur);line-height:2}
+.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.1rem 1.75rem;display:flex;flex-wrap:wrap;gap:1.5rem}
+.eq-col{flex:1;min-width:310px}
+.eq-label{font-size:.7rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-primary{font-family:'Courier New',monospace;font-size:1.05rem;color:var(--t1);line-height:2}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.9rem;color:var(--pur);line-height:2}
 .eq-note{font-size:.74rem;color:var(--tm);margin-top:.25rem}
 
 /* Stage table */
@@ -69,7 +69,7 @@ table.stages tr.total td:first-child{color:var(--t1)}
 .chart-wrap{position:relative;min-height:280px}
 
 .annotation-wrap{max-width:1200px;margin:0 auto .9rem;padding:0 1.5rem}
-.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.82rem;color:var(--tm);line-height:1.7}
+.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.88rem;color:var(--tm);line-height:1.75}
 .annotation strong{color:var(--t1)}
 .annotation b{color:var(--blue)}
 </style>
@@ -268,10 +268,10 @@ const ctxCasc = document.getElementById('chartCasc').getContext('2d');
 const chartDR = new Chart(ctxDR,{
   type:'scatter',
   data:{datasets:[
-    {label:'Fundamental',data:[],borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,.08)',borderWidth:2,pointRadius:0,showLine:true,fill:false},
-    {label:'IM3 product',data:[],borderColor:'#f85149',backgroundColor:'rgba(248,81,73,.08)',borderWidth:2,pointRadius:0,showLine:true,fill:false},
-    {label:'Noise Floor',data:[],borderColor:'#8b949e',borderDash:[6,4],borderWidth:1.5,pointRadius:0,showLine:true,fill:false},
-    {label:'P1dB',data:[],borderColor:'#f0883e',borderDash:[3,3],borderWidth:1.5,pointRadius:0,showLine:true,fill:false},
+    {label:'Fundamental',data:[],borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,.08)',borderWidth:2.5,pointRadius:0,showLine:true,fill:false},
+    {label:'IM3 product',data:[],borderColor:'#f85149',backgroundColor:'rgba(248,81,73,.08)',borderWidth:2.5,pointRadius:0,showLine:true,fill:{target:2,above:'rgba(88,166,255,.12)'}},
+    {label:'Noise Floor',data:[],borderColor:'#8b949e',borderDash:[6,4],borderWidth:2.5,pointRadius:0,showLine:true,fill:false},
+    {label:'P1dB',data:[],borderColor:'#f0883e',borderDash:[3,3],borderWidth:2.5,pointRadius:0,showLine:true,fill:false},
     {label:'Operating Point',data:[],borderColor:'#3fb950',backgroundColor:'#3fb950',pointRadius:5,showLine:false}
   ]},
   options:{
