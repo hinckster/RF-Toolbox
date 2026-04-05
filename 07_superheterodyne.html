@@ -6,554 +6,375 @@
 <title>Superheterodyne Receiver | RF Toolbox</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0d0d0f; --surface: #16161a; --card: #1e1e24; --border: #2a2a35;
-    --accent: #00c8ff; --accent2: #7b61ff; --text: #e2e2e8; --muted: #888899;
-    --green: #00e5a0; --orange: #ffaa00; --red: #ff4d6d;
-  }
-  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#16181d;--card:#1e2128;--deep:#0d1117;
+  --bdr:#30363d;--t1:#e6edf3;--t2:#c9d1d9;--tm:#8b949e;
+  --blue:#58a6ff;--grn:#3fb950;--org:#f0883e;--red:#f85149;--yel:#e6c547;--pur:#bc8cff;
+}
+body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
 
-  /* ── Toolbar ── */
-  .toolbar { position: fixed; top: 14px; right: 16px; display: flex; gap: 6px; z-index: 100; }
-  .tbtn {
-    background: var(--card); border: 1px solid var(--border); color: var(--muted);
-    border-radius: 5px; padding: 5px 10px; font-size: .75rem; cursor: pointer;
-    transition: border-color .15s, color .15s;
-  }
-  .tbtn:hover { border-color: var(--accent); color: var(--accent); }
+.toolbar{position:fixed;top:14px;right:16px;display:flex;gap:6px;z-index:100}
+.tbtn{background:var(--card);border:1px solid var(--bdr);color:var(--tm);border-radius:5px;padding:5px 10px;font-size:.75rem;cursor:pointer;transition:border-color .15s,color .15s}
+.tbtn:hover{border-color:var(--blue);color:var(--blue)}
 
-  nav { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
-  nav a { color: var(--accent); text-decoration: none; font-size: 0.88rem; }
-  nav a:hover { text-decoration: underline; }
-  nav span { color: var(--muted); }
+nav{padding:.75rem 1.5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.75rem;background:var(--card)}
+nav .sep{color:var(--bdr)}
+nav span{color:var(--tm);font-size:.85rem}
 
-  header { padding: 2rem 1.5rem 1.5rem; max-width: 1100px; margin: 0 auto; }
-  header .tag { font-size: 0.72rem; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.4rem; }
-  header h1 { font-size: 2rem; font-weight: 700; }
-  header p { color: var(--muted); margin-top: 0.4rem; }
+header{padding:1.5rem 1.5rem 1rem;max-width:1200px;margin:0 auto}
+header .tag{font-size:.72rem;font-weight:600;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:.3rem}
+header h1{font-size:1.7rem;font-weight:700;color:var(--t1)}
+header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 
-  .equation-box { max-width: 1100px; margin: 0 auto 1.5rem; padding: 0 1.5rem; }
-  .eq-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-    padding: 1.2rem 1.5rem; display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-start;
-  }
-  .eq-primary { font-family: 'Courier New', monospace; font-size: 1.05rem; color: var(--accent); flex: 1; min-width: 260px; }
-  .eq-secondary { font-family: 'Courier New', monospace; font-size: 0.88rem; color: var(--accent2); margin-top: 0.35rem; }
-  .eq-note { font-size: 0.82rem; color: var(--muted); margin-top: 0.3rem; }
+.eq-box{max-width:1200px;margin:0 auto .9rem;padding:0 1.5rem}
+.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.4rem;display:flex;flex-wrap:wrap;gap:1.5rem}
+.eq-col{flex:1;min-width:220px}
+.eq-label{font-size:.68rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-primary{font-family:'Courier New',monospace;font-size:.88rem;color:var(--blue);line-height:2}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.79rem;color:var(--pur);line-height:2}
+.eq-note{font-size:.73rem;color:var(--tm);margin-top:.25rem}
 
-  /* ── Main layout ── */
-  .layout {
-    display: grid; grid-template-columns: 300px 1fr; gap: 1.4rem;
-    max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem;
-  }
-  @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
+.layout{display:grid;grid-template-columns:290px 1fr;gap:1.2rem;max-width:1200px;margin:0 auto;padding:0 1.5rem 2rem}
+@media(max-width:768px){.layout{grid-template-columns:1fr}}
 
-  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
-  .panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1.1rem; }
+.panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem}
+.panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
+.panel-sep{border-top:1px solid var(--bdr);margin:.85rem 0}
 
-  .slider-row { margin-bottom: 1.1rem; }
-  .slider-row label { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.35rem; }
-  .slider-row label span { color: var(--accent); font-family: 'Courier New', monospace; font-weight: 600; }
-  input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
-  .slider-row .hints { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
+.sr{margin-bottom:.9rem}
+.sr label{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem}
+.sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
+input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
+.hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
 
-  /* ── Toggle button ── */
-  .toggle-row { margin-bottom: 1.1rem; }
-  .toggle-row .tog-label { font-size: 0.88rem; margin-bottom: 0.4rem; display: block; }
-  .toggle-btn {
-    display: inline-flex; border-radius: 20px; overflow: hidden;
-    border: 1px solid var(--border); background: var(--surface);
-  }
-  .toggle-btn button {
-    padding: 0.35rem 1rem; border: none; background: transparent;
-    color: var(--muted); font-size: 0.82rem; cursor: pointer; transition: 0.15s;
-  }
-  .toggle-btn button.active { background: var(--accent); color: #000; font-weight: 600; }
+/* Block diagram */
+.block-diag{display:flex;align-items:center;flex-wrap:wrap;gap:0;margin-bottom:1rem;padding:.7rem;background:var(--deep);border-radius:8px;border:1px solid var(--bdr);overflow-x:auto}
+.blk{background:var(--card);border:1px solid var(--bdr);border-radius:6px;padding:.4rem .7rem;text-align:center;font-size:.75rem;font-weight:600;color:var(--t1);min-width:70px;flex-shrink:0}
+.blk.rf-filter{border-color:var(--grn);color:var(--grn)}
+.blk.lna{border-color:var(--blue);color:var(--blue)}
+.blk.mixer{border-color:var(--yel);color:var(--yel)}
+.blk.if-filter{border-color:var(--pur);color:var(--pur)}
+.blk.if-amp{border-color:var(--org);color:var(--org)}
+.blk.lo{border-color:var(--red);color:var(--red);font-size:.68rem}
+.arr{color:var(--tm);font-size:1.2rem;padding:0 .2rem;flex-shrink:0}
+.lo-row{display:flex;flex-direction:column;align-items:center;gap:.1rem;flex-shrink:0}
 
-  /* ── Metric cards ── */
-  .results { margin-top: 1.4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
-  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; }
-  .result-card .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-  .result-card .value { font-size: 1.2rem; font-weight: 700; font-family: 'Courier New', monospace; margin-top: 0.15rem; transition: color 0.2s; }
-  .result-card .unit { font-size: 0.7rem; color: var(--muted); }
+/* Freq plan summary */
+.freq-plan{background:var(--deep);border:1px solid var(--bdr);border-radius:7px;padding:.7rem 1rem;margin-bottom:.9rem}
+.fp-row{display:flex;justify-content:space-between;align-items:center;padding:.2rem 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem}
+.fp-row:last-child{border:none;padding-top:.35rem;font-weight:700}
+.fp-label{color:var(--tm)}
+.fp-val{font-family:'Courier New',monospace;color:var(--blue)}
+.fp-val.image{color:var(--red)}
+.fp-val.lo{color:var(--yel)}
+.fp-val.if{color:var(--pur)}
+.fp-val.if2{color:var(--org)}
 
-  /* ── Right column ── */
-  .chart-col { display: flex; flex-direction: column; gap: 1.2rem; }
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.9rem}
+.mc{background:var(--deep);border:1px solid var(--bdr);border-radius:6px;padding:.6rem .8rem}
+.mc .mlb{font-size:.67rem;color:var(--tm);text-transform:uppercase;letter-spacing:.9px}
+.mc .mv{font-family:'Courier New',monospace;font-size:1.05rem;font-weight:700;margin-top:.1rem;transition:color 200ms}
+.mc .mu{font-size:.65rem;color:var(--tm)}
+.good{color:var(--grn)}.warn{color:var(--org)}.bad{color:var(--red)}.info{color:var(--blue)}.info2{color:var(--pur)}
 
-  .chart-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; display: flex; flex-direction: column; }
-  .chart-panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
-  .chart-wrap { position: relative; min-height: 220px; }
+.chart-panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem;margin-bottom:1rem}
+.chart-panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.8rem}
+.chart-wrap{position:relative;min-height:220px}
 
-  /* ── Block diagram ── */
-  .block-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem 1.4rem; }
-  .block-panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 0.9rem; }
-  .block-chain {
-    display: flex; align-items: center; flex-wrap: wrap; gap: 0; overflow-x: auto; padding-bottom: 0.5rem;
-  }
-  .block-box {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
-    padding: 0.55rem 0.75rem; font-size: 0.78rem; text-align: center; min-width: 70px;
-    position: relative; white-space: nowrap; flex-shrink: 0;
-  }
-  .block-box .bname { font-weight: 600; color: var(--text); }
-  .block-box .bsub { font-size: 0.68rem; color: var(--muted); font-family: 'Courier New', monospace; margin-top: 0.2rem; white-space: nowrap; }
-  .block-box.highlight-mixer { border-color: var(--orange); }
-  .block-box.highlight-mixer .bname { color: var(--orange); }
-  .block-box.highlight-bpf { border-color: var(--accent); }
-  .block-arrow { color: var(--muted); font-size: 1rem; padding: 0 0.3rem; flex-shrink: 0; user-select: none; }
-  .image-badge {
-    position: absolute; bottom: -1.7rem; left: 50%; transform: translateX(-50%);
-    font-size: 0.65rem; color: var(--red); white-space: nowrap;
-    font-family: 'Courier New', monospace; pointer-events: none;
-  }
-  .block-chain-wrap { padding-bottom: 2rem; }
+.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.82rem;color:var(--tm);line-height:1.7}
+.annotation strong{color:var(--t1)}
+.annotation b{color:var(--blue)}
 
-  /* ── Annotation ── */
-  .annotation {
-    border-left: 3px solid var(--accent); background: var(--card);
-    padding: 11px 14px; border-radius: 0 8px 8px 0;
-    font-size: 0.83rem; color: var(--muted); line-height: 1.65;
-  }
-  .annotation strong { color: var(--text); }
-
-  /* ── Full-width bottom section ── */
-  .bottom-section { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2.5rem; }
+.toggle-row{display:flex;gap:.5rem;margin-bottom:.8rem;align-items:center}
+.tog{padding:.25rem .75rem;border-radius:14px;border:1px solid var(--bdr);background:var(--deep);color:var(--tm);font-size:.77rem;cursor:pointer;transition:.15s}
+.tog.active{background:var(--blue);border-color:var(--blue);color:#000;font-weight:600}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
-  <button class="tbtn" onclick="takeScreenshot('Superheterodyne Receiver')">&#128247; Screenshot</button>
-  <button class="tbtn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
-  <button class="tbtn" id="copyBtn" onclick="copyLink()">&#8856; Copy Link</button>
+  <button class="tbtn" onclick="takeScreenshot('Superheterodyne Receiver')">📷 Screenshot</button>
+  <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
 </div>
 
 <nav>
-  <a href="index.html">&#8592; RF Toolbox</a>
-  <span>/</span>
-  <span>07 Superheterodyne</span>
+  <a href="index.html">RF Toolbox</a>
+  <span class="sep">›</span>
+  <span>Superheterodyne Receiver</span>
 </nav>
 
 <header>
-  <div class="tag">Tool 07</div>
+  <div class="tag">Tool 07 · Receiver Architecture</div>
   <h1>Superheterodyne Receiver</h1>
-  <p>LO planning, image frequency, and image rejection vs IF bandwidth</p>
+  <p>Frequency plan: RF → IF conversion. Image rejection vs IF frequency. Double-conversion. Spurious LO harmonics.</p>
 </header>
 
-<div class="equation-box">
+<div class="eq-box">
   <div class="eq-card">
-    <div>
-      <div class="eq-primary">f_LO = f_RF + f_IF &nbsp;(high-side injection)</div>
-      <div class="eq-secondary">f_LO = f_RF &minus; f_IF &nbsp;(low-side injection)</div>
-      <div class="eq-note">LO mixes with RF to down-convert to IF; injection side sets image location</div>
+    <div class="eq-col">
+      <div class="eq-label">Frequency Plan</div>
+      <div class="eq-primary">f_LO = f_RF ± f_IF</div>
+      <div class="eq-secondary">f_image = f_RF ± 2·f_IF  (upper LO)</div>
+      <div class="eq-secondary">f_image = f_RF − 2·f_IF  (lower LO)</div>
+      <div class="eq-note">Two mixing sidebands — one is the desired IF, one is image. Image must be filtered before mixer.</div>
     </div>
-    <div>
-      <div class="eq-primary">f_image = f_RF + 2&middot;f_IF &nbsp;(high-side)</div>
-      <div class="eq-secondary">f_image = f_RF &minus; 2&middot;f_IF &nbsp;(low-side)</div>
-      <div class="eq-note">Image is 2&middot;f_IF away; preselector BPF must reject it</div>
+    <div class="eq-col">
+      <div class="eq-label">Image Rejection</div>
+      <div class="eq-primary">IRR = 20 log₁₀(2·f_IF / BW_RF)</div>
+      <div class="eq-secondary">BW_RF = RF preselect filter bandwidth</div>
+      <div class="eq-note">Higher IF → better image separation but harder channel filter. Key design tradeoff (Razavi 2.4).</div>
     </div>
-    <div>
-      <div class="eq-primary">IRR &asymp; 20&middot;log&#8321;&#8320;(f_image / BW_IF)</div>
-      <div class="eq-note">Conceptual rejection model — wider IF BW = harder image rejection</div>
+    <div class="eq-col">
+      <div class="eq-label">Spurious Responses</div>
+      <div class="eq-primary">f_spur = (m·f_LO ± f_IF) / n</div>
+      <div class="eq-secondary">Common: 2·f_LO − f_IF, 3·f_LO − 2·f_IF</div>
+      <div class="eq-note">LO harmonic mixing. These land in-band and cannot be filtered. Pozar Ch. 9.</div>
     </div>
+  </div>
+</div>
+
+<!-- Block diagram -->
+<div style="max-width:1200px;margin:0 auto .9rem;padding:0 1.5rem">
+  <div class="block-diag" id="blockDiag">
+    <div class="blk rf-filter">RF<br>Filter</div>
+    <div class="arr">→</div>
+    <div class="blk lna">LNA</div>
+    <div class="arr">→</div>
+    <div class="blk rf-filter">Image<br>Reject</div>
+    <div class="arr">→</div>
+    <div class="lo-row">
+      <div style="font-size:.65rem;color:var(--yel)">LO</div>
+      <div class="blk mixer">Mixer</div>
+      <div style="font-size:.65rem;color:var(--yel)" id="bdLO">—</div>
+    </div>
+    <div class="arr">→</div>
+    <div class="blk if-filter">IF<br>Filter</div>
+    <div class="arr">→</div>
+    <div class="blk if-amp">IF<br>Amp</div>
+    <div class="arr" id="arrDbl" style="display:none">→</div>
+    <div class="lo-row" id="blkMix2" style="display:none">
+      <div style="font-size:.65rem;color:var(--red)">LO₂</div>
+      <div class="blk mixer">Mixer₂</div>
+      <div style="font-size:.65rem;color:var(--red)" id="bdLO2">—</div>
+    </div>
+    <div class="arr" id="arrDbl2" style="display:none">→</div>
+    <div class="blk if-filter" id="blkIF2" style="display:none">IF₂<br>Filter</div>
+    <div class="arr">→</div>
+    <div class="blk" style="border-color:var(--tm)">Demod</div>
   </div>
 </div>
 
 <div class="layout">
-  <!-- ── Sidebar ── -->
-  <div class="panel">
-    <h3>Parameters</h3>
-
-    <div class="slider-row">
-      <label>RF Frequency <span id="lRF">900 MHz</span></label>
-      <input type="range" id="sRF" min="0.1" max="6" value="0.9" step="0.01">
-      <div class="hints"><span>100 MHz</span><span>6 GHz</span></div>
-    </div>
-
-    <div class="slider-row">
-      <label>IF Frequency <span id="lIF">70 MHz</span></label>
-      <input type="range" id="sIF" min="10" max="500" value="70" step="1">
-      <div class="hints"><span>10 MHz</span><span>500 MHz</span></div>
-    </div>
-
-    <div class="toggle-row">
-      <span class="tog-label">LO Injection Side</span>
-      <div class="toggle-btn">
-        <button id="btnHigh" class="active" onclick="setInjection('high')">High-side</button>
-        <button id="btnLow" onclick="setInjection('low')">Low-side</button>
+  <div>
+    <div class="panel" style="margin-bottom:1rem">
+      <h3>Frequency Plan</h3>
+      <div class="sr">
+        <label>RF freq f<sub>RF</sub> <span id="vRF">900 MHz</span></label>
+        <input type="range" id="sRF" min="10" max="6000" step="10" value="900">
+        <div class="hints"><span>10 MHz</span><span>6 GHz</span></div>
+      </div>
+      <div class="sr">
+        <label>1st IF f<sub>IF</sub> <span id="vIF">70 MHz</span></label>
+        <input type="range" id="sIF" min="1" max="1000" step="1" value="70">
+        <div class="hints"><span>1 MHz</span><span>1 GHz</span></div>
+      </div>
+      <div class="sr">
+        <label>RF filter BW <span id="vBW">20 MHz</span></label>
+        <input type="range" id="sBW" min="0.1" max="200" step="0.5" value="20">
+        <div class="hints"><span>0.1 MHz</span><span>200 MHz</span></div>
+      </div>
+      <div class="panel-sep"></div>
+      <div class="toggle-row">
+        <span style="font-size:.8rem;color:var(--tm)">Conversion:</span>
+        <button class="tog active" id="togSingle" onclick="setConv('single',this)">Single</button>
+        <button class="tog" id="togDouble" onclick="setConv('double',this)">Double</button>
+      </div>
+      <div id="dbl2Ctrl" style="display:none">
+        <div class="sr">
+          <label>2nd IF f<sub>IF2</sub> <span id="vIF2">10.7 MHz</span></label>
+          <input type="range" id="sIF2" min="0.1" max="100" step="0.1" value="10.7">
+          <div class="hints"><span>0.1 MHz</span><span>100 MHz</span></div>
+        </div>
       </div>
     </div>
 
-    <div class="results">
-      <div class="result-card">
-        <div class="label">f_LO</div>
-        <div class="value" id="rLO" style="color: var(--orange);">—</div>
-        <div class="unit" id="uLO">GHz</div>
-      </div>
-      <div class="result-card">
-        <div class="label">f_image</div>
-        <div class="value" id="rImage" style="color: var(--red);">—</div>
-        <div class="unit" id="uImage">GHz</div>
-      </div>
-      <div class="result-card">
-        <div class="label">Image Sep. 2&middot;f_IF</div>
-        <div class="value" id="rSep" style="color: var(--accent2);">—</div>
-        <div class="unit">MHz</div>
-      </div>
-      <div class="result-card">
-        <div class="label">IF Frequency</div>
-        <div class="value" id="rIF" style="color: var(--accent);">—</div>
-        <div class="unit">MHz</div>
+    <div class="panel" style="margin-bottom:1rem">
+      <h3>Frequency Plan Summary</h3>
+      <div class="freq-plan" id="freqPlan">loading...</div>
+    </div>
+
+    <div class="panel">
+      <h3>Performance</h3>
+      <div class="metrics">
+        <div class="mc"><div class="mlb">LO freq</div><div class="mv" id="mLO" style="color:var(--yel)">—</div><div class="mu">MHz</div></div>
+        <div class="mc"><div class="mlb">Image freq</div><div class="mv bad" id="mImg">—</div><div class="mu">MHz</div></div>
+        <div class="mc"><div class="mlb">Image sep.</div><div class="mv" id="mImgSep" style="color:var(--tm)">—</div><div class="mu">MHz</div></div>
+        <div class="mc"><div class="mlb">IRR (ideal)</div><div class="mv" id="mIRR" style="color:var(--grn)">—</div><div class="mu">dB</div></div>
       </div>
     </div>
   </div>
 
-  <!-- ── Right column ── -->
-  <div class="chart-col">
-
-    <!-- Spectrum diagram -->
+  <div>
     <div class="chart-panel">
-      <h3>Frequency Spectrum Diagram</h3>
-      <div class="chart-wrap" style="min-height: 220px;">
-        <canvas id="spectrumChart"></canvas>
-      </div>
+      <h3>Frequency Spectrum — RF signal, LO, IF output, image frequency</h3>
+      <div class="chart-wrap"><canvas id="chartSpectrum"></canvas></div>
     </div>
-
-    <!-- IRR vs BW chart -->
     <div class="chart-panel">
-      <h3>Image Rejection vs IF Bandwidth</h3>
-      <div class="chart-wrap" style="min-height: 220px;">
-        <canvas id="irrChart"></canvas>
-      </div>
+      <h3>Image Rejection vs IF Frequency — the key design tradeoff</h3>
+      <div class="chart-wrap"><canvas id="chartIRR"></canvas></div>
     </div>
-
+    <div class="annotation" id="annotation">Computing...</div>
   </div>
-</div>
-
-<!-- Block diagram (full width below layout) -->
-<div class="bottom-section">
-  <div class="block-panel">
-    <h3>Receiver Block Diagram</h3>
-    <div class="block-chain-wrap">
-      <div class="block-chain" id="blockChain">
-        <div class="block-box">
-          <div class="bname">Antenna</div>
-          <div class="bsub">all freqs</div>
-        </div>
-        <div class="block-arrow">&#8594;</div>
-        <div class="block-box highlight-bpf" id="bBPF">
-          <div class="bname">BPF</div>
-          <div class="bsub" id="bBPFsub">preselector</div>
-          <div class="image-badge" id="imgBadge">image: —</div>
-        </div>
-        <div class="block-arrow">&#8594;</div>
-        <div class="block-box">
-          <div class="bname">LNA</div>
-          <div class="bsub">low-noise amp</div>
-        </div>
-        <div class="block-arrow">&#8594;</div>
-        <div class="block-box highlight-mixer" id="bMixer">
-          <div class="bname">Mixer</div>
-          <div class="bsub" id="bMixerSub">LO: —</div>
-        </div>
-        <div class="block-arrow">&#8594;</div>
-        <div class="block-box">
-          <div class="bname">IF Filter</div>
-          <div class="bsub" id="bIFFilter">BW: —</div>
-        </div>
-        <div class="block-arrow">&#8594;</div>
-        <div class="block-box">
-          <div class="bname">IF Amp</div>
-          <div class="bsub" id="bIFAmp">— MHz</div>
-        </div>
-        <div class="block-arrow">&#8594;</div>
-        <div class="block-box">
-          <div class="bname">Demod</div>
-          <div class="bsub">baseband</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="annotation" id="annotation" style="margin-top: 1.2rem;">Updating&hellip;</div>
 </div>
 
 <script>
-// ── State ──
-let injection = 'high'; // 'high' or 'low'
-
-const sRF = document.getElementById('sRF');
-const sIF = document.getElementById('sIF');
-
-function setInjection(side) {
-  injection = side;
-  document.getElementById('btnHigh').classList.toggle('active', side === 'high');
-  document.getElementById('btnLow').classList.toggle('active', side === 'low');
+let convMode='single';
+function setConv(mode,btn){
+  convMode=mode;
+  document.querySelectorAll('.tog').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  const isDbl=mode==='double';
+  document.getElementById('dbl2Ctrl').style.display=isDbl?'':'none';
+  document.getElementById('arrDbl').style.display=isDbl?'':'none';
+  document.getElementById('blkMix2').style.display=isDbl?'':'none';
+  document.getElementById('arrDbl2').style.display=isDbl?'':'none';
+  document.getElementById('blkIF2').style.display=isDbl?'':'none';
   update();
 }
 
-// ── Helpers ──
-function fmtFreq(fGHz) {
-  if (fGHz >= 1) return { val: fGHz.toFixed(3), unit: 'GHz' };
-  return { val: (fGHz * 1000).toFixed(1), unit: 'MHz' };
-}
-function fmtFreqShort(fGHz) {
-  if (fGHz >= 1) return fGHz.toFixed(3) + ' GHz';
-  return (fGHz * 1000).toFixed(1) + ' MHz';
-}
-function fmtMHz(mhz) { return mhz.toFixed(1) + ' MHz'; }
+const specCtx=document.getElementById('chartSpectrum').getContext('2d');
+const irrCtx=document.getElementById('chartIRR').getContext('2d');
 
-// ── Compute ──
-function compute() {
-  const rfGHz = +sRF.value;            // GHz
-  const ifMHz = +sIF.value;            // MHz
-  const ifGHz = ifMHz / 1000;          // GHz
-
-  let loGHz, imageGHz;
-  if (injection === 'high') {
-    loGHz    = rfGHz + ifGHz;
-    imageGHz = rfGHz + 2 * ifGHz;
-  } else {
-    loGHz    = rfGHz - ifGHz;
-    imageGHz = rfGHz - 2 * ifGHz;
-  }
-  if (imageGHz < 0) imageGHz = 0;
-
-  const sepMHz = 2 * ifMHz;
-  return { rfGHz, ifMHz, ifGHz, loGHz, imageGHz, sepMHz };
-}
-
-// ── Chart: Spectrum ──
-const specCtx = document.getElementById('spectrumChart').getContext('2d');
-const specChart = new Chart(specCtx, {
-  type: 'bar',
-  data: {
-    labels: [],
-    datasets: [{
-      label: 'Signal level (relative)',
-      data: [],
-      backgroundColor: [],
-      borderColor: [],
-      borderWidth: 1.5,
-      borderRadius: 3,
-    }]
-  },
-  options: {
-    animation: { duration: 0 },
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        callbacks: {
-          title: ctx => ctx[0].label,
-          label: ctx => ctx.dataset.backgroundColor[ctx.dataIndex] === '#ff4d6d'
-            ? 'Image frequency (interference)'
-            : ctx.raw.toFixed(0) + ' (relative height)'
-        }
-      }
-    },
-    scales: {
-      x: {
-        ticks: { color: '#888899', font: { size: 10 }, maxRotation: 30 },
-        grid: { color: '#2a2a35' },
-        title: { display: true, text: 'Frequency', color: '#888899', font: { size: 11 } }
-      },
-      y: {
-        ticks: { color: '#888899', font: { size: 10 } },
-        grid: { color: '#2a2a35' },
-        title: { display: true, text: 'Relative Level', color: '#888899', font: { size: 11 } },
-        min: 0, max: 110,
-      }
+const chartSpec=new Chart(specCtx,{
+  type:'bar',
+  data:{labels:[],datasets:[{label:'Frequency components',data:[],backgroundColor:[],borderWidth:0,barPercentage:.5}]},
+  options:{
+    animation:{duration:0},responsive:true,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed.y.toFixed(1)} dBm`}}},
+    scales:{
+      x:{grid:{color:'#252830'},ticks:{color:'#8b949e',font:{size:10}},title:{display:true,color:'#8b949e',text:'Frequency (MHz)'}},
+      y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Relative level (dBr)'},min:-80,max:5}
     }
   }
 });
 
-// ── Chart: IRR vs BW ──
-const irrCtx = document.getElementById('irrChart').getContext('2d');
-const irrChart = new Chart(irrCtx, {
-  type: 'line',
-  data: {
-    labels: [],
-    datasets: [{
-      label: 'Image Rejection (dB)',
-      data: [],
-      borderColor: '#00c8ff',
-      backgroundColor: 'rgba(0,200,255,0.08)',
-      borderWidth: 2,
-      pointRadius: 0,
-      fill: true,
-      tension: 0.3,
-    }, {
-      label: 'Current IF BW (IF freq)',
-      data: [],
-      borderColor: '#ffaa00',
-      borderWidth: 2,
-      borderDash: [6, 4],
-      pointRadius: 0,
-      fill: false,
-    }]
-  },
-  options: {
-    animation: { duration: 0 },
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { labels: { color: '#888899', font: { size: 11 } } },
-      tooltip: { mode: 'index', intersect: false }
-    },
-    scales: {
-      x: {
-        ticks: { color: '#888899', maxTicksLimit: 10, font: { size: 10 } },
-        grid: { color: '#2a2a35' },
-        title: { display: true, text: 'IF Bandwidth (MHz)', color: '#888899', font: { size: 11 } }
-      },
-      y: {
-        ticks: { color: '#888899', font: { size: 10 } },
-        grid: { color: '#2a2a35' },
-        title: { display: true, text: 'Image Rejection (dB)', color: '#888899', font: { size: 11 } },
-        min: 0, max: 85,
-      }
+const chartIRR=new Chart(irrCtx,{
+  type:'line',
+  data:{datasets:[
+    {label:'Image rejection (dB)',data:[],borderColor:'#3fb950',borderWidth:2.5,pointRadius:0,fill:false},
+    {label:'Operating point',data:[],borderColor:'#f85149',backgroundColor:'#f85149',pointRadius:6,showLine:false}
+  ]},
+  options:{
+    animation:{duration:0},responsive:true,
+    plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+    scales:{
+      x:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'IF Frequency (MHz)'}},
+      y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Image Rejection (dB)'}}
     }
   }
 });
 
-// ── Update all ──
-function update() {
-  const d = compute();
+function fmtMHz(f){return f>=1000?(f/1000).toFixed(3)+' GHz':f.toFixed(1)+' MHz';}
 
-  // Labels
-  document.getElementById('lRF').textContent = fmtFreqShort(d.rfGHz);
-  document.getElementById('lIF').textContent = d.ifMHz.toFixed(0) + ' MHz';
+function update(){
+  const fRF=+document.getElementById('sRF').value;  // MHz
+  const fIF=+document.getElementById('sIF').value;  // MHz
+  const BW_RF=+document.getElementById('sBW').value; // MHz
+  const fIF2=convMode==='double'?+document.getElementById('sIF2').value:0;
 
-  // Metric cards
-  const lo = fmtFreq(d.loGHz);
-  document.getElementById('rLO').textContent = lo.val;
-  document.getElementById('uLO').textContent = lo.unit;
+  document.getElementById('vRF').textContent=fmtMHz(fRF);
+  document.getElementById('vIF').textContent=fmtMHz(fIF);
+  document.getElementById('vBW').textContent=BW_RF.toFixed(1)+' MHz';
+  if(convMode==='double') document.getElementById('vIF2').textContent=fmtMHz(fIF2);
 
-  const img = fmtFreq(d.imageGHz);
-  document.getElementById('rImage').textContent = img.val;
-  document.getElementById('uImage').textContent = img.unit;
+  // Upper LO (fLO > fRF)
+  const fLO=fRF+fIF;
+  const fImage=fRF+2*fIF; // upper-side image
+  const imgSep=2*fIF;
+  // IRR = image-to-signal ratio suppressed by RF filter
+  // Approximation: IRR ≈ 20log(2*fIF/BW_RF) for single-pole filter
+  const IRR=Math.max(0, 20*Math.log10(2*fIF/BW_RF));
+  const fLO2=convMode==='double'?fIF-fIF2:0;
+  const fImg2=convMode==='double'?fIF+2*fIF2:0;
 
-  document.getElementById('rSep').textContent = d.sepMHz.toFixed(1);
-  document.getElementById('rIF').textContent  = d.ifMHz.toFixed(1);
+  // Update block diagram LO labels
+  document.getElementById('bdLO').textContent=fmtMHz(fLO);
+  if(convMode==='double') document.getElementById('bdLO2').textContent=fmtMHz(fLO2);
 
-  // Block diagram labels
-  document.getElementById('bMixerSub').textContent  = 'LO: ' + fmtFreqShort(d.loGHz);
-  document.getElementById('bIFFilter').textContent  = 'pass: ' + d.ifMHz.toFixed(0) + ' MHz';
-  document.getElementById('bIFAmp').textContent     = d.ifMHz.toFixed(0) + ' MHz';
-  document.getElementById('bBPFsub').textContent    = 'center ' + fmtFreqShort(d.rfGHz);
-  document.getElementById('imgBadge').textContent   = 'image: ' + fmtFreqShort(d.imageGHz);
-
-  // Spectrum chart
-  // Sort bars by frequency for clarity
-  const entries = [
-    { label: 'f_image\n' + fmtFreqShort(d.imageGHz), freq: d.imageGHz, height: 70, color: '#ff4d6d',  border: '#ff4d6d' },
-    { label: 'f_RF\n'    + fmtFreqShort(d.rfGHz),    freq: d.rfGHz,    height: 95, color: '#00e5a0',  border: '#00e5a0' },
-    { label: 'f_LO\n'    + fmtFreqShort(d.loGHz),    freq: d.loGHz,    height: 85, color: '#ffaa00',  border: '#ffaa00' },
-    { label: 'f_IF out\n'+ d.ifMHz.toFixed(0)+' MHz', freq: d.ifGHz,   height: 80, color: '#7b61ff',  border: '#7b61ff' },
-  ].sort((a, b) => a.freq - b.freq);
-
-  specChart.data.labels                        = entries.map(e => e.label);
-  specChart.data.datasets[0].data             = entries.map(e => e.height);
-  specChart.data.datasets[0].backgroundColor  = entries.map(e => e.color + '55');
-  specChart.data.datasets[0].borderColor      = entries.map(e => e.border);
-  specChart.update('none');
-
-  // IRR vs BW chart
-  const N = 100;
-  const bwLabels = [], irrData = [], currentLine = [];
-  const fImgMHz = d.imageGHz * 1000;
-  for (let i = 0; i < N; i++) {
-    const bw = 1 + (499) * i / (N - 1); // 1..500 MHz
-    const rawIRR = 20 * Math.log10(Math.max(fImgMHz, 1) / Math.max(bw, 0.001));
-    const irr = Math.min(Math.max(rawIRR, 0), 80);
-    bwLabels.push(bw.toFixed(0));
-    irrData.push(irr);
-    currentLine.push(null); // placeholder
+  // Frequency plan table
+  let fpHTML=`
+    <div class="fp-row"><span class="fp-label">RF signal</span><span class="fp-val">${fmtMHz(fRF)}</span></div>
+    <div class="fp-row"><span class="fp-label">LO₁</span><span class="fp-val lo">${fmtMHz(fLO)}</span></div>
+    <div class="fp-row"><span class="fp-label">Image freq (must reject)</span><span class="fp-val image">${fmtMHz(fImage)}</span></div>
+    <div class="fp-row"><span class="fp-label">1st IF output</span><span class="fp-val if">${fmtMHz(fIF)}</span></div>`;
+  if(convMode==='double'){
+    fpHTML+=`
+    <div class="fp-row"><span class="fp-label">LO₂</span><span class="fp-val lo">${fmtMHz(fLO2)}</span></div>
+    <div class="fp-row"><span class="fp-label">2nd Image</span><span class="fp-val image">${fmtMHz(fImg2)}</span></div>
+    <div class="fp-row"><span class="fp-label">2nd IF output</span><span class="fp-val if2">${fmtMHz(fIF2)}</span></div>`;
   }
-  // Mark current IF frequency as vertical reference — use a full-height line via dataset
-  const currentIRR = Math.min(Math.max(20 * Math.log10(Math.max(fImgMHz, 1) / Math.max(d.ifMHz, 0.001)), 0), 80);
-  const curIdx = Math.round((d.ifMHz - 1) / 499 * (N - 1));
-  for (let i = 0; i < N; i++) currentLine[i] = (i === curIdx) ? 82 : null;
-  // Use a scatter point instead
-  irrChart.data.labels = bwLabels;
-  irrChart.data.datasets[0].data = irrData;
-  // Marker dataset: vertical dashed line approximation — use sparse data
-  const markerData = bwLabels.map(() => null);
-  if (curIdx >= 0 && curIdx < N) markerData[curIdx] = currentIRR;
-  irrChart.data.datasets[1].data = bwLabels.map((_, i) => {
-    // draw a thin vertical via full-column value
-    return i === curIdx ? 82 : null;
-  });
-  irrChart.update('none');
+  document.getElementById('freqPlan').innerHTML=fpHTML;
 
-  // Annotation
-  const injStr = injection === 'high' ? 'high-side' : 'low-side';
-  const irrAtIF = Math.min(Math.max(20 * Math.log10(Math.max(fImgMHz, 1) / Math.max(d.ifMHz, 0.001)), 0), 80);
-  const advIRR = irrAtIF < 20 ? 40 : Math.ceil(irrAtIF);
-  document.getElementById('annotation').innerHTML =
-    `<strong>RF = ${fmtFreqShort(d.rfGHz)}, IF = ${d.ifMHz.toFixed(0)} MHz</strong> ` +
-    `&rarr; LO = <strong>${fmtFreqShort(d.loGHz)}</strong> (${injStr} injection). ` +
-    `Image = <strong style="color:var(--red)">${fmtFreqShort(d.imageGHz)}</strong>, ` +
-    `which is <strong>${d.sepMHz.toFixed(0)} MHz</strong> away from RF. ` +
-    `A wider IF bandwidth makes image rejection harder &mdash; use a preselector BPF with ` +
-    `<strong>&gt;${advIRR.toFixed(0)} dB</strong> rejection at the image frequency.`;
+  document.getElementById('mLO').textContent=fLO.toFixed(1);
+  document.getElementById('mImg').textContent=fImage.toFixed(1);
+  document.getElementById('mImgSep').textContent=imgSep.toFixed(1);
+  document.getElementById('mIRR').textContent=IRR.toFixed(1);
+  document.getElementById('mIRR').className='mv '+(IRR>60?'good':IRR>30?'warn':'bad');
+
+  // Spectrum chart — bar chart showing frequency components
+  const components=[
+    {label:`RF\n${fmtMHz(fRF)}`,f:fRF,lev:0,col:'#58a6ff'},
+    {label:`Image\n${fmtMHz(fImage)}`,f:fImage,lev:-IRR,col:'#f85149'},
+    {label:`LO\n${fmtMHz(fLO)}`,f:fLO,lev:-10,col:'#e6c547'},
+    {label:`IF out\n${fmtMHz(fIF)}`,f:fIF,lev:-3,col:'#bc8cff'},
+  ];
+  // LO harmonics
+  for(let m=2;m<=4;m++){
+    const fh=fLO*m;
+    // Check if it falls near RF band
+    const inBand=Math.abs(fh-fRF)<BW_RF*5;
+    components.push({label:`${m}×LO\n${fmtMHz(fh)}`,f:fh,lev:inBand?-20:-50,col:inBand?'#f0883e':'#30363d'});
+  }
+  if(convMode==='double'){
+    components.push({label:`IF₂\n${fmtMHz(fIF2)}`,f:fIF2,lev:-5,col:'#f0883e'});
+    components.push({label:`Img₂\n${fmtMHz(fImg2)}`,f:fImg2,lev:-30,col:'#f85149'});
+  }
+  components.sort((a,b)=>a.f-b.f);
+  chartSpec.data.labels=components.map(c=>c.label);
+  chartSpec.data.datasets[0].data=components.map(c=>c.lev);
+  chartSpec.data.datasets[0].backgroundColor=components.map(c=>c.col+'bb');
+  chartSpec.update();
+
+  // IRR vs IF frequency chart
+  const ifArr=Array.from({length:300},(_,i)=>1+999*i/299);
+  const irrArr=ifArr.map(f=>Math.max(0,20*Math.log10(2*f/BW_RF)));
+  chartIRR.data.datasets[0].data=ifArr.map((f,i)=>({x:f,y:irrArr[i]}));
+  chartIRR.data.datasets[1].data=[{x:fIF,y:IRR}];
+  chartIRR.update();
+
+  document.getElementById('annotation').innerHTML=
+    `<strong>Frequency plan:</strong> f_RF = <b>${fmtMHz(fRF)}</b>, f_LO = <b>${fmtMHz(fLO)}</b> (high-side injection),
+    f_IF = <b>${fmtMHz(fIF)}</b>.
+    Image frequency = <b style="color:var(--red)">${fmtMHz(fImage)}</b> — must be attenuated by RF preselect filter before mixer.<br>
+    <strong>Image rejection:</strong> <b>${IRR.toFixed(1)} dB</b> with ${BW_RF.toFixed(0)} MHz RF filter.
+    Image separation = 2×f_IF = <b>${(2*fIF).toFixed(1)} MHz</b>.
+    ${IRR<20?'Poor IRR — increase IF frequency or narrow RF filter. Image will fold into IF band.':
+    IRR<40?'Moderate IRR — acceptable for many systems but consider image-reject mixer.':
+    'Good IRR — image well-suppressed.'}
+    ${convMode==='double'?`<br><strong>Double conversion:</strong> 2nd IF = ${fmtMHz(fIF2)} gives narrow channel filter. LO₂ = ${fmtMHz(fLO2)}. 2nd image at ${fmtMHz(fImg2)} must be suppressed by IF filter.`:''}<br>
+    <strong>Design tradeoff:</strong> Higher IF improves image rejection but makes the IF channel filter harder (must be narrow relative to f_IF). Lower IF eases channel filter but image falls close to RF signal. This is the fundamental superheterodyne design tension.`;
 }
 
-// ── Event listeners ──
-sRF.addEventListener('input', update);
-sIF.addEventListener('input', update);
+[document.getElementById('sRF'),document.getElementById('sIF'),document.getElementById('sBW'),
+ document.getElementById('sIF2')].forEach(s=>s&&s.addEventListener('input',update));
 
-// ── Initial render ──
+function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#8b949e';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`superhet_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
+function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+function copyLink(){navigator.clipboard.writeText(window.location.href).then(()=>{const b=document.getElementById('copyBtn');const o=b.textContent;b.textContent='✓ Copied!';b.style.color='#3fb950';b.style.borderColor='#3fb950';setTimeout(()=>{b.textContent=o;b.style.color='';b.style.borderColor='';},2000);});}
+
 update();
-
-// ── Toolbar functions ──
-function takeScreenshot(toolName) {
-  const canvases = [...document.querySelectorAll('canvas')];
-  const padding = 16, titleHeight = 40;
-  const totalWidth = Math.max(800, canvases.reduce((s, c) => s + c.width + padding, padding));
-  const maxHeight = canvases.reduce((s, c) => s + c.height + padding, 0);
-  const out = document.createElement('canvas');
-  out.width = totalWidth;
-  out.height = maxHeight + titleHeight + padding * 2;
-  const c = out.getContext('2d');
-  c.fillStyle = '#0d0d0f';
-  c.fillRect(0, 0, out.width, out.height);
-  c.fillStyle = '#e2e2e8';
-  c.font = 'bold 14px Segoe UI, system-ui, sans-serif';
-  c.fillText(toolName + '  ·  RF Toolbox', padding, titleHeight / 2 + 5);
-  c.fillStyle = '#888899';
-  c.font = '11px monospace';
-  c.fillText(new Date().toISOString().slice(0, 19).replace('T', ' ') + ' UTC', padding, titleHeight - 4);
-  let y = titleHeight + padding;
-  canvases.forEach(cv => {
-    c.drawImage(cv, padding, y);
-    y += cv.height + padding;
-  });
-  const link = document.createElement('a');
-  const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-  link.download = `superheterodyne_${ts}.png`;
-  link.href = out.toDataURL('image/png');
-  link.click();
-}
-
-function toggleFullscreen() {
-  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-  else document.exitFullscreen();
-}
-
-function copyLink() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    const btn = document.getElementById('copyBtn');
-    const orig = btn.textContent;
-    btn.textContent = '✓ Copied!';
-    btn.style.color = '#00e5a0';
-    btn.style.borderColor = '#00e5a0';
-    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
-  });
-}
 </script>
 </body>
 </html>

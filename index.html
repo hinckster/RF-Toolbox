@@ -3,211 +3,250 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RF Engineering Toolbox</title>
+<title>RF Systems Toolbox — Noah Hinckster</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0d0d0f;
-    --surface: #16161a;
-    --card: #1e1e24;
-    --border: #2a2a35;
-    --accent: #00c8ff;
-    --accent2: #7b61ff;
-    --text: #e2e2e8;
-    --muted: #888899;
-    --green: #00e5a0;
-  }
-  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#16181d;--card:#1e2128;--deep:#0d1117;
+  --bdr:#30363d;--t1:#e6edf3;--t2:#c9d1d9;--tm:#8b949e;
+  --blue:#58a6ff;--grn:#3fb950;--org:#f0883e;--red:#f85149;--yel:#e6c547;--pur:#bc8cff;
+}
+body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
 
-  header {
-    padding: 3rem 2rem 2rem;
-    text-align: center;
-    border-bottom: 1px solid var(--border);
-    background: linear-gradient(180deg, #0d0d20 0%, var(--bg) 100%);
-  }
-  header h1 {
-    font-size: 2.6rem;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  header p { margin-top: 0.6rem; color: var(--muted); font-size: 1.05rem; }
-  .header-meta { margin-top: 1rem; font-size: 0.78rem; color: var(--muted); }
-  .header-meta a { color: var(--accent); text-decoration: none; }
-  .header-meta a:hover { text-decoration: underline; }
+/* Hero */
+.hero{padding:3rem 1.5rem 2rem;max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1.5rem}
+.hero-left{}
+.hero-tag{font-size:.72rem;font-weight:600;color:var(--blue);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:.5rem}
+.hero h1{font-size:2.2rem;font-weight:700;color:var(--t1);letter-spacing:-.3px;line-height:1.15}
+.hero-sub{color:var(--tm);margin-top:.5rem;font-size:.95rem;max-width:520px}
+.hero-bio{display:flex;align-items:center;gap:.75rem;margin-top:1.1rem;flex-wrap:wrap}
+.bio-name{font-size:.95rem;font-weight:600;color:var(--t1)}
+.bio-title{font-size:.83rem;color:var(--tm)}
+.bio-sep{color:var(--bdr)}
 
-  .section-label {
-    max-width: 1100px; margin: 2.5rem auto 1rem; padding: 0 1.5rem;
-    font-size: 0.72rem; font-weight: 600; color: var(--muted);
-    letter-spacing: 2px; text-transform: uppercase;
-  }
+.hero-actions{display:flex;gap:.6rem;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1rem;border-radius:6px;border:1px solid var(--bdr);background:var(--card);color:var(--tm);font-size:.82rem;cursor:pointer;transition:.15s}
+.btn:hover{border-color:var(--blue);color:var(--blue);text-decoration:none}
+.btn.primary{border-color:var(--blue);color:var(--blue)}
 
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.4rem;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 1.5rem 2rem;
-  }
+/* Stats row */
+.stats{border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);background:var(--card)}
+.stats-inner{max-width:1200px;margin:0 auto;padding:.75rem 1.5rem;display:flex;gap:2rem;flex-wrap:wrap}
+.stat{display:flex;flex-direction:column;gap:.1rem}
+.stat-val{font-family:'Courier New',monospace;font-size:1.15rem;font-weight:700;color:var(--blue)}
+.stat-lab{font-size:.7rem;color:var(--tm);text-transform:uppercase;letter-spacing:.8px}
 
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.6rem;
-    text-decoration: none;
-    color: var(--text);
-    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-  .card:hover {
-    border-color: var(--accent);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 32px rgba(0,200,255,0.12);
-  }
-  .card-icon { font-size: 2rem; }
-  .card-num { font-size: 0.72rem; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
-  .card h2 { font-size: 1.15rem; font-weight: 600; }
-  .card p { font-size: 0.88rem; color: var(--muted); line-height: 1.55; }
-  .card .eq {
-    font-family: 'Courier New', monospace;
-    font-size: 0.82rem;
-    color: var(--accent2);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 0.5rem 0.75rem;
-    margin-top: auto;
-  }
+/* Section headers */
+.section{max-width:1200px;margin:0 auto;padding:0 1.5rem}
+.section-hdr{display:flex;align-items:center;gap:.75rem;margin:2rem 0 1.1rem}
+.section-hdr .sh-line{flex:1;height:1px;background:var(--bdr)}
+.section-hdr .sh-label{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:2px;text-transform:uppercase;white-space:nowrap}
+.section-hdr .sh-badge{font-size:.67rem;padding:.18rem .55rem;border-radius:10px;font-weight:600}
+.sh-badge.rf{background:rgba(88,166,255,.15);color:var(--blue)}
+.sh-badge.sig{background:rgba(188,140,255,.15);color:var(--pur)}
 
-  footer {
-    text-align: center;
-    padding: 2rem;
-    color: var(--muted);
-    font-size: 0.82rem;
-    border-top: 1px solid var(--border);
-  }
-  footer a { color: var(--accent); text-decoration: none; }
+/* Tool grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:1.1rem;margin-bottom:2rem}
 
-  @media (max-width: 768px) {
-    header h1 { font-size: 1.9rem; }
-    .grid { grid-template-columns: 1fr; }
-  }
+.card{display:flex;flex-direction:column;gap:.75rem;background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:1.4rem;text-decoration:none;color:var(--t2);transition:border-color .2s,transform .18s,box-shadow .2s;position:relative}
+.card:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:0 8px 28px rgba(88,166,255,.1);text-decoration:none}
+.card:hover .card-arrow{color:var(--blue)}
+
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem}
+.card-icon{font-size:1.6rem;line-height:1}
+.card-arrow{color:var(--bdr);font-size:1.1rem;transition:color .15s}
+.card-num{font-size:.67rem;font-weight:600;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:.2rem}
+.card h2{font-size:1.05rem;font-weight:700;color:var(--t1);line-height:1.3}
+.card-desc{font-size:.82rem;color:var(--tm);line-height:1.6;flex:1}
+.card-expert{font-size:.74rem;color:var(--grn);margin-top:.1rem;font-style:italic}
+
+.card-eq{font-family:'Courier New',monospace;font-size:.76rem;color:var(--blue);background:var(--deep);border:1px solid var(--bdr);border-radius:5px;padding:.45rem .7rem;margin-top:auto}
+
+.live-badge{display:inline-block;font-size:.62rem;font-weight:700;padding:.12rem .45rem;border-radius:8px;background:rgba(63,185,80,.15);color:var(--grn);text-transform:uppercase;letter-spacing:.8px;vertical-align:middle;margin-left:.4rem}
+
+/* Footer */
+footer{border-top:1px solid var(--bdr);padding:2rem 1.5rem;text-align:center;color:var(--tm);font-size:.82rem;margin-top:1rem}
+footer a{color:var(--blue)}
+
+@media(max-width:768px){
+  .hero h1{font-size:1.65rem}
+  .grid{grid-template-columns:1fr}
+  .stats-inner{gap:1.2rem}
+}
 </style>
 </head>
 <body>
 
-<header>
-  <h1>RF Engineering Toolbox</h1>
-  <p>Interactive calculators for RF &amp; microwave systems analysis</p>
-  <div class="header-meta">
-    Noah Hinckster &nbsp;·&nbsp; EE Graduate Student &nbsp;·&nbsp;
-    <a href="https://github.com/hinckster/RF-Toolbox">GitHub</a>
-    &nbsp;·&nbsp; Last updated: 2026-04-04
+<div class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">RF &amp; Wireless Systems</div>
+    <h1>RF Systems<br>Toolbox</h1>
+    <div class="hero-sub">Expert-level interactive calculators for RF system analysis, receiver design, radar, antenna theory, and propagation. Every tool shows equations in symbolic and numerical form simultaneously.</div>
+    <div class="hero-bio">
+      <span class="bio-name">Noah Hinckster</span>
+      <span class="bio-sep">·</span>
+      <span class="bio-title">MS Electrical Engineering · RF/Wireless Systems</span>
+    </div>
   </div>
-</header>
-
-<div class="section-label">Batch 1 — Core RF Tools</div>
-
-<div class="grid">
-
-  <a class="card" href="01_friis_transmission.html">
-    <div class="card-icon">📡</div>
-    <div class="card-num">Tool 01</div>
-    <h2>Friis Transmission</h2>
-    <p>Calculate received power in a free-space link. Sweep distance or frequency and observe path loss in real time.</p>
-    <div class="eq">Pr = Pt + Gt + Gr + 20·log(λ/4πd)</div>
-  </a>
-
-  <a class="card" href="02_noise_figure.html">
-    <div class="card-icon">🔊</div>
-    <div class="card-num">Tool 02</div>
-    <h2>Noise Figure Cascade</h2>
-    <p>Friis cascade formula for up to 4 stages. See how each stage's NF and gain shape the system noise floor.</p>
-    <div class="eq">F = F₁ + (F₂-1)/G₁ + (F₃-1)/G₁G₂ + …</div>
-  </a>
-
-  <a class="card" href="03_iip3_intermod.html">
-    <div class="card-icon">📈</div>
-    <div class="card-num">Tool 03</div>
-    <h2>IIP3 &amp; Intermod</h2>
-    <p>Third-order intercept and IM3 product calculator. Visualise the fundamental and spur intercept on a log–log plot.</p>
-    <div class="eq">P_IM3 = 3·Pin − 2·IIP3 + G</div>
-  </a>
-
-  <a class="card" href="04_antenna_array.html">
-    <div class="card-icon">🔭</div>
-    <div class="card-num">Tool 04</div>
-    <h2>Antenna Array Factor</h2>
-    <p>Uniform linear array beam pattern. Adjust element count, spacing, and scan angle to shape the main lobe.</p>
-    <div class="eq">AF(θ) = sin(N·ψ/2) / N·sin(ψ/2)</div>
-  </a>
-
-  <a class="card" href="05_smith_chart.html">
-    <div class="card-icon">🎯</div>
-    <div class="card-num">Tool 05</div>
-    <h2>Smith Chart</h2>
-    <p>Plot normalised load impedance on an interactive Smith Chart. Reads out Γ, VSWR, and return loss live.</p>
-    <div class="eq">Γ = (Z_L − Z₀) / (Z_L + Z₀)</div>
-  </a>
-
+  <div class="hero-actions">
+    <a class="btn primary" href="https://github.com/hinckster/RF-Toolbox">⎇ GitHub</a>
+    <a class="btn" href="DESIGN.md">⚙ Design System</a>
+  </div>
 </div>
 
-<div class="section-label">Batch 2 — Systems &amp; Propagation</div>
+<div class="stats">
+  <div class="stats-inner">
+    <div class="stat"><div class="stat-val">8</div><div class="stat-lab">Live Tools</div></div>
+    <div class="stat"><div class="stat-val">100%</div><div class="stat-lab">Self-contained HTML</div></div>
+    <div class="stat"><div class="stat-val">0</div><div class="stat-lab">Server dependencies</div></div>
+    <div class="stat"><div class="stat-val">Chart.js 4.4.1</div><div class="stat-lab">Visualization engine</div></div>
+    <div class="stat"><div class="stat-val">Pozar · Balanis · Skolnik</div><div class="stat-lab">Equation references</div></div>
+  </div>
+</div>
 
-<div class="grid">
+<!-- RF Systems Design Section -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="sh-line"></div>
+    <div class="sh-label">RF Systems Design</div>
+    <span class="sh-badge rf">Link · Receiver · Radar</span>
+    <div class="sh-line"></div>
+  </div>
 
-  <a class="card" href="06_radar_range.html">
-    <div class="card-icon">🛰️</div>
-    <div class="card-num">Tool 06</div>
-    <h2>Radar Range Equation</h2>
-    <p>Maximum detection range as a function of Pt, antenna gains, RCS, and receiver sensitivity. Sweep RCS to see range sensitivity.</p>
-    <div class="eq">R⁴ = Pt·Gt·Gr·λ²·σ / (4π)³·L·Smin</div>
-  </a>
+  <div class="grid">
+    <a class="card" href="01_link_budget.html">
+      <div class="card-top">
+        <div class="card-icon">⚖️</div>
+        <div class="card-arrow">›</div>
+      </div>
+      <div>
+        <div class="card-num">Tool 01 <span class="live-badge">Live</span></div>
+        <h2>System Link Budget</h2>
+      </div>
+      <div class="card-desc">Full cascaded link budget — editable Pt, FSPL, antenna gains, cable losses, NF, SNR. Running margin at every stage. Friis equation shown as the zero-loss special case.</div>
+      <div class="card-expert">Expert: shows which term consumes the most margin at every stage</div>
+      <div class="card-eq">Margin = Pt − L_tx + Gt − FSPL − L_atm + Gr − L_rx − S_min</div>
+    </a>
 
-  <a class="card" href="07_superheterodyne.html">
-    <div class="card-icon">📻</div>
-    <div class="card-num">Tool 07</div>
-    <h2>Superheterodyne Receiver</h2>
-    <p>Visualise LO, image frequency, and IF architecture. Shows image rejection vs IF bandwidth tradeoff.</p>
-    <div class="eq">f_image = f_RF ± 2·f_IF</div>
-  </a>
+    <a class="card" href="02_receiver_chain.html">
+      <div class="card-top">
+        <div class="card-icon">📡</div>
+        <div class="card-arrow">›</div>
+      </div>
+      <div>
+        <div class="card-num">Tool 02 <span class="live-badge">Live</span></div>
+        <h2>Receiver Dynamic Range</h2>
+      </div>
+      <div class="card-desc">4-stage receiver (LNA → filter → mixer → IF amp). Cascaded NF (Friis) and cascaded IIP3 simultaneously. SFDR window, P1dB, noise floor — complete DR analysis.</div>
+      <div class="card-expert">Expert: identifies NF and IIP3 bottleneck stage automatically</div>
+      <div class="card-eq">SFDR = ⅔(OIP3 − N_floor) · F_sys = F₁ + (F₂−1)/G₁ + ···</div>
+    </a>
 
-  <a class="card" href="08_fspl.html">
-    <div class="card-icon">📶</div>
-    <div class="card-num">Tool 08</div>
-    <h2>FSPL Multi-Band Sweep</h2>
-    <p>Free-space path loss vs distance for up to 4 selectable frequency bands overlaid on one chart.</p>
-    <div class="eq">FSPL = 20·log(4πdf/c)</div>
-  </a>
+    <a class="card" href="06_radar_range.html">
+      <div class="card-top">
+        <div class="card-icon">🛰️</div>
+        <div class="card-arrow">›</div>
+      </div>
+      <div>
+        <div class="card-num">Tool 06 <span class="live-badge">Live</span></div>
+        <h2>Radar Range Equation</h2>
+      </div>
+      <div class="card-desc">Maximum range vs RCS sweep (the key radar design curve). Received power vs range with S_min threshold. Clutter RCS comparison (birds, cars, aircraft). Pulse compression gain.</div>
+      <div class="card-expert">Expert: clutter context + pulse compression range extension</div>
+      <div class="card-eq">R⁴ = Pt·Gt·Gr·λ²·σ / [(4π)³·L·S_min]</div>
+    </a>
 
-  <a class="card" href="09_transmission_line.html">
-    <div class="card-icon">〰️</div>
-    <div class="card-num">Tool 09</div>
-    <h2>Transmission Line</h2>
-    <p>Standing wave pattern |V(z)| along a terminated transmission line, with reflection coefficient on a mini Smith chart inset.</p>
-    <div class="eq">Γ(z) = ΓL · e^(−j2βz)</div>
-  </a>
+    <a class="card" href="07_superheterodyne.html">
+      <div class="card-top">
+        <div class="card-icon">📻</div>
+        <div class="card-arrow">›</div>
+      </div>
+      <div>
+        <div class="card-num">Tool 07 <span class="live-badge">Live</span></div>
+        <h2>Superheterodyne Receiver</h2>
+      </div>
+      <div class="card-desc">Interactive block diagram: RF filter → LNA → mixer → IF. Frequency plan spectrum shows RF, LO, IF, image — all labeled. IRR vs IF frequency tradeoff. Double-conversion option.</div>
+      <div class="card-expert">Expert: LO harmonic spurious responses labeled in spectrum</div>
+      <div class="card-eq">f_image = f_RF + 2·f_IF · IRR = 20 log(2·f_IF / BW_RF)</div>
+    </a>
 
-  <a class="card" href="10_link_budget.html">
-    <div class="card-icon">⚖️</div>
-    <div class="card-num">Tool 10</div>
-    <h2>Link Budget Calculator</h2>
-    <p>Editable budget table with running margin, waterfall bar chart, and red highlight when margin goes negative.</p>
-    <div class="eq">Margin = Pr − Sensitivity</div>
-  </a>
+    <a class="card" href="08_fspl.html">
+      <div class="card-top">
+        <div class="card-icon">📶</div>
+        <div class="card-arrow">›</div>
+      </div>
+      <div>
+        <div class="card-num">Tool 08 <span class="live-badge">Live</span></div>
+        <h2>Path Loss Comparison</h2>
+      </div>
+      <div class="card-desc">FSPL vs distance for 6 bands: 900 MHz, 2.4 GHz, 5 GHz, 28 GHz, 60 GHz, 77 GHz. Rain attenuation (ITU-R P.838) and atmospheric absorption (ITU-R P.676) overlays.</div>
+      <div class="card-expert">Expert: 60 GHz O₂ absorption window + band selection guidance</div>
+      <div class="card-eq">FSPL = 20log(d_km) + 20log(f_MHz) + 32.44 dB</div>
+    </a>
+  </div>
+</div>
 
+<!-- Signal Integrity / Circuit Theory Section -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="sh-line"></div>
+    <div class="sh-label">Signal Integrity &amp; Circuit Theory</div>
+    <span class="sh-badge sig">Nonlinearity · Arrays · Matching</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="grid">
+    <a class="card" href="03_iip3_intermod.html">
+      <div class="card-top">
+        <div class="card-icon">📈</div>
+        <div class="card-arrow">›</div>
+      </div>
+      <div>
+        <div class="card-num">Tool 03 <span class="live-badge">Live</span></div>
+        <h2>IIP3 / Intermodulation</h2>
+      </div>
+      <div class="card-desc">Polynomial device model (a₁, a₂, a₃) → exact IIP3, IIP2, OIP3, P1dB. Spectrum shows IM2, IM3, 2nd/3rd harmonics. Intercept diagram with gain compression curve.</div>
+      <div class="card-expert">Expert: derive IIP3 from polynomial coefficients, not just measure it</div>
+      <div class="card-eq">IIP3 = √(4|a₁|/3|a₃|) · y = a₁x + a₂x² + a₃x³</div>
+    </a>
+
+    <a class="card" href="04_antenna_array.html">
+      <div class="card-top">
+        <div class="card-icon">🔭</div>
+        <div class="card-arrow">›</div>
+      </div>
+      <div>
+        <div class="card-num">Tool 04 <span class="live-badge">Live</span></div>
+        <h2>ULA Array Factor</h2>
+      </div>
+      <div class="card-desc">Element pattern × amplitude taper → total pattern. Tapers: Uniform, Hamming, Hann, Chebyshev, Taylor. Compare two configurations. Grating lobe markers. Cartesian and polar views.</div>
+      <div class="card-expert">Expert: Chebyshev equiripple vs Taylor near-equiripple tradeoff</div>
+      <div class="card-eq">E_total(θ) = E_elem(θ) · AF(θ) = E_elem · Σ aₙe^(jnψ)</div>
+    </a>
+
+    <a class="card" href="05_matching.html">
+      <div class="card-top">
+        <div class="card-icon">🎯</div>
+        <div class="card-arrow">›</div>
+      </div>
+      <div>
+        <div class="card-num">Tool 05 <span class="live-badge">Live</span></div>
+        <h2>Smith Chart + TL Matching</h2>
+      </div>
+      <div class="card-desc">Smith Chart with draggable load point. Line length slider rotates Γ on the constant-|Γ| circle in real time. Standing wave |V(z)| updates simultaneously. Single-stub matching solved automatically.</div>
+      <div class="card-expert">Expert: stub solutions computed analytically, overlaid on chart</div>
+      <div class="card-eq">Γ(l) = Γ_L · e^(−j4πl/λ) · VSWR = (1+|Γ|)/(1−|Γ|)</div>
+    </a>
+  </div>
 </div>
 
 <footer>
-  RF Toolbox &mdash; self-contained HTML calculators &mdash; no server required &mdash;
+  RF Systems Toolbox &mdash; self-contained HTML, no server, no build step &mdash;
   <a href="https://github.com/hinckster/RF-Toolbox">github.com/hinckster/RF-Toolbox</a>
+  &mdash; Noah Hinckster · MS EE · RF/Wireless Systems
 </footer>
+
 </body>
 </html>

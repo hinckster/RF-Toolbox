@@ -6,463 +6,361 @@
 <title>Radar Range Equation | RF Toolbox</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0d0d0f; --surface: #16161a; --card: #1e1e24; --border: #2a2a35;
-    --accent: #00c8ff; --accent2: #7b61ff; --text: #e2e2e8; --muted: #888899;
-    --green: #00e5a0; --orange: #ffaa00; --red: #ff4d6d;
-  }
-  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#16181d;--card:#1e2128;--deep:#0d1117;
+  --bdr:#30363d;--t1:#e6edf3;--t2:#c9d1d9;--tm:#8b949e;
+  --blue:#58a6ff;--grn:#3fb950;--org:#f0883e;--red:#f85149;--yel:#e6c547;--pur:#bc8cff;
+}
+body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
 
-  /* Toolbar */
-  .toolbar { position: fixed; top: 14px; right: 16px; display: flex; gap: 6px; z-index: 100; }
-  .tbtn {
-    background: var(--card); border: 1px solid var(--border); color: var(--muted);
-    border-radius: 5px; padding: 5px 10px; font-size: .75rem; cursor: pointer;
-    transition: border-color .15s, color .15s;
-  }
-  .tbtn:hover { border-color: var(--accent); color: var(--accent); }
+.toolbar{position:fixed;top:14px;right:16px;display:flex;gap:6px;z-index:100}
+.tbtn{background:var(--card);border:1px solid var(--bdr);color:var(--tm);border-radius:5px;padding:5px 10px;font-size:.75rem;cursor:pointer;transition:border-color .15s,color .15s}
+.tbtn:hover{border-color:var(--blue);color:var(--blue)}
 
-  nav { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
-  nav a { color: var(--accent); text-decoration: none; font-size: 0.88rem; }
-  nav a:hover { text-decoration: underline; }
-  nav span { color: var(--muted); }
+nav{padding:.75rem 1.5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.75rem;background:var(--card)}
+nav .sep{color:var(--bdr)}
+nav span{color:var(--tm);font-size:.85rem}
 
-  header { padding: 2rem 1.5rem 1.5rem; max-width: 1100px; margin: 0 auto; }
-  header .tag { font-size: 0.72rem; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.4rem; }
-  header h1 { font-size: 2rem; font-weight: 700; }
-  header p { color: var(--muted); margin-top: 0.4rem; }
+header{padding:1.5rem 1.5rem 1rem;max-width:1180px;margin:0 auto}
+header .tag{font-size:.72rem;font-weight:600;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:.3rem}
+header h1{font-size:1.7rem;font-weight:700;color:var(--t1)}
+header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 
-  .equation-box { max-width: 1100px; margin: 0 auto 1.5rem; padding: 0 1.5rem; }
-  .eq-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-    padding: 1.2rem 1.5rem; display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center;
-  }
-  .eq-primary { font-family: 'Courier New', monospace; font-size: 1.1rem; color: var(--accent); flex: 1; min-width: 280px; }
-  .eq-secondary { font-family: 'Courier New', monospace; font-size: 0.88rem; color: var(--accent2); }
-  .eq-note { font-size: 0.82rem; color: var(--muted); margin-top: 0.3rem; }
+.eq-box{max-width:1180px;margin:0 auto .9rem;padding:0 1.5rem}
+.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.4rem;display:flex;flex-wrap:wrap;gap:1.5rem}
+.eq-col{flex:1;min-width:220px}
+.eq-label{font-size:.68rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-primary{font-family:'Courier New',monospace;font-size:.88rem;color:var(--blue);line-height:2}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.79rem;color:var(--pur);line-height:2}
+.eq-note{font-size:.73rem;color:var(--tm);margin-top:.25rem}
 
-  .layout {
-    display: grid; grid-template-columns: 320px 1fr; gap: 1.4rem;
-    max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem;
-  }
-  @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
+.layout{display:grid;grid-template-columns:290px 1fr;gap:1.2rem;max-width:1180px;margin:0 auto;padding:0 1.5rem 2rem}
+@media(max-width:768px){.layout{grid-template-columns:1fr}}
 
-  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
-  .panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1.1rem; }
+.panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem}
+.panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
+.panel-sep{border-top:1px solid var(--bdr);margin:.85rem 0}
 
-  .slider-row { margin-bottom: 1.1rem; }
-  .slider-row label { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.35rem; }
-  .slider-row label span { color: var(--accent); font-family: 'Courier New', monospace; font-weight: 600; transition: all 200ms ease; }
-  input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
-  .slider-row .hints { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
+.sr{margin-bottom:.9rem}
+.sr label{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem}
+.sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
+input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
+.hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
 
-  .results { margin-top: 1.4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
-  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; }
-  .result-card .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-  .result-card .value { font-size: 1.3rem; font-weight: 700; color: var(--green); font-family: 'Courier New', monospace; margin-top: 0.15rem; transition: all 200ms ease; }
-  .result-card .unit { font-size: 0.7rem; color: var(--muted); }
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.9rem}
+.mc{background:var(--deep);border:1px solid var(--bdr);border-radius:6px;padding:.6rem .8rem}
+.mc .mlb{font-size:.67rem;color:var(--tm);text-transform:uppercase;letter-spacing:.9px}
+.mc .mv{font-family:'Courier New',monospace;font-size:1.05rem;font-weight:700;margin-top:.1rem;transition:color 200ms}
+.mc .mu{font-size:.65rem;color:var(--tm)}
+.good{color:var(--grn)}.warn{color:var(--org)}.bad{color:var(--red)}.info{color:var(--blue)}.info2{color:var(--pur)}
 
-  .chart-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; display: flex; flex-direction: column; }
-  .chart-panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
-  .chart-wrap { flex: 1; position: relative; min-height: 340px; }
+.chart-panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem;margin-bottom:1rem}
+.chart-panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.8rem}
+.chart-wrap{position:relative;min-height:240px}
 
-  .annotation {
-    border-left: 3px solid var(--accent); background: var(--surface);
-    padding: 11px 14px; border-radius: 0 8px 8px 0; margin-top: 1rem;
-    font-size: 0.83rem; color: var(--muted); line-height: 1.65;
-  }
-  .annotation strong { color: var(--text); }
+.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.82rem;color:var(--tm);line-height:1.7}
+.annotation strong{color:var(--t1)}
+.annotation b{color:var(--blue)}
+
+.clutter-row{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.7rem}
+.clutter-tag{font-size:.72rem;padding:.18rem .5rem;border-radius:10px;border:1px solid var(--bdr);background:var(--deep);color:var(--tm);display:flex;align-items:center;gap:.3rem}
+.clutter-dot{width:8px;height:8px;border-radius:50%}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
-  <button class="tbtn" onclick="takeScreenshot()">&#128247; Screenshot</button>
-  <button class="tbtn" onclick="toggleFullscreen()">&#9678; Fullscreen</button>
-  <button class="tbtn" id="copyBtn" onclick="copyLink()">&#10040; Copy Link</button>
+  <button class="tbtn" onclick="takeScreenshot('Radar Range Equation')">📷 Screenshot</button>
+  <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
 </div>
 
 <nav>
-  <a href="index.html">&#8592; RF Toolbox</a>
-  <span>/</span>
-  <span>06 Radar Range Equation</span>
+  <a href="index.html">RF Toolbox</a>
+  <span class="sep">›</span>
+  <span>Radar Range Equation</span>
 </nav>
 
 <header>
-  <div class="tag">Tool 06</div>
-  <h1>Radar Range Equation Calculator</h1>
-  <p>Maximum detection range as a function of transmit power, antenna gains, RCS, and receiver sensitivity</p>
+  <div class="tag">Tool 06 · Radar Systems</div>
+  <h1>Radar Range Equation</h1>
+  <p>Full Skolnik radar range equation — R vs RCS curve, Pr vs range, clutter comparison, pulse compression gain.</p>
 </header>
 
-<div class="equation-box">
+<div class="eq-box">
   <div class="eq-card">
-    <div>
-      <div class="eq-primary">R&#8308; = Pt&#183;Gt&#183;Gr&#183;&#955;&#178;&#183;&#963; / ((4&#960;)&#179;&#183;L&#183;Smin)</div>
-      <div class="eq-note">Pt, Gt, Gr in linear; &#955; = c/f; &#963; = radar cross section (m&#178;)</div>
+    <div class="eq-col">
+      <div class="eq-label">Radar Range Equation (Skolnik 2.1)</div>
+      <div class="eq-primary">R⁴ = Pt·Gt·Gr·λ²·σ / [(4π)³·L·S_min]</div>
+      <div class="eq-secondary">S_min = kTB·NF·(S/N)_min / T_i</div>
+      <div class="eq-secondary">In dB: R_max = ¼ · [Pt+Gt+Gr+2·10log(λ)+σ_dBsm −(4π)³_dB−L−S_min]</div>
+      <div class="eq-note">λ = c/f. Each term varies as R⁴ — the "fourth-power law".</div>
     </div>
-    <div>
-      <div class="eq-secondary">Smin(dBm) = &#8722;174 + NF + 10&#183;log&#8321;&#8320;(BW&#8320;&#7611;) + SNR&#8346;&#7522;&#8345;</div>
-      <div class="eq-note">thermal noise floor + noise figure + SNR threshold</div>
+    <div class="eq-col">
+      <div class="eq-label">Received Power</div>
+      <div class="eq-primary">Pr = Pt·Gt·Gr·λ²·σ / [(4π)³·R⁴·L]</div>
+      <div class="eq-secondary">= EIRP + Gr + 10log(σ) − 30log(R) + 20log(λ) − const</div>
+      <div class="eq-note">Falls as R⁻⁴ (40 dB/decade) — every 2× range = −12 dB received power.</div>
+    </div>
+    <div class="eq-col">
+      <div class="eq-label">Pulse Compression</div>
+      <div class="eq-primary">G_pc = BW·τ = TBP</div>
+      <div class="eq-secondary">Range_compressed = Range_uncompressed · TBP^(1/4)</div>
+      <div class="eq-secondary">R_max ∝ (Pt·τ·BW)^(1/4) = (E_total)^(1/4)</div>
+      <div class="eq-note">Time-bandwidth product. LFM chirp: BW = Δf, τ = pulse width.</div>
     </div>
   </div>
 </div>
 
 <div class="layout">
-  <div class="panel">
-    <h3>Parameters</h3>
-
-    <div class="slider-row">
-      <label>Tx Power (Pt) <span id="lPt">30 dBm</span></label>
-      <input type="range" id="sPt" min="-10" max="60" value="30" step="1">
-      <div class="hints"><span>&#8722;10 dBm</span><span>60 dBm</span></div>
-    </div>
-
-    <div class="slider-row">
-      <label>Tx Antenna Gain (Gt) <span id="lGt">30.0 dBi</span></label>
-      <input type="range" id="sGt" min="0" max="50" value="30" step="0.5">
-      <div class="hints"><span>0 dBi</span><span>50 dBi</span></div>
-    </div>
-
-    <div class="slider-row">
-      <label>Rx Antenna Gain (Gr) <span id="lGr">30.0 dBi</span></label>
-      <input type="range" id="sGr" min="0" max="50" value="30" step="0.5">
-      <div class="hints"><span>0 dBi</span><span>50 dBi</span></div>
-    </div>
-
-    <div class="slider-row">
-      <label>Frequency <span id="lFreq">10.00 GHz</span></label>
-      <input type="range" id="sFreq" min="-1" max="1.4771" value="1" step="0.01">
-      <div class="hints"><span>0.1 GHz</span><span>30 GHz</span></div>
-    </div>
-
-    <div class="slider-row">
-      <label>RCS (&#963;) <span id="lRCS">0 dBsm</span></label>
-      <input type="range" id="sRCS" min="-30" max="30" value="0" step="1">
-      <div class="hints"><span>&#8722;30 dBsm</span><span>+30 dBsm</span></div>
-    </div>
-
-    <div class="slider-row">
-      <label>System Losses (L) <span id="lL">3.0 dB</span></label>
-      <input type="range" id="sL" min="0" max="20" value="3" step="0.5">
-      <div class="hints"><span>0 dB</span><span>20 dB</span></div>
-    </div>
-
-    <div class="slider-row">
-      <label>Noise Figure (NF) <span id="lNF">5.0 dB</span></label>
-      <input type="range" id="sNF" min="0" max="20" value="5" step="0.5">
-      <div class="hints"><span>0 dB</span><span>20 dB</span></div>
-    </div>
-
-    <div class="slider-row">
-      <label>SNR&#8346;&#7522;&#8345; <span id="lSNR">13 dB</span></label>
-      <input type="range" id="sSNR" min="0" max="30" value="13" step="1">
-      <div class="hints"><span>0 dB</span><span>30 dB</span></div>
-    </div>
-
-    <div class="slider-row">
-      <label>Bandwidth (BW) <span id="lBW">1.000 MHz</span></label>
-      <input type="range" id="sBW" min="-3" max="2" value="0" step="0.05">
-      <div class="hints"><span>0.001 MHz</span><span>100 MHz</span></div>
-    </div>
-
-    <div class="results">
-      <div class="result-card">
-        <div class="label">R&#8346;&#8363;&#8366;</div>
-        <div class="value" id="rRmax">&#8212;</div>
-        <div class="unit">km</div>
+  <div>
+    <div class="panel" style="margin-bottom:1rem">
+      <h3>Radar Parameters</h3>
+      <div class="sr">
+        <label>Tx Power P<sub>t</sub> <span id="vPt">1000 W</span></label>
+        <input type="range" id="sPt" min="0" max="4" step="0.05" value="3">
+        <div class="hints"><span>1 W</span><span>10 kW</span></div>
       </div>
-      <div class="result-card">
-        <div class="label">Smin</div>
-        <div class="value" id="rSmin">&#8212;</div>
-        <div class="unit">dBm</div>
+      <div class="sr">
+        <label>Antenna Gain G<sub>t</sub>=G<sub>r</sub> <span id="vGt">35.0 dBi</span></label>
+        <input type="range" id="sGt" min="0" max="50" step="0.5" value="35">
+        <div class="hints"><span>0 dBi</span><span>50 dBi</span></div>
       </div>
-      <div class="result-card">
-        <div class="label">Wavelength &#955;</div>
-        <div class="value" id="rLambda">&#8212;</div>
-        <div class="unit">cm</div>
+      <div class="sr">
+        <label>Frequency f <span id="vF">9.5 GHz</span></label>
+        <input type="range" id="sF" min="0.1" max="100" step="0.1" value="9.5">
+        <div class="hints"><span>0.1 GHz</span><span>100 GHz</span></div>
       </div>
-      <div class="result-card">
-        <div class="label">Tx Power</div>
-        <div class="value" id="rPtW">&#8212;</div>
-        <div class="unit">W</div>
+      <div class="sr">
+        <label>Target RCS σ <span id="vRCS">0 dBsm</span></label>
+        <input type="range" id="sRCS" min="-30" max="40" step="0.5" value="0">
+        <div class="hints"><span>−30 dBsm</span><span>+40 dBsm</span></div>
       </div>
-      <div class="result-card" style="grid-column:1/-1;">
-        <div class="label">Two-way Path Loss @ R&#8346;&#8363;&#8366;</div>
-        <div class="value" id="rPathLoss">&#8212;</div>
-        <div class="unit">dB</div>
+      <div class="sr">
+        <label>System Loss L <span id="vL">3.0 dB</span></label>
+        <input type="range" id="sL" min="0" max="20" step="0.25" value="3">
+        <div class="hints"><span>0 dB</span><span>20 dB</span></div>
+      </div>
+      <div class="sr">
+        <label>S_min (sensitivity) <span id="vSmin">-100 dBm</span></label>
+        <input type="range" id="sSmin" min="-130" max="-60" step="0.5" value="-100">
+        <div class="hints"><span>−130 dBm</span><span>−60 dBm</span></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:1rem">
+      <h3>Pulse Compression</h3>
+      <div class="sr">
+        <label>Pulse width τ <span id="vTau">1.0 μs</span></label>
+        <input type="range" id="sTau" min="0.01" max="100" step="0.01" value="1">
+        <div class="hints"><span>10 ns</span><span>100 μs</span></div>
+      </div>
+      <div class="sr">
+        <label>Chirp BW <span id="vBWpc">10 MHz</span></label>
+        <input type="range" id="sBWpc" min="0.1" max="1000" step="0.5" value="10">
+        <div class="hints"><span>0.1 MHz</span><span>1 GHz</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Key Results</h3>
+      <div class="metrics">
+        <div class="mc"><div class="mlb">Max Range</div><div class="mv info" id="mRmax">—</div><div class="mu">km</div></div>
+        <div class="mc"><div class="mlb">λ</div><div class="mv" id="mLambda" style="color:var(--tm)">—</div><div class="mu">cm</div></div>
+        <div class="mc"><div class="mlb">Pulse Comp. Gain</div><div class="mv good" id="mTBP">—</div><div class="mu">dB</div></div>
+        <div class="mc"><div class="mlb">R_max (compressed)</div><div class="mv info2" id="mRmaxPC">—</div><div class="mu">km</div></div>
+        <div class="mc"><div class="mlb">EIRP</div><div class="mv" id="mEIRP" style="color:var(--t1)">—</div><div class="mu">dBm</div></div>
+        <div class="mc"><div class="mlb">Pr @ 10 km</div><div class="mv" id="mPr10" style="color:var(--tm)">—</div><div class="mu">dBm</div></div>
       </div>
     </div>
   </div>
 
-  <div class="chart-panel">
-    <h3>R&#8346;&#8363;&#8366; vs RCS Sweep (&#8722;20 to +30 dBsm)</h3>
-    <div class="chart-wrap">
-      <canvas id="chart"></canvas>
+  <div>
+    <div class="chart-panel">
+      <h3>Max Range vs Target RCS — the key radar design curve</h3>
+      <div class="chart-wrap"><canvas id="chartRvsRCS"></canvas></div>
     </div>
-    <div class="annotation" id="annotation">Updating&#8230;</div>
+    <div class="chart-panel">
+      <h3>Received Power vs Range — R⁻⁴ law + S_min threshold</h3>
+      <div class="clutter-row" id="clutterTags"></div>
+      <div class="chart-wrap"><canvas id="chartPrvsR"></canvas></div>
+    </div>
+    <div class="annotation" id="annotation">Computing...</div>
   </div>
 </div>
 
 <script>
-const C = 3e8;
+const C=3e8;
+// Clutter reference RCS values (dBsm typical)
+const CLUTTER=[
+  {name:'Insect',rcs:-55,col:'#8b949e'},
+  {name:'Bird',rcs:-30,col:'#bc8cff'},
+  {name:'Human',rcs:-10,col:'#58a6ff'},
+  {name:'Car',rcs:10,col:'#f0883e'},
+  {name:'Fighter jet',rcs:0,col:'#e6c547'},
+  {name:'Airliner',rcs:20,col:'#3fb950'},
+  {name:'Ship',rcs:35,col:'#f85149'},
+];
 
-const sliders = {
-  Pt:   document.getElementById('sPt'),
-  Gt:   document.getElementById('sGt'),
-  Gr:   document.getElementById('sGr'),
-  freq: document.getElementById('sFreq'),
-  RCS:  document.getElementById('sRCS'),
-  L:    document.getElementById('sL'),
-  NF:   document.getElementById('sNF'),
-  SNR:  document.getElementById('sSNR'),
-  BW:   document.getElementById('sBW'),
-};
-const lbls = {
-  Pt:   document.getElementById('lPt'),
-  Gt:   document.getElementById('lGt'),
-  Gr:   document.getElementById('lGr'),
-  freq: document.getElementById('lFreq'),
-  RCS:  document.getElementById('lRCS'),
-  L:    document.getElementById('lL'),
-  NF:   document.getElementById('lNF'),
-  SNR:  document.getElementById('lSNR'),
-  BW:   document.getElementById('lBW'),
-};
-
-function getVals() {
-  const Pt_dBm   = +sliders.Pt.value;
-  const Gt_dBi   = +sliders.Gt.value;
-  const Gr_dBi   = +sliders.Gr.value;
-  // freq slider is log10(GHz): range -1 to 1.4771 => 0.1 to 30 GHz
-  const fGHz     = Math.pow(10, +sliders.freq.value);
-  const RCS_dBsm = +sliders.RCS.value;
-  const L_dB     = +sliders.L.value;
-  const NF_dB    = +sliders.NF.value;
-  const SNR_dB   = +sliders.SNR.value;
-  // BW slider is log10(MHz): range -3 to 2 => 0.001 to 100 MHz
-  const BW_MHz   = Math.pow(10, +sliders.BW.value);
-  return { Pt_dBm, Gt_dBi, Gr_dBi, fGHz, RCS_dBsm, L_dB, NF_dB, SNR_dB, BW_MHz };
+function radarEq(Pt_W, Gt_lin, f_Hz, sigma_m2, L_lin, Smin_W){
+  const lam=C/f_Hz;
+  const numerator=Pt_W*Gt_lin*Gt_lin*lam*lam*sigma_m2;
+  const denominator=Math.pow(4*Math.PI,3)*L_lin*Smin_W;
+  return Math.pow(numerator/denominator, 0.25);
 }
 
-function computeRange(v) {
-  const Pt_W    = Math.pow(10, (v.Pt_dBm - 30) / 10);
-  const Gt_lin  = Math.pow(10, v.Gt_dBi / 10);
-  const Gr_lin  = Math.pow(10, v.Gr_dBi / 10);
-  const sigma   = Math.pow(10, v.RCS_dBsm / 10);
-  const L_lin   = Math.pow(10, v.L_dB / 10);
-  const lambda  = C / (v.fGHz * 1e9);
-
-  const BW_Hz    = v.BW_MHz * 1e6;
-  const Smin_dBm = -174 + v.NF_dB + 10 * Math.log10(BW_Hz) + v.SNR_dB;
-  const Smin_W   = Math.pow(10, (Smin_dBm - 30) / 10);
-
-  const numer  = Pt_W * Gt_lin * Gr_lin * lambda * lambda * sigma;
-  const denom  = Math.pow(4 * Math.PI, 3) * L_lin * Smin_W;
-  const R_m    = Math.pow(numer / denom, 0.25);
-  const R_km   = R_m / 1000;
-
-  // Two-way path loss at R_max (one-way FSPL x2)
-  const TWPL_dB = 2 * (20 * Math.log10(4 * Math.PI * R_m / lambda));
-
-  return { R_km, Smin_dBm, lambda, Pt_W, TWPL_dB };
+function Pr(Pt_W, Gt_lin, f_Hz, sigma_m2, R_m, L_lin){
+  const lam=C/f_Hz;
+  return Pt_W*Gt_lin*Gt_lin*lam*lam*sigma_m2/(Math.pow(4*Math.PI,3)*R_m*R_m*R_m*R_m*L_lin);
 }
 
-function formatFreq(f) {
-  return f >= 1 ? f.toFixed(2) + ' GHz' : (f * 1000).toFixed(0) + ' MHz';
-}
+const ctxRvsRCS=document.getElementById('chartRvsRCS').getContext('2d');
+const ctxPrvsR=document.getElementById('chartPrvsR').getContext('2d');
 
-function formatBW(bw) {
-  if (bw >= 1)    return bw.toFixed(3) + ' MHz';
-  if (bw >= 0.001) return (bw * 1000).toFixed(2) + ' kHz';
-  return bw.toExponential(2) + ' MHz';
-}
-
-function updateLabels() {
-  const v = getVals();
-  lbls.Pt.textContent   = v.Pt_dBm + ' dBm';
-  lbls.Gt.textContent   = v.Gt_dBi.toFixed(1) + ' dBi';
-  lbls.Gr.textContent   = v.Gr_dBi.toFixed(1) + ' dBi';
-  lbls.freq.textContent = formatFreq(v.fGHz);
-  lbls.RCS.textContent  = (v.RCS_dBsm >= 0 ? '+' : '') + v.RCS_dBsm + ' dBsm';
-  lbls.L.textContent    = v.L_dB.toFixed(1) + ' dB';
-  lbls.NF.textContent   = v.NF_dB.toFixed(1) + ' dB';
-  lbls.SNR.textContent  = v.SNR_dB + ' dB';
-  lbls.BW.textContent   = formatBW(v.BW_MHz);
-}
-
-function updateResults() {
-  const v = getVals();
-  const { R_km, Smin_dBm, lambda, Pt_W, TWPL_dB } = computeRange(v);
-
-  document.getElementById('rRmax').textContent     = R_km.toFixed(2);
-  document.getElementById('rSmin').textContent     = Smin_dBm.toFixed(1);
-  document.getElementById('rLambda').textContent   = (lambda * 100).toFixed(2);
-  document.getElementById('rPtW').textContent      = Pt_W < 1 ? Pt_W.toFixed(3) : Pt_W.toFixed(2);
-  document.getElementById('rPathLoss').textContent = TWPL_dB.toFixed(1);
-
-  updateAnnotation(v, R_km, Smin_dBm);
-  buildChart(v, R_km);
-}
-
-function updateAnnotation(v, R_km, Smin_dBm) {
-  const ptGainPct = ((Math.pow(2, 0.25) - 1) * 100).toFixed(0); // ~19%
-  const rStr = R_km >= 1 ? R_km.toFixed(2) + ' km' : (R_km * 1000).toFixed(0) + ' m';
-  const rcsStr = (v.RCS_dBsm >= 0 ? '+' : '') + v.RCS_dBsm + ' dBsm';
-
-  document.getElementById('annotation').innerHTML =
-    '<strong>R&#8346;&#8363;&#8366; = ' + rStr + '</strong> &mdash; ' +
-    'RCS = <strong>' + rcsStr + '</strong>, ' +
-    'f = <strong>' + formatFreq(v.fGHz) + '</strong>, ' +
-    'Smin = <strong>' + Smin_dBm.toFixed(1) + ' dBm</strong>. ' +
-    'Doubling Pt increases range by only <strong>' + ptGainPct + '%</strong> (R &prop; Pt<sup>1/4</sup>). ' +
-    'Increasing Gt+Gr by 6 dB each <strong>doubles</strong> range. ' +
-    'Reducing Smin by 3 dB (better NF or lower SNR threshold) adds <strong>' + ptGainPct + '% range</strong>.';
-}
-
-// Chart
-const ctx = document.getElementById('chart').getContext('2d');
-const chart = new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: [],
-    datasets: [
-      {
-        label: 'R_max vs RCS',
-        data: [],
-        borderColor: '#00c8ff',
-        backgroundColor: 'rgba(0,200,255,0.07)',
-        borderWidth: 2,
-        pointRadius: 0,
-        fill: true,
-        tension: 0.3,
-        order: 2,
-      },
-      {
-        label: 'Current operating point',
-        data: [],
-        borderColor: '#ffaa00',
-        backgroundColor: '#ffaa00',
-        borderWidth: 0,
-        pointRadius: 8,
-        pointHoverRadius: 10,
-        pointStyle: 'circle',
-        showLine: false,
-        order: 1,
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    animation: { duration: 0 },
-    plugins: {
-      legend: { labels: { color: '#888899', font: { size: 11 }, boxWidth: 14 } },
-      tooltip: {
-        mode: 'nearest',
-        intersect: false,
-        callbacks: {
-          label: function(item) {
-            return item.dataset.label + ': ' + item.parsed.y.toFixed(3) + ' km';
-          }
-        }
-      }
-    },
-    scales: {
-      x: {
-        ticks: { color: '#888899', maxTicksLimit: 11, font: { size: 10 } },
-        grid: { color: '#2a2a35' },
-        title: { display: true, text: 'RCS (dBsm)', color: '#888899', font: { size: 11 } }
-      },
-      y: {
-        type: 'logarithmic',
-        ticks: {
-          color: '#888899',
-          font: { size: 10 },
-          callback: function(val) {
-            const log = Math.log10(val);
-            if (Math.abs(log - Math.round(log)) < 0.01) return val + ' km';
-            if (Math.abs(log - (Math.round(log) + 0.301)) < 0.02) return val.toFixed(1);
-            return '';
-          }
-        },
-        grid: { color: '#2a2a35' },
-        title: { display: true, text: 'R_max (km)', color: '#888899', font: { size: 11 } }
-      }
+const chartRvsRCS=new Chart(ctxRvsRCS,{
+  type:'line',
+  data:{datasets:[
+    {label:'Max Range (uncompressed)',data:[],borderColor:'#58a6ff',borderWidth:2.5,pointRadius:0,fill:false},
+    {label:'Max Range (pulse comp.)',data:[],borderColor:'#3fb950',borderDash:[5,3],borderWidth:2,pointRadius:0,fill:false},
+    {label:'Target RCS',data:[],borderColor:'#f85149',backgroundColor:'#f85149',pointRadius:6,showLine:false}
+  ]},
+  options:{
+    animation:{duration:0},responsive:true,
+    plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+    scales:{
+      x:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Target RCS (dBsm)'}},
+      y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Max Range (km)'}}
     }
   }
 });
 
-function buildChart(v, currentR_km) {
-  const RCS_MIN = -20, RCS_MAX = 30, PTS = 100;
-  const labels = [], curveData = [];
-
-  for (let i = 0; i < PTS; i++) {
-    const rcs = RCS_MIN + (RCS_MAX - RCS_MIN) * i / (PTS - 1);
-    const { R_km } = computeRange(Object.assign({}, v, { RCS_dBsm: rcs }));
-    labels.push(rcs.toFixed(1));
-    curveData.push({ x: rcs.toFixed(1), y: R_km });
+const chartPrvsR=new Chart(ctxPrvsR,{
+  type:'line',
+  data:{datasets:[
+    {label:'Received Power',data:[],borderColor:'#58a6ff',borderWidth:2.5,pointRadius:0,fill:false},
+    {label:'S_min threshold',data:[],borderColor:'#f85149',borderDash:[5,4],borderWidth:1.5,pointRadius:0,showLine:true,fill:false},
+    {label:'Operating Point',data:[],borderColor:'#3fb950',backgroundColor:'#3fb950',pointRadius:6,showLine:false}
+  ]},
+  options:{
+    animation:{duration:0},responsive:true,
+    plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+    scales:{
+      x:{type:'logarithmic',grid:{color:'#252830'},ticks:{color:'#8b949e',maxTicksLimit:8},title:{display:true,color:'#8b949e',text:'Range (km)'}},
+      y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Received Power (dBm)'}}
+    }
   }
+});
 
-  // Snap current RCS to nearest label string for the point
-  const opPoint = [{ x: v.RCS_dBsm.toFixed(1), y: currentR_km }];
+function update(){
+  const Pt_dBW=+document.getElementById('sPt').value;  // log10(Pt) slider
+  const Pt_W=Math.pow(10,Pt_dBW);
+  const Gt_dB=+document.getElementById('sGt').value;
+  const f_GHz=+document.getElementById('sF').value;
+  const RCS_dBsm=+document.getElementById('sRCS').value;
+  const L_dB=+document.getElementById('sL').value;
+  const Smin_dBm=+document.getElementById('sSmin').value;
+  const tau_us=+document.getElementById('sTau').value;
+  const BW_MHz=+document.getElementById('sBWpc').value;
 
-  chart.data.labels = labels;
-  chart.data.datasets[0].data = curveData;
-  chart.data.datasets[1].data = opPoint;
-  chart.update('none');
-}
+  const f_Hz=f_GHz*1e9;
+  const lam=C/f_Hz;
+  const Gt_lin=Math.pow(10,Gt_dB/10);
+  const L_lin=Math.pow(10,L_dB/10);
+  const Smin_W=Math.pow(10,(Smin_dBm-30)/10);
+  const sigma_m2=Math.pow(10,RCS_dBsm/10);
+  const TBP=BW_MHz*1e6*tau_us*1e-6;
+  const TBP_dB=10*Math.log10(Math.max(1,TBP));
 
-function onInput() {
-  updateLabels();
-  updateResults();
-}
+  const Pt_W_disp=Pt_W>=1000?(Pt_W/1000).toFixed(1)+' kW':Pt_W.toFixed(0)+' W';
+  document.getElementById('vPt').textContent=Pt_W_disp;
+  document.getElementById('vGt').textContent=Gt_dB.toFixed(1)+' dBi';
+  document.getElementById('vF').textContent=f_GHz>=1?(f_GHz).toFixed(1)+' GHz':(f_GHz*1000).toFixed(0)+' MHz';
+  document.getElementById('vRCS').textContent=RCS_dBsm.toFixed(1)+' dBsm';
+  document.getElementById('vL').textContent=L_dB.toFixed(2)+' dB';
+  document.getElementById('vSmin').textContent=Smin_dBm.toFixed(1)+' dBm';
+  document.getElementById('vTau').textContent=tau_us.toFixed(2)+' μs';
+  document.getElementById('vBWpc').textContent=BW_MHz.toFixed(1)+' MHz';
 
-Object.values(sliders).forEach(el => el.addEventListener('input', onInput));
-onInput();
+  const Rmax=radarEq(Pt_W,Gt_lin,f_Hz,sigma_m2,L_lin,Smin_W);
+  const Rmax_km=Rmax/1e3;
+  const Rmax_pc_km=Rmax_km*Math.pow(TBP,0.25);
+  const EIRP_dBm=10*Math.log10(Pt_W*1000)+Gt_dB;
+  const Pr10_dBm=10*Math.log10(Pr(Pt_W,Gt_lin,f_Hz,sigma_m2,10e3,L_lin)*1e3);
 
-// Toolbar functions
-function takeScreenshot() {
-  const canvases = [...document.querySelectorAll('canvas')];
-  const padding = 16, titleHeight = 40;
-  const totalWidth = canvases.reduce((s, c) => s + c.width + padding, padding);
-  const maxHeight = Math.max(...canvases.map(c => c.height));
-  const out = document.createElement('canvas');
-  out.width = totalWidth;
-  out.height = maxHeight + titleHeight + padding * 2;
-  const c = out.getContext('2d');
-  c.fillStyle = '#0d0d0f';
-  c.fillRect(0, 0, out.width, out.height);
-  c.fillStyle = '#e2e2e8';
-  c.font = 'bold 14px Segoe UI, system-ui, sans-serif';
-  c.fillText('Radar Range Equation  \u00B7  RF Toolbox', padding, titleHeight / 2 + 5);
-  c.fillStyle = '#888899';
-  c.font = '11px monospace';
-  c.fillText(new Date().toISOString().slice(0, 19).replace('T', ' ') + ' UTC', padding, titleHeight - 4);
-  let x = padding;
-  canvases.forEach(cv => { c.drawImage(cv, x, titleHeight + padding); x += cv.width + padding; });
-  const link = document.createElement('a');
-  const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-  link.download = 'radar_range_' + ts + '.png';
-  link.href = out.toDataURL('image/png');
-  link.click();
-}
+  document.getElementById('mRmax').textContent=Rmax_km.toFixed(1);
+  document.getElementById('mRmax').className='mv '+(Rmax_km>100?'good':Rmax_km>20?'warn':'bad');
+  document.getElementById('mLambda').textContent=(lam*100).toFixed(2);
+  document.getElementById('mTBP').textContent=TBP_dB.toFixed(1);
+  document.getElementById('mRmaxPC').textContent=Rmax_pc_km.toFixed(1);
+  document.getElementById('mEIRP').textContent=EIRP_dBm.toFixed(1);
+  document.getElementById('mPr10').textContent=Pr10_dBm.toFixed(1);
 
-function toggleFullscreen() {
-  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-  else document.exitFullscreen();
-}
-
-function copyLink() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    const btn = document.getElementById('copyBtn');
-    const orig = btn.textContent;
-    btn.textContent = '\u2713 Copied!';
-    btn.style.color = '#00e5a0';
-    btn.style.borderColor = '#00e5a0';
-    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+  // Chart 1: Rmax vs RCS
+  const rcsArr=Array.from({length:200},(_,i)=>-30+70*i/199);
+  const rmaxArr=rcsArr.map(r=>{
+    const s=Math.pow(10,r/10);
+    return radarEq(Pt_W,Gt_lin,f_Hz,s,L_lin,Smin_W)/1e3;
   });
+  const rmaxPcArr=rmaxArr.map((r,i)=>r*Math.pow(TBP,0.25));
+  chartRvsRCS.data.datasets[0].data=rcsArr.map((r,i)=>({x:r,y:rmaxArr[i]}));
+  chartRvsRCS.data.datasets[1].data=rcsArr.map((r,i)=>({x:r,y:rmaxPcArr[i]}));
+  chartRvsRCS.data.datasets[2].data=[{x:RCS_dBsm,y:Rmax_km}];
+
+  // Add clutter markers as vertical annotation (simplified as separate dataset)
+  while(chartRvsRCS.data.datasets.length>3) chartRvsRCS.data.datasets.pop();
+  CLUTTER.forEach(cl=>{
+    chartRvsRCS.data.datasets.push({
+      label:'', data:[{x:cl.rcs,y:0},{x:cl.rcs,y:Math.max(...rmaxArr)*1.1}],
+      borderColor:cl.col+'80',borderDash:[2,4],borderWidth:1,pointRadius:0,showLine:true,fill:false
+    });
+  });
+  chartRvsRCS.update();
+
+  // Chart 2: Pr vs Range
+  const rMin=0.1, rMax=Math.max(Rmax_km*2,100);
+  const rArr=Array.from({length:300},(_,i)=>Math.pow(10,Math.log10(rMin)+(Math.log10(rMax)-Math.log10(rMin))*i/299));
+  const prArr=rArr.map(r=>10*Math.log10(Pr(Pt_W,Gt_lin,f_Hz,sigma_m2,r*1e3,L_lin)*1e3));
+  chartPrvsR.data.datasets[0].data=rArr.map((r,i)=>({x:r,y:prArr[i]}));
+  chartPrvsR.data.datasets[1].data=[{x:rMin,y:Smin_dBm},{x:rMax,y:Smin_dBm}];
+  const Pr_at_Rmax=10*Math.log10(Pr(Pt_W,Gt_lin,f_Hz,sigma_m2,Rmax,L_lin)*1e3);
+  chartPrvsR.data.datasets[2].data=[{x:Rmax_km,y:Pr_at_Rmax}];
+  chartPrvsR.options.scales.x.min=rMin;
+  chartPrvsR.options.scales.x.max=rMax;
+  chartPrvsR.update();
+
+  // Clutter tags
+  document.getElementById('clutterTags').innerHTML=CLUTTER.map(cl=>{
+    const rmaxCl=radarEq(Pt_W,Gt_lin,f_Hz,Math.pow(10,cl.rcs/10),L_lin,Smin_W)/1e3;
+    return `<span class="clutter-tag"><span class="clutter-dot" style="background:${cl.col}"></span>
+      ${cl.name} (${cl.rcs} dBsm): ${rmaxCl.toFixed(1)} km</span>`;
+  }).join('');
+
+  const Pt_dBm=10*Math.log10(Pt_W*1000);
+  document.getElementById('annotation').innerHTML=
+    `<strong>Radar equation:</strong> R_max = <b>${Rmax_km.toFixed(1)} km</b> against a
+    <b>${RCS_dBsm} dBsm</b> target at <b>${f_GHz.toFixed(1)} GHz</b>.
+    Pt = ${Pt_W_disp}, G = ${Gt_dB} dBi, λ = ${(lam*100).toFixed(2)} cm, L = ${L_dB} dB, S_min = ${Smin_dBm} dBm.<br>
+    <strong>Pulse compression:</strong> TBP = ${TBP.toFixed(0)} (${TBP_dB.toFixed(1)} dB gain) →
+    R_max increases to <b>${Rmax_pc_km.toFixed(1)} km</b>
+    (TBP^0.25 × ${Rmax_km.toFixed(1)} km). Energy = Pt·τ = ${(Pt_W*tau_us*1e-6*1e6).toFixed(1)} μJ.<br>
+    <strong>Fourth-power law:</strong> doubling range requires ${Math.pow(2,4).toFixed(0)}× power or ${(20*Math.log10(2)*2).toFixed(0)} dB more EIRP.
+    Pr falls ${40} dB/decade.
+    ${Rmax_km<10?'Short range — consider increasing power, gain, or integration time.':
+    Rmax_km<50?'Medium range — typical for airborne weather radar or short-range surveillance.':
+    'Long range — comparable to long-range surveillance or weather radar.'}`;
 }
+
+[document.getElementById('sPt'),document.getElementById('sGt'),document.getElementById('sF'),
+ document.getElementById('sRCS'),document.getElementById('sL'),document.getElementById('sSmin'),
+ document.getElementById('sTau'),document.getElementById('sBWpc')
+].forEach(s=>s.addEventListener('input',update));
+
+function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#8b949e';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`radar_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
+function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+function copyLink(){navigator.clipboard.writeText(window.location.href).then(()=>{const b=document.getElementById('copyBtn');const o=b.textContent;b.textContent='✓ Copied!';b.style.color='#3fb950';b.style.borderColor='#3fb950';setTimeout(()=>{b.textContent=o;b.style.color='';b.style.borderColor='';},2000);});}
+
+update();
 </script>
 </body>
 </html>

@@ -3,836 +3,337 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IIP3 &amp; Intermod Cascade | RF Toolbox</title>
+<title>IIP3 / Intermodulation | RF Toolbox</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg: #0d0d0f; --surface: #16161a; --card: #1e1e24; --border: #2a2a35;
-  --accent: #00c8ff; --accent2: #7b61ff; --text: #e2e2e8; --muted: #888899;
-  --green: #00e5a0; --orange: #ffaa00; --red: #ff4d6d; --purple: #bc8cff;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#16181d;--card:#1e2128;--deep:#0d1117;
+  --bdr:#30363d;--t1:#e6edf3;--t2:#c9d1d9;--tm:#8b949e;
+  --blue:#58a6ff;--grn:#3fb950;--org:#f0883e;--red:#f85149;--yel:#e6c547;--pur:#bc8cff;
 }
-body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; font-size: 14px; }
+body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
 
-.toolbar { position: fixed; top: 14px; right: 16px; display: flex; gap: 6px; z-index: 100; }
-.tbtn { background: var(--card); border: 1px solid var(--border); color: var(--muted); border-radius: 5px; padding: 5px 10px; font-size: .75rem; cursor: pointer; transition: border-color .15s, color .15s; }
-.tbtn:hover { border-color: var(--accent); color: var(--accent); }
+.toolbar{position:fixed;top:14px;right:16px;display:flex;gap:6px;z-index:100}
+.tbtn{background:var(--card);border:1px solid var(--bdr);color:var(--tm);border-radius:5px;padding:5px 10px;font-size:.75rem;cursor:pointer;transition:border-color .15s,color .15s}
+.tbtn:hover{border-color:var(--blue);color:var(--blue)}
 
-nav { padding: .9rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
-nav a { color: var(--accent); text-decoration: none; font-size: .88rem; }
-nav a:hover { text-decoration: underline; }
-nav span { color: var(--muted); }
+nav{padding:.75rem 1.5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.75rem;background:var(--card)}
+nav .sep{color:var(--bdr)}
+nav span{color:var(--tm);font-size:.85rem}
 
-header { padding: 1.5rem 1.5rem 1rem; max-width: 1200px; margin: 0 auto; }
-header .tag { font-size: .72rem; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: .3rem; }
-header h1 { font-size: 1.7rem; font-weight: 700; }
-header p { color: var(--muted); margin-top: .3rem; font-size: .88rem; }
+header{padding:1.5rem 1.5rem 1rem;max-width:1180px;margin:0 auto}
+header .tag{font-size:.72rem;font-weight:600;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:.3rem}
+header h1{font-size:1.7rem;font-weight:700;color:var(--t1)}
+header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 
-.eq-bar { max-width: 1200px; margin: 0 auto .8rem; padding: 0 1.5rem; }
-.eq-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: .9rem 1.2rem; display: flex; flex-wrap: wrap; gap: 1.5rem; }
-.eq-primary { font-family: 'Courier New', monospace; font-size: .95rem; color: var(--accent); margin-bottom: .2rem; }
-.eq-secondary { font-family: 'Courier New', monospace; font-size: .82rem; color: var(--accent2); }
-.eq-note { font-size: .76rem; color: var(--muted); margin-top: .2rem; }
+.eq-box{max-width:1180px;margin:0 auto .9rem;padding:0 1.5rem}
+.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.4rem;display:flex;flex-wrap:wrap;gap:1.5rem}
+.eq-col{flex:1;min-width:220px}
+.eq-label{font-size:.68rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-primary{font-family:'Courier New',monospace;font-size:.88rem;color:var(--blue);line-height:2}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.79rem;color:var(--pur);line-height:2}
+.eq-note{font-size:.73rem;color:var(--tm);margin-top:.25rem}
 
-.ctrl-bar { max-width: 1200px; margin: 0 auto .8rem; padding: 0 1.5rem; display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; }
-.ctrl-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: .4rem .85rem; font-size: .82rem; cursor: pointer; transition: border-color .15s, color .15s; white-space: nowrap; }
-.ctrl-btn:hover { border-color: var(--accent); color: var(--accent); }
-.ctrl-btn.primary { border-color: var(--accent); color: var(--accent); }
-.ctrl-btn.danger { border-color: var(--border); color: var(--muted); }
-.ctrl-btn.danger:hover { border-color: var(--red); color: var(--red); }
-select.ctrl-select { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: .4rem .7rem; font-size: .82rem; cursor: pointer; }
-.ctrl-sep { width: 1px; background: var(--border); height: 24px; }
-label.ctrl-label { font-size: .78rem; color: var(--muted); display: flex; align-items: center; gap: .4rem; }
-label.ctrl-label input[type=number] { background: var(--surface); border: 1px solid var(--border); color: var(--accent); border-radius: 5px; padding: .3rem .45rem; font-size: .82rem; font-family: 'Courier New', monospace; width: 72px; }
+.layout{display:grid;grid-template-columns:280px 1fr;gap:1.2rem;max-width:1180px;margin:0 auto;padding:0 1.5rem 2rem}
+@media(max-width:768px){.layout{grid-template-columns:1fr}}
 
-.metrics-bar { max-width: 1200px; margin: 0 auto .8rem; padding: 0 1.5rem; }
-.metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: .55rem; }
-.metric-card { background: var(--card); border: 1px solid var(--border); border-radius: 7px; padding: .6rem .8rem; }
-.metric-card .mlabel { font-size: .67rem; color: var(--muted); text-transform: uppercase; letter-spacing: .9px; }
-.metric-card .mval { font-family: 'Courier New', monospace; font-size: 1.15rem; font-weight: 700; margin-top: .15rem; transition: color 200ms ease; }
-.metric-card .munit { font-size: .67rem; color: var(--muted); }
-.good { color: var(--green); } .warn { color: var(--orange); } .bad { color: var(--red); } .info { color: var(--accent); } .info2 { color: var(--accent2); }
+.panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem}
+.panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
+.panel-sep{border-top:1px solid var(--bdr);margin:.85rem 0}
 
-.table-wrap { max-width: 1200px; margin: 0 auto .8rem; padding: 0 1.5rem; overflow-x: auto; }
-table.stages { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: .82rem; }
-table.stages thead tr { background: var(--surface); }
-table.stages th { padding: .5rem .6rem; color: var(--muted); font-size: .68rem; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--border); }
-table.stages td { padding: .35rem .4rem; border-bottom: 1px solid rgba(255,255,255,.03); vertical-align: middle; }
-table.stages tr:last-child td { border-bottom: none; }
-table.stages tr.stage-row:hover td { background: rgba(255,255,255,.025); }
-table.stages tr.stage-row.disabled td { opacity: .45; }
+.sr{margin-bottom:.9rem}
+.sr label{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem}
+.sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
+input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
+.hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
 
-.stage-name { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 4px; padding: .28rem .5rem; width: 120px; font-size: .82rem; }
-.stage-name:focus { outline: none; border-color: var(--accent); }
-select.stage-type { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 4px; padding: .28rem .4rem; font-size: .8rem; width: 110px; }
-.stage-num { background: var(--surface); border: 1px solid var(--border); color: var(--accent); border-radius: 4px; padding: .28rem .4rem; width: 62px; font-size: .82rem; font-family: 'Courier New', monospace; text-align: right; }
-.stage-num:focus { outline: none; border-color: var(--accent); }
-.stage-num.auto { color: var(--muted); border-style: dashed; cursor: default; pointer-events: none; }
-.cum-cell { font-family: 'Courier New', monospace; font-size: .8rem; text-align: right; padding-right: .7rem; white-space: nowrap; }
-.contrib-bar-wrap { display: flex; align-items: center; gap: .35rem; min-width: 80px; }
-.contrib-bar { height: 8px; border-radius: 3px; min-width: 2px; transition: width 200ms ease; }
-.contrib-pct { font-family: 'Courier New', monospace; font-size: .75rem; width: 38px; text-align: right; white-space: nowrap; }
-.ord-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: .7rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; transition: .15s; }
-.ord-btn:hover { border-color: var(--accent); color: var(--accent); }
-.del-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 3px; width: 22px; height: 22px; cursor: pointer; font-size: .85rem; transition: .15s; }
-.del-btn:hover { border-color: var(--red); color: var(--red); }
-.passive-note { font-size: .65rem; color: var(--muted); font-style: italic; }
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:1rem}
+.mc{background:var(--deep);border:1px solid var(--bdr);border-radius:6px;padding:.6rem .8rem}
+.mc .mlb{font-size:.67rem;color:var(--tm);text-transform:uppercase;letter-spacing:.9px}
+.mc .mv{font-family:'Courier New',monospace;font-size:1.05rem;font-weight:700;margin-top:.1rem;transition:color 200ms}
+.mc .mu{font-size:.65rem;color:var(--tm)}
+.good{color:var(--grn)}.warn{color:var(--org)}.bad{color:var(--red)}.info{color:var(--blue)}.info2{color:var(--pur)}
 
-.charts-row { max-width: 1200px; margin: 0 auto .8rem; padding: 0 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
-@media (max-width: 900px) { .charts-row { grid-template-columns: 1fr; } }
-.chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
-.chart-card h3 { font-size: .72rem; font-weight: 600; color: var(--muted); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: .7rem; }
-.chart-wrap { position: relative; height: 240px; }
+.chart-panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem;margin-bottom:1rem}
+.chart-panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.8rem}
+.chart-wrap{position:relative;min-height:260px}
 
-.blocker-wrap { max-width: 1200px; margin: 0 auto .8rem; padding: 0 1.5rem; }
-.blocker-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.2rem; }
-.blocker-card h3 { font-size: .72rem; font-weight: 600; color: var(--muted); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: .8rem; }
-.blocker-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
-@media (max-width: 768px) { .blocker-grid { grid-template-columns: 1fr; } }
-.sl-row { margin-bottom: .7rem; }
-.sl-row label { display: flex; justify-content: space-between; font-size: .85rem; margin-bottom: .25rem; }
-.sl-row label span { color: var(--orange); font-family: 'Courier New', monospace; font-weight: 600; transition: all 200ms ease; }
-input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
-.sl-hints { display: flex; justify-content: space-between; font-size: .68rem; color: var(--muted); margin-top: .12rem; }
-.blocker-results { display: grid; grid-template-columns: repeat(3,1fr); gap: .5rem; margin-top: .8rem; }
-@media (max-width: 768px) { .blocker-results { grid-template-columns: 1fr 1fr; } }
-.br-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: .55rem .7rem; }
-.br-card .brl { font-size: .67rem; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
-.br-card .brv { font-family: 'Courier New', monospace; font-size: 1.05rem; font-weight: 700; margin-top: .1rem; transition: color 200ms ease; }
+.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.82rem;color:var(--tm);line-height:1.7}
+.annotation strong{color:var(--t1)}
+.annotation b{color:var(--blue)}
 
-.analysis-wrap { max-width: 1200px; margin: 0 auto .8rem; padding: 0 1.5rem; }
-.analysis-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.2rem; }
-.analysis-card h3 { font-size: .72rem; font-weight: 600; color: var(--muted); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: .7rem; }
-table.whatif { width: 100%; border-collapse: collapse; font-size: .8rem; }
-table.whatif th { color: var(--muted); font-size: .68rem; text-transform: uppercase; letter-spacing: .7px; text-align: left; padding: .35rem .5rem; border-bottom: 1px solid var(--border); }
-table.whatif td { padding: .32rem .5rem; border-bottom: 1px solid rgba(255,255,255,.03); font-family: 'Courier New', monospace; }
-table.whatif tr:last-child td { border-bottom: none; }
-.lev-bar { height: 6px; border-radius: 3px; display: inline-block; vertical-align: middle; }
-
-.annotation-wrap { max-width: 1200px; margin: 0 auto 2rem; padding: 0 1.5rem; }
-.annotation { border-left: 3px solid var(--accent); background: var(--card); padding: 11px 14px; border-radius: 0 8px 8px 0; font-size: .83rem; color: var(--muted); line-height: 1.7; }
-.annotation strong { color: var(--text); }
-
-@media (max-width: 768px) { header h1 { font-size: 1.4rem; } }
-#importInput { display: none; }
+.freq-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem}
+.ftag{font-size:.68rem;padding:.15rem .5rem;border-radius:10px;font-family:'Courier New',monospace}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
-  <button class="tbtn" onclick="takeScreenshot()">📷 Screenshot</button>
+  <button class="tbtn" onclick="takeScreenshot('IIP3 Intermodulation')">📷 Screenshot</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
   <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
 </div>
-<input type="file" id="importInput" accept=".json" onchange="importJSON(event)">
 
 <nav>
-  <a href="index.html">← RF Toolbox</a>
-  <span>/</span>
-  <span>03 IIP3 &amp; Intermod Cascade</span>
+  <a href="index.html">RF Toolbox</a>
+  <span class="sep">›</span>
+  <span>IIP3 / Intermodulation</span>
 </nav>
 
 <header>
-  <div class="tag">Tool 03</div>
-  <h1>IIP3 &amp; Intermod Cascade Analyzer</h1>
-  <p>Cascaded linearity — N stages, blocker analysis, SFDR, what-if sensitivity</p>
+  <div class="tag">Tool 03 · Nonlinearity</div>
+  <h1>Two-Tone Intermodulation Test</h1>
+  <p>Polynomial device model (a₁, a₂, a₃) → exact IIP3/OIP3/IIP2/P1dB. Spectrum shows IM2, IM3, and harmonics.</p>
 </header>
 
-<div class="eq-bar">
+<div class="eq-box">
   <div class="eq-card">
-    <div>
-      <div class="eq-primary">1/IIP3_sys = Σ G₁…ₙ₋₁ / IIP3_n</div>
-      <div class="eq-note">preceding gain amplifies each stage's nonlinearity</div>
+    <div class="eq-col">
+      <div class="eq-label">Nonlinear Device Model</div>
+      <div class="eq-primary">y(t) = a₁x + a₂x² + a₃x³</div>
+      <div class="eq-secondary">x(t) = A·cos(ω₁t) + A·cos(ω₂t)</div>
+      <div class="eq-note">a₁ = small-signal gain, a₂ → 2nd-order, a₃ → 3rd-order products</div>
     </div>
-    <div>
-      <div class="eq-secondary">OIP3 = IIP3_sys + G_total</div>
-      <div class="eq-secondary">P_IM3_out = 3·Pin − 2·IIP3_sys + G_total</div>
-      <div class="eq-note">IM3 slope = 3 dB/dB; fundamental = 1 dB/dB</div>
+    <div class="eq-col">
+      <div class="eq-label">Intercept Points (Razavi)</div>
+      <div class="eq-primary">IIP3 = √(4|a₁| / 3|a₃|)  [V pk]</div>
+      <div class="eq-secondary">IIP2 = |a₁ / a₂|  [V pk]</div>
+      <div class="eq-secondary">P1dB: 3|a₃|A²/4 = 0.109|a₁|</div>
+      <div class="eq-note">At IIP3: fundamental power = IM3 power at output (Pozar 10.34)</div>
     </div>
-    <div>
-      <div class="eq-secondary">SFDR = 2/3 · (OIP3 − N_floor_out)</div>
-      <div class="eq-secondary">P_blocker_IM3 = 2·Pblocker + Pdes − 2·IIP3_sys</div>
-      <div class="eq-note">unequal-tone blocker spur referred to input</div>
+    <div class="eq-col">
+      <div class="eq-label">Output Spectrum Amplitudes</div>
+      <div class="eq-primary">Fund: a₁A + 9a₃A³/4</div>
+      <div class="eq-secondary">IM3 (2f₁−f₂): 3a₃A³/4  [close-in]</div>
+      <div class="eq-secondary">IM2 (f₁+f₂): a₂A²  [wideband]</div>
+      <div class="eq-secondary">2nd harm (2f₁): a₂A²/2</div>
+      <div class="eq-note">A = V peak per tone into 50 Ω</div>
     </div>
   </div>
 </div>
 
-<div class="ctrl-bar">
-  <select class="ctrl-select" id="presetSel" onchange="loadPreset(this.value)">
-    <option value="">— Load preset —</option>
-    <option value="generic">Generic LNA+Mixer+IF</option>
-    <option value="wlan">Wi-Fi 2.4 GHz RX</option>
-    <option value="lte">LTE 700 MHz RX</option>
-    <option value="sat">Satellite LNB Downconverter</option>
-  </select>
-  <div class="ctrl-sep"></div>
-  <button class="ctrl-btn primary" onclick="addStage()">+ Add Stage</button>
-  <button class="ctrl-btn" onclick="exportJSON()">↓ Export JSON</button>
-  <button class="ctrl-btn" onclick="document.getElementById('importInput').click()">↑ Import JSON</button>
-  <button class="ctrl-btn" onclick="copyResults()">⎘ Copy Results</button>
-  <button class="ctrl-btn danger" onclick="if(confirm('Reset to default?')) loadPreset('generic')">✕ Reset</button>
-  <div class="ctrl-sep"></div>
-  <label class="ctrl-label">BW: <input type="number" id="BW_MHz" value="10" min="0.001" max="1000" step="1"> MHz</label>
-  <label class="ctrl-label">Pin (operating): <input type="number" id="Pin_dBm" value="-40" min="-80" max="10" step="1"> dBm</label>
-</div>
-
-<div class="metrics-bar">
-  <div class="metrics-grid">
-    <div class="metric-card"><div class="mlabel">IIP3 (input-ref)</div><div class="mval info" id="mIIP3">—</div><div class="munit">dBm</div></div>
-    <div class="metric-card"><div class="mlabel">OIP3 (output-ref)</div><div class="mval info2" id="mOIP3">—</div><div class="munit">dBm</div></div>
-    <div class="metric-card"><div class="mlabel">Total Gain</div><div class="mval info" id="mGain">—</div><div class="munit">dB</div></div>
-    <div class="metric-card"><div class="mlabel">Noise Figure</div><div class="mval" id="mNF">—</div><div class="munit">dB</div></div>
-    <div class="metric-card"><div class="mlabel">P1dB (input est.)</div><div class="mval warn" id="mP1dB">—</div><div class="munit">dBm</div></div>
-    <div class="metric-card"><div class="mlabel">SFDR</div><div class="mval good" id="mSFDR">—</div><div class="munit">dB</div></div>
-    <div class="metric-card"><div class="mlabel">Noise Floor (out)</div><div class="mval" id="mNfloor">—</div><div class="munit">dBm</div></div>
-    <div class="metric-card"><div class="mlabel">IM3 dBc</div><div class="mval" id="mIM3dBc">—</div><div class="munit">dBc</div></div>
-  </div>
-</div>
-
-<div class="table-wrap">
-  <table class="stages" id="stageTable">
-    <thead>
-      <tr>
-        <th style="width:46px"></th>
-        <th style="width:28px">#</th>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Gain (dB)</th>
-        <th>NF (dB)</th>
-        <th>IIP3 (dBm)</th>
-        <th>P1dB (dBm)</th>
-        <th>Cum Gain</th>
-        <th>Cum IIP3</th>
-        <th>IIP3 Contrib</th>
-        <th style="width:28px"></th>
-        <th style="width:32px"></th>
-      </tr>
-    </thead>
-    <tbody id="stageTbody"></tbody>
-  </table>
-</div>
-
-<div class="charts-row">
-  <div class="chart-card">
-    <h3>Intercept Diagram — Fundamental vs IM3</h3>
-    <div class="chart-wrap"><canvas id="chartIntercept"></canvas></div>
-  </div>
-  <div class="chart-card">
-    <h3>Per-Stage IIP3 Dominance (%)</h3>
-    <div class="chart-wrap"><canvas id="chartContrib"></canvas></div>
-  </div>
-</div>
-
-<div class="blocker-wrap">
-  <div class="blocker-card">
-    <h3>Blocker Analysis — Two-Tone IM3 Spur</h3>
-    <div class="blocker-grid">
-      <div>
-        <div class="sl-row">
-          <label>P_desired (in) <span id="lPdes">−50 dBm</span></label>
-          <input type="range" id="sPdes" min="-90" max="-10" value="-50" step="1" oninput="updateBlocker()">
-          <div class="sl-hints"><span>−90</span><span>−10 dBm</span></div>
-        </div>
-        <div class="sl-row">
-          <label>P_blocker (in) <span id="lPblk">−30 dBm</span></label>
-          <input type="range" id="sPblk" min="-90" max="0" value="-30" step="1" oninput="updateBlocker()">
-          <div class="sl-hints"><span>−90</span><span>0 dBm</span></div>
-        </div>
+<div class="layout">
+  <div>
+    <div class="panel" style="margin-bottom:1rem">
+      <h3>Device Polynomial Coefficients</h3>
+      <div class="sr">
+        <label>a₁ — linear gain <span id="vA1">5.0</span></label>
+        <input type="range" id="sA1" min="0.1" max="20" step="0.1" value="5">
+        <div class="hints"><span>0.1</span><span>20 V/V</span></div>
       </div>
-      <div>
-        <div class="blocker-results">
-          <div class="br-card"><div class="brl">P_desired out</div><div class="brv info" id="bPdesOut">—</div></div>
-          <div class="br-card"><div class="brl">P_IM3 out</div><div class="brv bad" id="bIM3out">—</div></div>
-          <div class="br-card"><div class="brl">C/I</div><div class="brv" id="bCI">—</div></div>
-          <div class="br-card"><div class="brl">Blocker vs P1dB</div><div class="brv" id="bComp">—</div></div>
-          <div class="br-card"><div class="brl">IM3 dBc</div><div class="brv" id="bIM3dBc">—</div></div>
-          <div class="br-card"><div class="brl">Regime</div><div class="brv" id="bRegime" style="font-size:.8rem">—</div></div>
-        </div>
+      <div class="sr">
+        <label>a₂ — 2nd-order coeff <span id="vA2">1.0</span></label>
+        <input type="range" id="sA2" min="0" max="10" step="0.1" value="1">
+        <div class="hints"><span>0</span><span>10 V/V²</span></div>
       </div>
-      <div>
-        <div class="annotation" id="blockerAnnotation" style="font-size:.81rem;line-height:1.6">Updating…</div>
+      <div class="sr">
+        <label>a₃ — 3rd-order coeff <span id="vA3">-0.50</span></label>
+        <input type="range" id="sA3" min="-5" max="-0.01" step="0.01" value="-0.5">
+        <div class="hints"><span>−5</span><span>−0.01 V/V³</span></div>
+      </div>
+      <div class="panel-sep"></div>
+      <h3 style="margin-bottom:.7rem">Two-Tone Test Signal</h3>
+      <div class="sr">
+        <label>Input Power P<sub>in</sub> <span id="vPin">−20.0 dBm</span></label>
+        <input type="range" id="sPin" min="-60" max="20" step="0.5" value="-20">
+        <div class="hints"><span>−60 dBm</span><span>+20 dBm</span></div>
+      </div>
+      <div class="sr">
+        <label>Center freq f₀ <span id="vF0">2400 MHz</span></label>
+        <input type="range" id="sF0" min="100" max="10000" step="100" value="2400">
+        <div class="hints"><span>100 MHz</span><span>10 GHz</span></div>
+      </div>
+      <div class="sr">
+        <label>Tone spacing Δf <span id="vDf">1.0 MHz</span></label>
+        <input type="range" id="sDf" min="0.1" max="50" step="0.1" value="1">
+        <div class="hints"><span>0.1 MHz</span><span>50 MHz</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Derived Parameters</h3>
+      <div class="metrics">
+        <div class="mc"><div class="mlb">IIP3</div><div class="mv info" id="mIIP3">—</div><div class="mu">dBm</div></div>
+        <div class="mc"><div class="mlb">OIP3</div><div class="mv info" id="mOIP3">—</div><div class="mu">dBm</div></div>
+        <div class="mc"><div class="mlb">IIP2</div><div class="mv info2" id="mIIP2">—</div><div class="mu">dBm</div></div>
+        <div class="mc"><div class="mlb">Gain (a₁)</div><div class="mv" id="mGain" style="color:var(--t1)">—</div><div class="mu">dB</div></div>
+        <div class="mc"><div class="mlb">P1dB (in)</div><div class="mv warn" id="mP1dB">—</div><div class="mu">dBm</div></div>
+        <div class="mc"><div class="mlb">IM3 level</div><div class="mv bad" id="mIM3">—</div><div class="mu">dBm</div></div>
+        <div class="mc"><div class="mlb">IM3 rel.</div><div class="mv" id="mIM3rel" style="color:var(--tm)">—</div><div class="mu">dBc</div></div>
+        <div class="mc"><div class="mlb">IM2 level</div><div class="mv" id="mIM2" style="color:var(--org)">—</div><div class="mu">dBm</div></div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="analysis-wrap">
-  <div class="analysis-card">
-    <h3>What-If Sensitivity — IIP3 &amp; Gain Leverage per Stage (+3 dB perturbation)</h3>
-    <table class="whatif">
-      <thead><tr>
-        <th>#</th><th>Stage</th>
-        <th>ΔIIP3_sys if IIP3_n +3 dB</th>
-        <th>Leverage (IIP3)</th>
-        <th>ΔIIP3_sys if Gain_n +3 dB</th>
-        <th>Leverage (Gain)</th>
-      </tr></thead>
-      <tbody id="sensitivityTbody"></tbody>
-    </table>
+  <div>
+    <div class="chart-panel">
+      <h3>Output Spectrum — fundamental, IM2, IM3, harmonics</h3>
+      <div class="freq-tags" id="freqTags"></div>
+      <div class="chart-wrap"><canvas id="chartSpectrum"></canvas></div>
+    </div>
+    <div class="chart-panel">
+      <h3>Intercept Diagram — gain compression + IIP3/OIP3</h3>
+      <div class="chart-wrap"><canvas id="chartIntercept"></canvas></div>
+    </div>
+    <div class="annotation" id="annotation">Computing...</div>
   </div>
-</div>
-
-<div class="annotation-wrap">
-  <div class="annotation" id="mainAnnotation">Updating…</div>
 </div>
 
 <script>
-// ─── Constants & helpers ───────────────────────────────────────────
-const T0 = 290;
-const dBtoLin = x => Math.pow(10, x / 10);
-const linTodB = x => 10 * Math.log10(Math.max(x, 1e-20));
-const fmt1 = x => (isFinite(x) ? (x >= 0 ? '+' : '') + x.toFixed(1) : '∞');
-const fmt2 = x => (isFinite(x) ? (x >= 0 ? '+' : '') + x.toFixed(2) : '∞');
+const Z0=50;
+function vTodBm(v){return v<=0?-200:10*Math.log10((v*v)/(2*Z0)*1000)}
+function dBmToV(p){return Math.sqrt(Math.pow(10,(p/10))*2*Z0/1000)}
+function hexRGB(h){return `${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)}`}
 
-const PASSIVE_TYPES = new Set(['filter','attenuator','switch','cable','coupler','diplexer']);
-const TYPE_OPTS = [
-  {v:'amp',      l:'Amplifier'},
-  {v:'lna',      l:'LNA'},
-  {v:'mixer',    l:'Mixer'},
-  {v:'filter',   l:'Filter (passive)'},
-  {v:'attenuator',l:'Attenuator'},
-  {v:'switch',   l:'Switch'},
-  {v:'cable',    l:'Cable/Line'},
-  {v:'coupler',  l:'Coupler/Hybrid'},
-  {v:'diplexer', l:'Diplexer'},
-  {v:'vga',      l:'VGA/Driver'},
-  {v:'if_amp',   l:'IF Amplifier'},
-];
-
-let stages = [];
-let nextId = 1;
-
-function makeStage(o = {}) {
-  return {
-    id: nextId++,
-    name:    o.name    ?? 'Stage',
-    type:    o.type    ?? 'amp',
-    gain:    o.gain    ?? 15,
-    nf:      o.nf      ?? 3,
-    iip3:    o.iip3    ?? 10,
-    p1db:    o.p1db    ?? ((o.iip3 ?? 10) - 9.6),
-    enabled: o.enabled ?? true
-  };
-}
-
-function effectiveNF(s) {
-  if (PASSIVE_TYPES.has(s.type)) return Math.max(0, -s.gain);
-  return s.nf ?? 3;
-}
-
-function effectiveIIP3(s) {
-  // Passive elements are very linear; approximate as very high IIP3
-  if (PASSIVE_TYPES.has(s.type)) return 40;
-  return s.iip3 ?? 10;
-}
-
-// ─── Cascade computation ───────────────────────────────────────────
-function computeCascade() {
-  const active = stages.filter(s => s.enabled);
-  if (!active.length) return null;
-
-  let cumG_lin = 1, cumG_dB = 0, inv_IIP3 = 0, F_sys = 1;
-  const rows = [];
-
-  for (let i = 0; i < active.length; i++) {
-    const s = active[i];
-    const G_lin = dBtoLin(s.gain);
-    const NF_eff = effectiveNF(s);
-    const F_i = dBtoLin(NF_eff);
-    const IIP3_eff = effectiveIIP3(s);
-    const IIP3_lin = dBtoLin(IIP3_eff);
-
-    F_sys += (F_i - 1) / cumG_lin;
-
-    const precG_lin = cumG_lin;
-    const precG_dB  = cumG_dB;
-    cumG_lin *= G_lin;
-    cumG_dB  += s.gain;
-
-    inv_IIP3 += precG_lin / IIP3_lin;
-
-    rows.push({
-      s, NF_eff, precG_dB, precG_lin,
-      cumG_dB, cumG_lin,
-      F_sys_here: F_sys,
-      NF_sys_here: linTodB(F_sys),
-      inv_IIP3_here: inv_IIP3
-    });
+const specChart=new Chart(document.getElementById('chartSpectrum').getContext('2d'),{
+  type:'bar',
+  data:{labels:[],datasets:[{label:'Output',data:[],backgroundColor:[],borderWidth:0,barPercentage:.6}]},
+  options:{
+    animation:{duration:0},responsive:true,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.parsed.y.toFixed(1)} dBm`}}},
+    scales:{
+      x:{grid:{color:'#252830'},ticks:{color:'#8b949e',font:{size:10}},title:{display:true,color:'#8b949e',text:'Frequency'}},
+      y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Output Power (dBm)'},min:-120}
+    }
   }
+});
 
-  const NF_sys        = linTodB(F_sys);
-  const IIP3_sys_dBm  = inv_IIP3 > 0 ? linTodB(1 / inv_IIP3) : Infinity;
-  const OIP3_sys_dBm  = isFinite(IIP3_sys_dBm) ? IIP3_sys_dBm + cumG_dB : Infinity;
-
-  // Per-stage IIP3 contribution (% of total 1/IIP3_sys)
-  rows.forEach(r => {
-    const IIP3_lin_s = dBtoLin(effectiveIIP3(r.s));
-    const term = r.precG_lin / IIP3_lin_s;
-    r.iip3_contrib_pct = inv_IIP3 > 0 ? term / inv_IIP3 * 100 : 0;
-  });
-
-  return { rows, active, NF_sys, IIP3_sys_dBm, OIP3_sys_dBm, cumG_dB, F_sys };
-}
-
-// ─── Sensitivity: Δ system IIP3 if stage param changes by EPS ─────
-const EPS = 3.0; // dB
-
-function sensitivityAnalysis(base) {
-  if (!base) return [];
-  return base.active.map((s, idx) => {
-    // IIP3 sensitivity
-    const origIIP3 = s.iip3;
-    s.iip3 = origIIP3 + EPS;
-    const altI = computeCascade();
-    const deltaIIP3 = (altI ? altI.IIP3_sys_dBm : base.IIP3_sys_dBm) - base.IIP3_sys_dBm;
-    s.iip3 = origIIP3;
-
-    // Gain sensitivity (increasing gain of non-first stages raises IIP3 via preceding gain)
-    const origGain = s.gain;
-    s.gain = origGain + EPS;
-    const altG = computeCascade();
-    const deltaGain = (altG ? altG.IIP3_sys_dBm : base.IIP3_sys_dBm) - base.IIP3_sys_dBm;
-    s.gain = origGain;
-
-    return { s, idx, deltaIIP3, deltaGain };
-  });
-}
-
-// ─── Presets ──────────────────────────────────────────────────────
-const PRESETS = {
-  generic: [
-    { name:'LNA',       type:'lna',       gain:15,  nf:1.5, iip3:-5,   p1db:-15  },
-    { name:'BPF',       type:'filter',    gain:-2,  nf:2,   iip3:40,   p1db:30   },
-    { name:'Mixer',     type:'mixer',     gain:7,   nf:8,   iip3:12,   p1db:2    },
-    { name:'IF Amp',    type:'if_amp',    gain:20,  nf:5,   iip3:20,   p1db:10   },
-  ],
-  wlan: [
-    { name:'Ant Switch',type:'switch',    gain:-1,  nf:1,   iip3:40,   p1db:30   },
-    { name:'LNA',       type:'lna',       gain:14,  nf:2.0, iip3:-3,   p1db:-13  },
-    { name:'BPF',       type:'filter',    gain:-2,  nf:2,   iip3:40,   p1db:30   },
-    { name:'Mixer',     type:'mixer',     gain:6,   nf:9,   iip3:10,   p1db:0    },
-    { name:'IF Filter', type:'filter',    gain:-3,  nf:3,   iip3:40,   p1db:30   },
-    { name:'IF Amp',    type:'if_amp',    gain:22,  nf:6,   iip3:18,   p1db:8    },
-  ],
-  lte: [
-    { name:'Duplexer',  type:'diplexer',  gain:-2,  nf:2,   iip3:40,   p1db:30   },
-    { name:'LNA',       type:'lna',       gain:16,  nf:1.2, iip3:-8,   p1db:-18  },
-    { name:'BPF',       type:'filter',    gain:-1.5,nf:1.5, iip3:40,   p1db:30   },
-    { name:'Mixer',     type:'mixer',     gain:5,   nf:10,  iip3:8,    p1db:-2   },
-    { name:'IF Amp',    type:'if_amp',    gain:25,  nf:7,   iip3:15,   p1db:5    },
-  ],
-  sat: [
-    { name:'LNB LNA',   type:'lna',       gain:50,  nf:0.5, iip3:-20,  p1db:-30  },
-    { name:'BPF',       type:'filter',    gain:-1,  nf:1,   iip3:40,   p1db:30   },
-    { name:'Downconv.', type:'mixer',     gain:4,   nf:11,  iip3:15,   p1db:4    },
-    { name:'IF Cable',  type:'cable',     gain:-3,  nf:3,   iip3:40,   p1db:30   },
-    { name:'IF Amp',    type:'if_amp',    gain:18,  nf:4,   iip3:22,   p1db:12   },
-  ]
-};
-
-function loadPreset(key) {
-  if (!key) return;
-  nextId = 1; stages = [];
-  if (PRESETS[key]) PRESETS[key].forEach(o => stages.push(makeStage(o)));
-  document.getElementById('presetSel').value = '';
-  render();
-}
-
-// ─── Stage mutations ──────────────────────────────────────────────
-function addStage() {
-  stages.push(makeStage({ name: 'Stage ' + stages.length }));
-  render();
-}
-
-function deleteStage(id) {
-  stages = stages.filter(s => s.id !== id);
-  render();
-}
-
-function moveStage(id, dir) {
-  const i = stages.findIndex(s => s.id === id);
-  const j = i + dir;
-  if (j < 0 || j >= stages.length) return;
-  [stages[i], stages[j]] = [stages[j], stages[i]];
-  render();
-}
-
-function setField(id, field, val) {
-  const s = stages.find(s => s.id === id);
-  if (!s) return;
-  s[field] = val;
-  // Auto-update P1dB if iip3 changes and p1db was tracking it
-  if (field === 'iip3' && !PASSIVE_TYPES.has(s.type)) {
-    // Only sync p1db if it's close to iip3-9.6 (still tracking default)
-    if (Math.abs(s.p1db - (val - 9.6 + EPS*0)) < 2) s.p1db = val - 9.6;
-  }
-  if (field === 'type') {
-    // Update P1dB default for passive
-    if (PASSIVE_TYPES.has(val)) s.p1db = 30;
-    else if (s.p1db === 30 && !PASSIVE_TYPES.has(s.type)) s.p1db = s.iip3 - 9.6;
-  }
-  render();
-}
-
-function toggleEnabled(id) {
-  const s = stages.find(s => s.id === id);
-  if (s) { s.enabled = !s.enabled; render(); }
-}
-
-// ─── Charts ───────────────────────────────────────────────────────
-const ctxI = document.getElementById('chartIntercept').getContext('2d');
-const chartIntercept = new Chart(ctxI, {
-  type: 'line',
-  data: { labels: [], datasets: [
-    { label: 'Fundamental out', data: [], borderColor: '#00c8ff', borderWidth: 2.5, pointRadius: 0, fill: false, tension: 0 },
-    { label: 'IM3 out',         data: [], borderColor: '#ff4d6d', borderWidth: 2, pointRadius: 0, fill: false, tension: 0, borderDash: [5,3] },
-    { label: 'Noise floor out', data: [], borderColor: '#444466', borderWidth: 1.5, pointRadius: 0, fill: false, tension: 0, borderDash: [2,4] },
-    { label: 'Op point',        data: [], borderColor: '#ffaa00', borderWidth: 0, pointRadius: 7, pointBackgroundColor: '#ffaa00', showLine: false },
-    { label: 'OIP3',            data: [], borderColor: '#7b61ff', borderWidth: 0, pointRadius: 8, pointBackgroundColor: '#7b61ff', pointStyle: 'crossRot', showLine: false },
+const interceptChart=new Chart(document.getElementById('chartIntercept').getContext('2d'),{
+  type:'scatter',
+  data:{datasets:[
+    {label:'Fundamental',data:[],borderColor:'#58a6ff',borderWidth:2.5,pointRadius:0,showLine:true,fill:false},
+    {label:'IM3',data:[],borderColor:'#f85149',borderWidth:2.5,pointRadius:0,showLine:true,fill:false},
+    {label:'Fund asymptote',data:[],borderColor:'rgba(88,166,255,.3)',borderDash:[5,4],borderWidth:1.5,pointRadius:0,showLine:true,fill:false},
+    {label:'IM3 asymptote',data:[],borderColor:'rgba(248,81,73,.3)',borderDash:[5,4],borderWidth:1.5,pointRadius:0,showLine:true,fill:false},
+    {label:'IIP3/OIP3',data:[],borderColor:'#e6c547',backgroundColor:'#e6c547',pointRadius:7,showLine:false},
+    {label:'P1dB point',data:[],borderColor:'#f0883e',backgroundColor:'#f0883e',pointStyle:'triangle',pointRadius:7,showLine:false},
+    {label:'Operating Pt',data:[],borderColor:'#3fb950',backgroundColor:'#3fb950',pointRadius:5,showLine:false}
   ]},
-  options: {
-    animation: { duration: 0 }, responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { labels: { color: '#888899', font: { size: 10 } } }, tooltip: { mode: 'index', intersect: false } },
-    scales: {
-      x: { ticks: { color: '#888899', maxTicksLimit: 10, font: { size: 10 } }, grid: { color: '#2a2a35' }, title: { display: true, text: 'Input Power (dBm)', color: '#888899', font: { size: 11 } } },
-      y: { ticks: { color: '#888899', font: { size: 10 } }, grid: { color: '#2a2a35' }, min: -160, max: 60, title: { display: true, text: 'Output Power (dBm)', color: '#888899', font: { size: 11 } } }
+  options:{
+    animation:{duration:0},responsive:true,
+    plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+    scales:{
+      x:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Input Power (dBm)'}},
+      y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Output Power (dBm)'}}
     }
   }
 });
 
-const ctxC = document.getElementById('chartContrib').getContext('2d');
-const chartContrib = new Chart(ctxC, {
-  type: 'bar',
-  data: { labels: [], datasets: [{ label: 'IIP3 Dominance (%)', data: [], backgroundColor: [], borderColor: [], borderWidth: 1.5 }] },
-  options: {
-    animation: { duration: 0 }, responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { labels: { color: '#888899', font: { size: 10 } } }, tooltip: { callbacks: { label: ctx => ' ' + parseFloat(ctx.raw).toFixed(1) + '%' } } },
-    scales: {
-      x: { ticks: { color: '#888899', font: { size: 10 } }, grid: { color: '#2a2a35' } },
-      y: { ticks: { color: '#888899', font: { size: 10 } }, grid: { color: '#2a2a35' }, max: 100, title: { display: true, text: '% of 1/IIP3_sys', color: '#888899', font: { size: 11 } } }
-    }
-  }
-});
+function update(){
+  const a1=+document.getElementById('sA1').value;
+  const a2=+document.getElementById('sA2').value;
+  const a3=+document.getElementById('sA3').value;
+  const Pin_dBm=+document.getElementById('sPin').value;
+  const f0=+document.getElementById('sF0').value;
+  const df=+document.getElementById('sDf').value;
 
-const CHART_COLORS = ['#00c8ff','#00e5a0','#ffaa00','#ff4d6d','#bc8cff','#7b61ff','#58d9a0','#ff8b50'];
+  document.getElementById('vA1').textContent=a1.toFixed(1);
+  document.getElementById('vA2').textContent=a2.toFixed(1);
+  document.getElementById('vA3').textContent=a3.toFixed(2);
+  document.getElementById('vPin').textContent=Pin_dBm.toFixed(1)+' dBm';
+  document.getElementById('vF0').textContent=f0>=1000?(f0/1000).toFixed(2)+' GHz':f0+' MHz';
+  document.getElementById('vDf').textContent=df.toFixed(1)+' MHz';
 
-// ─── Main render ──────────────────────────────────────────────────
-function render() {
-  const res = computeCascade();
-  updateMetrics(res);
-  renderTable(res);
-  updateCharts(res);
-  updateBlocker(res);
-  updateSensitivity(res);
-  updateAnnotation(res);
+  const A=dBmToV(Pin_dBm);
+  const fund_amp=Math.abs(a1*A+(9/4)*a3*A*A*A);
+  const im3_amp=Math.abs((3/4)*a3*A*A*A);
+  const im2_amp=Math.abs(a2*A*A);
+  const h2_amp=Math.abs((1/2)*a2*A*A);
+  const h3_amp=Math.abs((1/4)*a3*A*A*A);
+
+  const IIP3_v=Math.sqrt(4*Math.abs(a1)/(3*Math.abs(a3)));
+  const IIP3_dBm=vTodBm(IIP3_v);
+  const Gain_dB=20*Math.log10(Math.abs(a1));
+  const OIP3_dBm=IIP3_dBm+Gain_dB;
+  const IIP2_dBm=vTodBm(Math.abs(a1/a2));
+  const A_p1dB=Math.sqrt(4*Math.abs(a1)*0.109/(3*Math.abs(a3)));
+  const P1dB_in=vTodBm(A_p1dB);
+
+  const fund_dBm=vTodBm(fund_amp);
+  const im3_dBm=im3_amp>1e-15?vTodBm(im3_amp):-200;
+  const im2_dBm=im2_amp>1e-15?vTodBm(im2_amp):-200;
+  const h2_dBm=h2_amp>1e-15?vTodBm(h2_amp):-200;
+  const h3_dBm=h3_amp>1e-15?vTodBm(h3_amp):-200;
+
+  document.getElementById('mIIP3').textContent=IIP3_dBm.toFixed(1);
+  document.getElementById('mOIP3').textContent=OIP3_dBm.toFixed(1);
+  document.getElementById('mIIP2').textContent=IIP2_dBm.toFixed(1);
+  document.getElementById('mGain').textContent=Gain_dB.toFixed(1)+' dB';
+  document.getElementById('mP1dB').textContent=P1dB_in.toFixed(1);
+  document.getElementById('mIM3').textContent=im3_dBm>-150?im3_dBm.toFixed(1):'<−150';
+  document.getElementById('mIM3rel').textContent=im3_dBm>-150?(im3_dBm-fund_dBm).toFixed(1):'—';
+  document.getElementById('mIM2').textContent=im2_dBm>-150?im2_dBm.toFixed(1):'<−150';
+
+  const f1=f0-df/2, f2=f0+df/2;
+  const specEntries=[
+    {k:'IM2 (f₁+f₂)',f:f1+f2,p:im2_dBm,c:'f0883e'},
+    {k:'2f₁',f:2*f1,p:h2_dBm,c:'bc8cff'},
+    {k:'IM3 (2f₁−f₂)',f:2*f1-f2,p:im3_dBm,c:'f85149'},
+    {k:'f₁',f:f1,p:fund_dBm,c:'58a6ff'},
+    {k:'f₂',f:f2,p:fund_dBm,c:'58a6ff'},
+    {k:'IM3 (2f₂−f₁)',f:2*f2-f1,p:im3_dBm,c:'f85149'},
+    {k:'2f₂',f:2*f2,p:h2_dBm,c:'bc8cff'},
+    {k:'3f₁',f:3*f1,p:h3_dBm,c:'bc8cff'},
+  ].filter(e=>e.f>0).sort((a,b)=>a.f-b.f);
+
+  specChart.data.labels=specEntries.map(e=>e.k);
+  specChart.data.datasets[0].data=specEntries.map(e=>Math.max(e.p,-120));
+  specChart.data.datasets[0].backgroundColor=specEntries.map(e=>`rgba(${hexRGB(e.c)},.75)`);
+  specChart.update();
+
+  document.getElementById('freqTags').innerHTML=specEntries.map(e=>
+    `<span class="ftag" style="background:rgba(${hexRGB(e.c)},.15);color:#${e.c}">${e.k}: ${e.f.toFixed(0)} MHz</span>`
+  ).join('');
+
+  // Intercept diagram
+  const PinMin=-80, PinMax=Math.min(25,IIP3_dBm+12);
+  const npts=300;
+  const pinArr=Array.from({length:npts},(_,i)=>PinMin+(PinMax-PinMin)*i/(npts-1));
+  const fundLine=pinArr.map(p=>{const Av=dBmToV(p);return{x:p,y:vTodBm(Math.abs(a1*Av+(9/4)*a3*Av*Av*Av))};});
+  const im3Line=pinArr.map(p=>{const Av=dBmToV(p);const v=Math.abs((3/4)*a3*Av*Av*Av);return{x:p,y:v>1e-15?vTodBm(v):-200};});
+  const fundAsym=pinArr.map(p=>({x:p,y:p+Gain_dB}));
+  const im3Asym=pinArr.map(p=>({x:p,y:3*p+Gain_dB-2*IIP3_dBm}));
+
+  interceptChart.data.datasets[0].data=fundLine;
+  interceptChart.data.datasets[1].data=im3Line;
+  interceptChart.data.datasets[2].data=fundAsym;
+  interceptChart.data.datasets[3].data=im3Asym;
+  interceptChart.data.datasets[4].data=[{x:IIP3_dBm,y:OIP3_dBm}];
+  interceptChart.data.datasets[5].data=[{x:P1dB_in,y:P1dB_in+Gain_dB-1}];
+  interceptChart.data.datasets[6].data=[{x:Pin_dBm,y:fund_dBm}];
+  interceptChart.options.scales.x.min=PinMin;
+  interceptChart.options.scales.x.max=PinMax;
+  interceptChart.update();
+
+  const margin=P1dB_in-Pin_dBm;
+  const im3_rel=im3_dBm>-150?im3_dBm-fund_dBm:null;
+  document.getElementById('annotation').innerHTML=
+    `<strong>Device coefficients:</strong> a₁=${a1.toFixed(1)}, a₂=${a2.toFixed(1)}, a₃=${a3.toFixed(2)}
+    → Gain = <b>${Gain_dB.toFixed(1)} dB</b>, IIP3 = <b>${IIP3_dBm.toFixed(1)} dBm</b>,
+    OIP3 = <b>${OIP3_dBm.toFixed(1)} dBm</b>, IIP2 = <b>${IIP2_dBm.toFixed(1)} dBm</b>,
+    P1dB(in) = <b>${P1dB_in.toFixed(1)} dBm</b>.<br>
+    <strong>At Pin = ${Pin_dBm.toFixed(1)} dBm:</strong>
+    Fundamental = <b>${fund_dBm.toFixed(1)} dBm</b>.
+    IM3 at 2f₁−f₂ = <b>${im3_dBm>-150?im3_dBm.toFixed(1)+' dBm ('+im3_rel.toFixed(1)+' dBc)':'negligible'}</b>.
+    IM2 = <b>${im2_dBm>-150?im2_dBm.toFixed(1)+' dBm':'negligible'}</b>.
+    2f₁ harmonic = <b>${h2_dBm>-150?h2_dBm.toFixed(1)+' dBm':'negligible'}</b>.<br>
+    <strong>Backoff from P1dB:</strong> ${margin.toFixed(1)} dB.
+    ${margin<3?'WARNING: operating near compression — severe nonlinearity.':
+    margin<10?'Moderate backoff — IM3 products visible in spectrum.':
+    'Good linear region — IM products well suppressed.'}<br>
+    <strong>Shorthand check:</strong> IM3(dBm) ≈ 3·Pin − 2·IIP3 + Gain = ${(3*Pin_dBm-2*IIP3_dBm+Gain_dB).toFixed(1)} dBm.`;
 }
 
-function updateMetrics(res) {
-  const BW_MHz = +document.getElementById('BW_MHz').value || 10;
-  const BW_Hz  = BW_MHz * 1e6;
-  const Pin    = +document.getElementById('Pin_dBm').value;
+[document.getElementById('sA1'),document.getElementById('sA2'),document.getElementById('sA3'),
+ document.getElementById('sPin'),document.getElementById('sF0'),document.getElementById('sDf')
+].forEach(s=>s.addEventListener('input',update));
 
-  if (!res) {
-    ['mIIP3','mOIP3','mGain','mNF','mP1dB','mSFDR','mNfloor','mIM3dBc'].forEach(id => { document.getElementById(id).textContent = '—'; });
-    return;
-  }
+function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#8b949e';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`iip3_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
+function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+function copyLink(){navigator.clipboard.writeText(window.location.href).then(()=>{const b=document.getElementById('copyBtn');const o=b.textContent;b.textContent='✓ Copied!';b.style.color='#3fb950';b.style.borderColor='#3fb950';setTimeout(()=>{b.textContent=o;b.style.color='';b.style.borderColor='';},2000);});}
 
-  const { IIP3_sys_dBm, OIP3_sys_dBm, cumG_dB, NF_sys } = res;
-  const nfloor_dBm     = -174 + NF_sys + linTodB(BW_Hz);
-  const nfloor_out_dBm = nfloor_dBm + cumG_dB;
-  const SFDR           = isFinite(OIP3_sys_dBm) ? (2/3) * (OIP3_sys_dBm - nfloor_out_dBm) : null;
-  const P1dB_in        = isFinite(IIP3_sys_dBm) ? IIP3_sys_dBm - 9.6 : null;
-  const Pfund_out      = Pin + cumG_dB;
-  const PIM3_out       = isFinite(IIP3_sys_dBm) ? 3 * Pin - 2 * IIP3_sys_dBm + cumG_dB : null;
-  const IM3dBc         = PIM3_out !== null ? PIM3_out - Pfund_out : null;
-
-  const setM = (id, val, cls) => { const el = document.getElementById(id); el.textContent = val; el.className = 'mval ' + (cls || ''); };
-
-  setM('mIIP3', isFinite(IIP3_sys_dBm) ? fmt1(IIP3_sys_dBm) : '∞', 'info');
-  setM('mOIP3', isFinite(OIP3_sys_dBm) ? fmt1(OIP3_sys_dBm) : '∞', 'info2');
-  setM('mGain', fmt1(cumG_dB), 'info');
-  setM('mNF',   fmt1(NF_sys), NF_sys < 3 ? 'good' : NF_sys < 8 ? 'warn' : 'bad');
-  setM('mP1dB', P1dB_in !== null ? fmt1(P1dB_in) : '—', 'warn');
-  setM('mSFDR', SFDR !== null ? SFDR.toFixed(1) : '—', SFDR > 60 ? 'good' : SFDR > 40 ? 'warn' : 'bad');
-  setM('mNfloor', nfloor_out_dBm.toFixed(1), '');
-  setM('mIM3dBc', IM3dBc !== null ? IM3dBc.toFixed(1) : '—', IM3dBc < -40 ? 'good' : IM3dBc < -20 ? 'warn' : 'bad');
-}
-
-function renderTable(res) {
-  const tbody = document.getElementById('stageTbody');
-  const activeMap = {};
-  if (res) res.rows.forEach(r => { activeMap[r.s.id] = r; });
-  const maxContrib = res ? Math.max(...res.rows.map(r => r.iip3_contrib_pct), 1) : 1;
-
-  tbody.innerHTML = stages.map((s, idx) => {
-    const r   = activeMap[s.id];
-    const NF  = effectiveNF(s);
-    const isP = PASSIVE_TYPES.has(s.type);
-
-    const cumG      = r ? r.cumG_dB.toFixed(1) : '—';
-    const cumIIP3   = r ? linTodB(1 / r.inv_IIP3_here).toFixed(1) : '—';
-    const contPct   = r ? r.iip3_contrib_pct.toFixed(1) : '—';
-    const contCol   = r ? (r.iip3_contrib_pct > 50 ? '#ff4d6d' : r.iip3_contrib_pct > 20 ? '#ffaa00' : '#00e5a0') : '#888899';
-    const barW      = r ? Math.max(2, (r.iip3_contrib_pct / maxContrib) * 90) : 0;
-
-    const typeOpts = TYPE_OPTS.map(t => `<option value="${t.v}"${s.type===t.v?' selected':''}>${t.l}</option>`).join('');
-    const iip3Field = isP
-      ? `<input class="stage-num auto" value="~+40" readonly title="Passive — treated as ~+40 dBm">`
-      : `<input class="stage-num" type="number" value="${s.iip3}" step="0.5" onchange="setField(${s.id},'iip3',+this.value)" style="width:62px">`;
-    const p1dbField = isP
-      ? `<input class="stage-num auto" value="~+30" readonly>`
-      : `<input class="stage-num" type="number" value="${s.p1db.toFixed(1)}" step="0.5" onchange="setField(${s.id},'p1db',+this.value)" style="width:62px">`;
-
-    return `<tr class="stage-row${s.enabled?'':' disabled'}" data-id="${s.id}">
-      <td style="white-space:nowrap">
-        <button class="ord-btn" onclick="moveStage(${s.id},-1)" title="Move up">▲</button>
-        <button class="ord-btn" onclick="moveStage(${s.id}, 1)" title="Move down">▼</button>
-      </td>
-      <td style="color:var(--muted);font-size:.78rem;padding:.35rem .5rem">${idx+1}</td>
-      <td><input class="stage-name" value="${s.name}" oninput="setField(${s.id},'name',this.value)"></td>
-      <td><select class="stage-type" onchange="setField(${s.id},'type',this.value)">${typeOpts}</select></td>
-      <td><input class="stage-num" type="number" value="${s.gain}" step="0.5" onchange="setField(${s.id},'gain',+this.value)" style="width:62px"></td>
-      <td>${isP
-        ? `<input class="stage-num auto" value="${NF.toFixed(2)}" readonly title="Auto = insertion loss"><br><span class="passive-note">= loss</span>`
-        : `<input class="stage-num" type="number" value="${s.nf}" step="0.1" onchange="setField(${s.id},'nf',+this.value)" style="width:62px">`
-      }</td>
-      <td>${iip3Field}</td>
-      <td>${p1dbField}</td>
-      <td class="cum-cell" style="color:var(--accent)">${cumG} dB</td>
-      <td class="cum-cell" style="color:var(--accent2)">${cumIIP3 !== '—' ? fmt1(+cumIIP3) : '—'}</td>
-      <td>
-        <div class="contrib-bar-wrap">
-          <div class="contrib-bar" style="width:${barW}px;background:${contCol}"></div>
-          <span class="contrib-pct" style="color:${contCol}">${contPct}%</span>
-        </div>
-      </td>
-      <td><input type="checkbox" ${s.enabled?'checked':''} onchange="toggleEnabled(${s.id})" title="Enable/disable stage"></td>
-      <td><button class="del-btn" onclick="deleteStage(${s.id})" title="Remove stage">✕</button></td>
-    </tr>`;
-  }).join('');
-}
-
-function updateCharts(res) {
-  const Pin_op = +document.getElementById('Pin_dBm').value;
-  const BW_MHz = +document.getElementById('BW_MHz').value || 10;
-  const BW_Hz  = BW_MHz * 1e6;
-
-  if (!res || !isFinite(res.IIP3_sys_dBm)) {
-    chartIntercept.data.labels = [];
-    chartIntercept.data.datasets.forEach(d => d.data = []);
-    chartIntercept.update('none');
-    chartContrib.data.labels = [];
-    chartContrib.data.datasets[0].data = [];
-    chartContrib.update('none');
-    return;
-  }
-
-  const { IIP3_sys_dBm, OIP3_sys_dBm, cumG_dB, NF_sys } = res;
-  const nfloor_out = -174 + NF_sys + linTodB(BW_Hz) + cumG_dB;
-
-  const n = 80, pMin = -80, pMax = 30;
-  const labels = [], fund = [], im3 = [], nfl = [];
-  for (let i = 0; i < n; i++) {
-    const p = pMin + (pMax - pMin) * i / (n - 1);
-    labels.push(p.toFixed(0));
-    fund.push(+(p + cumG_dB).toFixed(2));
-    im3.push(+(3*p - 2*IIP3_sys_dBm + cumG_dB).toFixed(2));
-    nfl.push(+nfloor_out.toFixed(2));
-  }
-
-  chartIntercept.data.labels = labels;
-  chartIntercept.data.datasets[0].data = fund;
-  chartIntercept.data.datasets[1].data = im3;
-  chartIntercept.data.datasets[2].data = nfl;
-  chartIntercept.data.datasets[3].data = [{ x: Pin_op.toFixed(0), y: +(Pin_op + cumG_dB).toFixed(2) }];
-  chartIntercept.data.datasets[4].data = [{ x: IIP3_sys_dBm.toFixed(0), y: +OIP3_sys_dBm.toFixed(2) }];
-  chartIntercept.update('none');
-
-  // Contrib bar chart
-  chartContrib.data.labels = res.rows.map(r => r.s.name);
-  chartContrib.data.datasets[0].data = res.rows.map(r => +r.iip3_contrib_pct.toFixed(2));
-  chartContrib.data.datasets[0].backgroundColor = res.rows.map((r,i) =>
-    r.iip3_contrib_pct > 50 ? 'rgba(255,77,109,.75)' : r.iip3_contrib_pct > 20 ? 'rgba(255,170,0,.75)' : CHART_COLORS[i % CHART_COLORS.length] + 'cc');
-  chartContrib.data.datasets[0].borderColor = res.rows.map((r,i) =>
-    r.iip3_contrib_pct > 50 ? '#ff4d6d' : r.iip3_contrib_pct > 20 ? '#ffaa00' : CHART_COLORS[i % CHART_COLORS.length]);
-  chartContrib.update('none');
-}
-
-function updateBlocker(res) {
-  if (res === undefined) res = computeCascade();
-  const Pdes = +document.getElementById('sPdes').value;
-  const Pblk = +document.getElementById('sPblk').value;
-  document.getElementById('lPdes').textContent = Pdes + ' dBm';
-  document.getElementById('lPblk').textContent = Pblk + ' dBm';
-
-  if (!res || !isFinite(res.IIP3_sys_dBm)) {
-    ['bPdesOut','bIM3out','bCI','bComp','bIM3dBc','bRegime'].forEach(id => { document.getElementById(id).textContent = '—'; document.getElementById(id).className = 'brv'; });
-    document.getElementById('blockerAnnotation').innerHTML = 'No active stages.';
-    return;
-  }
-
-  const { IIP3_sys_dBm, OIP3_sys_dBm, cumG_dB } = res;
-  const P1dB_in = IIP3_sys_dBm - 9.6;
-
-  const Pdes_out  = Pdes + cumG_dB;
-  // 2f_blocker - f_desired product, input referred
-  const PIM3_in   = 2 * Pblk + Pdes - 2 * IIP3_sys_dBm;
-  const PIM3_out  = PIM3_in + cumG_dB;
-  const CI        = Pdes_out - PIM3_out;
-  const margin    = P1dB_in - Pblk; // positive = not compressed
-  const IM3dBc_bl = PIM3_out - Pdes_out;
-
-  const regime = Pblk > P1dB_in ? 'Compressed' : CI < 10 ? 'IM3-limited' : 'Linear';
-
-  const setB = (id, txt, cls) => { document.getElementById(id).textContent = txt; document.getElementById(id).className = 'brv ' + cls; };
-  setB('bPdesOut', Pdes_out.toFixed(1) + ' dBm', 'info');
-  setB('bIM3out',  PIM3_out.toFixed(1) + ' dBm', 'bad');
-  setB('bCI',      CI.toFixed(1) + ' dB', CI > 30 ? 'good' : CI > 10 ? 'warn' : 'bad');
-  setB('bComp',    (margin >= 0 ? '+' : '') + margin.toFixed(1) + ' dB', margin > 6 ? 'good' : margin > 0 ? 'warn' : 'bad');
-  setB('bIM3dBc',  IM3dBc_bl.toFixed(1) + ' dBc', IM3dBc_bl < -40 ? 'good' : IM3dBc_bl < -20 ? 'warn' : 'bad');
-  setB('bRegime',  regime, regime === 'Linear' ? 'good' : regime === 'Compressed' ? 'bad' : 'warn');
-
-  const tip = regime === 'Compressed'
-    ? `<span style="color:var(--red)">Blocker (${Pblk} dBm) exceeds P1dB (${P1dB_in.toFixed(1)} dBm) — gain compression active.</span> Increase IIP3/P1dB or add input filtering.`
-    : CI < 10
-    ? `C/I = ${CI.toFixed(1)} dB — <span style="color:var(--orange)">marginal linearity</span>. Improve IIP3 of dominant stage or attenuate blocker.`
-    : `System is in the linear region. Blocker is ${margin.toFixed(1)} dB below P1dB. IM3 spur at <strong>${PIM3_out.toFixed(1)} dBm out</strong> (${IM3dBc_bl.toFixed(1)} dBc).`;
-  document.getElementById('blockerAnnotation').innerHTML = tip;
-}
-
-function updateSensitivity(res) {
-  const tbody = document.getElementById('sensitivityTbody');
-  if (!res) { tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);padding:.5rem">No stages.</td></tr>'; return; }
-  const sens = sensitivityAnalysis(res);
-  const maxDI = Math.max(...sens.map(s => Math.abs(s.deltaIIP3)), 0.01);
-  const maxDG = Math.max(...sens.map(s => Math.abs(s.deltaGain)), 0.01);
-
-  tbody.innerHTML = sens.map((r, i) => {
-    const dI = r.deltaIIP3, dG = r.deltaGain;
-    const wI = Math.max(2, Math.abs(dI) / maxDI * 80);
-    const wG = Math.max(2, Math.abs(dG) / maxDG * 80);
-    const cI = dI > 0 ? '#00e5a0' : dI < 0 ? '#ff4d6d' : '#888899';
-    const cG = dG > 0 ? '#00e5a0' : dG < 0 ? '#ff4d6d' : '#888899';
-    return `<tr>
-      <td style="color:var(--muted)">${i+1}</td>
-      <td>${r.s.name}</td>
-      <td><span style="color:${cI}">${dI >= 0 ? '+' : ''}${dI.toFixed(2)} dB</span></td>
-      <td><span class="lev-bar" style="width:${wI}px;background:${cI}"></span></td>
-      <td><span style="color:${cG}">${dG >= 0 ? '+' : ''}${dG.toFixed(2)} dB</span></td>
-      <td><span class="lev-bar" style="width:${wG}px;background:${cG}"></span></td>
-    </tr>`;
-  }).join('');
-}
-
-function updateAnnotation(res) {
-  const el = document.getElementById('mainAnnotation');
-  if (!res) { el.innerHTML = 'Add stages to begin analysis.'; return; }
-
-  const { IIP3_sys_dBm, OIP3_sys_dBm, cumG_dB, NF_sys } = res;
-  const Pin   = +document.getElementById('Pin_dBm').value;
-  const BW    = +document.getElementById('BW_MHz').value || 10;
-  const BW_Hz = BW * 1e6;
-  const nfl   = -174 + NF_sys + linTodB(BW_Hz);
-  const SFDR  = isFinite(OIP3_sys_dBm) ? (2/3) * (OIP3_sys_dBm - (nfl + cumG_dB)) : null;
-  const IM3c  = isFinite(IIP3_sys_dBm) ? 2 * (IIP3_sys_dBm - Pin) : null;
-
-  const dominant = res.rows.reduce((a,b) => b.iip3_contrib_pct > a.iip3_contrib_pct ? b : a, res.rows[0]);
-  const tip = SFDR && SFDR < 40
-    ? `<span style="color:var(--orange)">SFDR ${SFDR.toFixed(1)} dB is limited</span> — improve OIP3 or reduce NF.`
-    : SFDR && SFDR > 70 ? 'Excellent SFDR for the specified bandwidth.' : '';
-
-  el.innerHTML =
-    `<strong>System:</strong> Gain = <strong>${cumG_dB.toFixed(1)} dB</strong>, ` +
-    `IIP3 = <strong>${fmt1(IIP3_sys_dBm)} dBm</strong>, ` +
-    `OIP3 = <strong>${fmt1(OIP3_sys_dBm)} dBm</strong>, ` +
-    `NF = <strong>${NF_sys.toFixed(2)} dB</strong>. ` +
-    (dominant ? `<strong>${dominant.s.name}</strong> dominates IIP3 budget (${dominant.iip3_contrib_pct.toFixed(0)}%). ` : '') +
-    (IM3c !== null ? `At Pin = ${Pin} dBm: IM3 dBc = <strong>${IM3c.toFixed(1)} dBc</strong>. ` : '') +
-    (SFDR !== null ? `SFDR = <strong>${SFDR.toFixed(1)} dB</strong> in ${BW} MHz BW. ` : '') +
-    tip;
-}
-
-// ─── JSON import/export ───────────────────────────────────────────
-function exportJSON() {
-  const data = { tool: 'IIP3 Cascade', version: 1, stages: stages.map(s => ({ ...s })) };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = 'iip3_cascade.json'; a.click();
-}
-
-function importJSON(ev) {
-  const file = ev.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (!data.stages) throw new Error('No stages array');
-      nextId = 1; stages = [];
-      data.stages.forEach(o => stages.push(makeStage(o)));
-      render();
-    } catch (err) { alert('Import failed: ' + err.message); }
-  };
-  reader.readAsText(file);
-  ev.target.value = '';
-}
-
-function copyResults() {
-  const res = computeCascade();
-  if (!res) { alert('No stages defined.'); return; }
-  const { IIP3_sys_dBm, OIP3_sys_dBm, cumG_dB, NF_sys } = res;
-  const BW = +document.getElementById('BW_MHz').value || 10;
-  const SFDR = isFinite(OIP3_sys_dBm) ? (2/3) * (OIP3_sys_dBm - (-174 + NF_sys + linTodB(BW*1e6) + cumG_dB)) : null;
-  const lines = [
-    'IIP3 Cascade Summary — RF Toolbox',
-    '─'.repeat(40),
-    `IIP3 (input-ref):  ${fmt1(IIP3_sys_dBm)} dBm`,
-    `OIP3 (output-ref): ${fmt1(OIP3_sys_dBm)} dBm`,
-    `Total Gain:        ${cumG_dB.toFixed(1)} dB`,
-    `System NF:         ${NF_sys.toFixed(2)} dB`,
-    `P1dB (input est.): ${(IIP3_sys_dBm - 9.6).toFixed(1)} dBm`,
-    SFDR !== null ? `SFDR (${BW} MHz BW):  ${SFDR.toFixed(1)} dB` : '',
-    '', 'Stage breakdown:',
-    ...res.rows.map((r, i) => `  ${i+1}. ${r.s.name.padEnd(16)} IIP3 contrib: ${r.iip3_contrib_pct.toFixed(1)}%  CumG: ${r.cumG_dB.toFixed(1)} dB`)
-  ];
-  navigator.clipboard.writeText(lines.filter(Boolean).join('\n')).then(() => alert('Results copied to clipboard.'));
-}
-
-// ─── Toolbar ──────────────────────────────────────────────────────
-function takeScreenshot() {
-  const canvases = [...document.querySelectorAll('canvas')];
-  const p = 16, tH = 40;
-  const W = canvases.reduce((s,c) => s + c.width + p, p);
-  const H = Math.max(...canvases.map(c => c.height)) + tH + p * 2;
-  const out = document.createElement('canvas'); out.width = W; out.height = H;
-  const c = out.getContext('2d');
-  c.fillStyle = '#0d0d0f'; c.fillRect(0,0,W,H);
-  c.fillStyle = '#e2e2e8'; c.font = 'bold 14px Segoe UI,sans-serif';
-  c.fillText('IIP3 & Intermod Cascade  ·  RF Toolbox', p, tH/2+5);
-  c.fillStyle = '#888899'; c.font = '11px monospace';
-  c.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC', p, tH-4);
-  let x = p; canvases.forEach(cv => { c.drawImage(cv,x,tH+p); x += cv.width+p; });
-  const a = document.createElement('a');
-  a.download = 'iip3_cascade_' + new Date().toISOString().slice(0,19).replace(/[:T]/g,'-') + '.png';
-  a.href = out.toDataURL('image/png'); a.click();
-}
-function toggleFullscreen() {
-  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-  else document.exitFullscreen();
-}
-function copyLink() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    const btn = document.getElementById('copyBtn'), orig = btn.textContent;
-    btn.textContent = '✓ Copied!'; btn.style.color='#00e5a0'; btn.style.borderColor='#00e5a0';
-    setTimeout(() => { btn.textContent = orig; btn.style.color=''; btn.style.borderColor=''; }, 2000);
-  });
-}
-
-// ─── Wire up live controls ────────────────────────────────────────
-document.getElementById('BW_MHz').addEventListener('input', render);
-document.getElementById('Pin_dBm').addEventListener('input', render);
-
-// ─── Bootstrap ────────────────────────────────────────────────────
-loadPreset('generic');
+update();
 </script>
 </body>
 </html>

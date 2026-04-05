@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smith Chart + Matching | RF Toolbox</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#16181d;--card:#1e2128;--deep:#0d1117;
+  --bdr:#30363d;--t1:#e6edf3;--t2:#c9d1d9;--tm:#8b949e;
+  --blue:#58a6ff;--grn:#3fb950;--org:#f0883e;--red:#f85149;--yel:#e6c547;--pur:#bc8cff;
+}
+body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+
+.toolbar{position:fixed;top:14px;right:16px;display:flex;gap:6px;z-index:100}
+.tbtn{background:var(--card);border:1px solid var(--bdr);color:var(--tm);border-radius:5px;padding:5px 10px;font-size:.75rem;cursor:pointer;transition:border-color .15s,color .15s}
+.tbtn:hover{border-color:var(--blue);color:var(--blue)}
+
+nav{padding:.75rem 1.5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.75rem;background:var(--card)}
+nav .sep{color:var(--bdr)}
+nav span{color:var(--tm);font-size:.85rem}
+
+header{padding:1.5rem 1.5rem 1rem;max-width:1200px;margin:0 auto}
+header .tag{font-size:.72rem;font-weight:600;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:.3rem}
+header h1{font-size:1.7rem;font-weight:700;color:var(--t1)}
+header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
+
+.eq-box{max-width:1200px;margin:0 auto .9rem;padding:0 1.5rem}
+.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.4rem;display:flex;flex-wrap:wrap;gap:1.5rem}
+.eq-col{flex:1;min-width:220px}
+.eq-label{font-size:.68rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-primary{font-family:'Courier New',monospace;font-size:.88rem;color:var(--blue);line-height:2}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.79rem;color:var(--pur);line-height:2}
+.eq-note{font-size:.73rem;color:var(--tm);margin-top:.25rem}
+
+.layout{display:grid;grid-template-columns:280px 1fr;gap:1.2rem;max-width:1200px;margin:0 auto;padding:0 1.5rem 2rem}
+@media(max-width:768px){.layout{grid-template-columns:1fr}}
+
+.panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem}
+.panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.9rem}
+.panel-sep{border-top:1px solid var(--bdr);margin:.8rem 0}
+
+.sr{margin-bottom:.85rem}
+.sr label{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.22rem}
+.sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
+input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
+.hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
+
+.ni{background:var(--deep);border:1px solid var(--bdr);border-radius:4px;color:var(--blue);font-family:'Courier New',monospace;font-size:.82rem;padding:.28rem .45rem;width:70px;text-align:right}
+.ni:focus{outline:none;border-color:var(--blue)}
+
+.snap-row{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.9rem}
+.snap-btn{font-size:.72rem;padding:.2rem .55rem;border-radius:12px;border:1px solid var(--bdr);background:var(--deep);color:var(--tm);cursor:pointer;transition:.15s}
+.snap-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.9rem}
+.mc{background:var(--deep);border:1px solid var(--bdr);border-radius:6px;padding:.55rem .75rem}
+.mc .mlb{font-size:.66rem;color:var(--tm);text-transform:uppercase;letter-spacing:.9px}
+.mc .mv{font-family:'Courier New',monospace;font-size:1rem;font-weight:700;margin-top:.1rem;transition:color 200ms}
+.mc .mu{font-size:.63rem;color:var(--tm)}
+.good{color:var(--grn)}.warn{color:var(--org)}.bad{color:var(--red)}.info{color:var(--blue)}.info2{color:var(--pur)}
+
+/* Smith canvas */
+.smith-wrap{position:relative;width:100%;padding-bottom:100%;background:var(--deep);border-radius:8px;overflow:hidden}
+.smith-wrap canvas{position:absolute;top:0;left:0;width:100%;height:100%}
+
+.chart-panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem;margin-top:1rem}
+.chart-panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.7rem}
+.chart-wrap{position:relative;min-height:200px}
+
+.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;margin-top:1rem;font-size:.82rem;color:var(--tm);line-height:1.7}
+.annotation strong{color:var(--t1)}
+.annotation b{color:var(--blue)}
+
+.stub-info{background:rgba(63,185,80,.07);border:1px solid rgba(63,185,80,.25);border-radius:7px;padding:.65rem .9rem;margin-top:.8rem;font-size:.79rem;color:var(--tm);line-height:1.7}
+.stub-info strong{color:var(--grn)}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="tbtn" onclick="takeScreenshot('Smith Chart + Matching')">📷 Screenshot</button>
+  <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
+</div>
+
+<nav>
+  <a href="index.html">RF Toolbox</a>
+  <span class="sep">›</span>
+  <span>Smith Chart + Matching</span>
+</nav>
+
+<header>
+  <div class="tag">Tool 05 · Matching Networks</div>
+  <h1>Smith Chart — Transmission Line Matching</h1>
+  <p>Line length slider rotates Γ around the constant-|Γ| circle in real time. Standing wave pattern updates simultaneously. Single-stub matching solved automatically.</p>
+</header>
+
+<div class="eq-box">
+  <div class="eq-card">
+    <div class="eq-col">
+      <div class="eq-label">Reflection Coefficient (Pozar 2.4)</div>
+      <div class="eq-primary">Γ_L = (Z_L − Z₀) / (Z_L + Z₀)</div>
+      <div class="eq-secondary">z_L = Z_L/Z₀  (normalized impedance)</div>
+      <div class="eq-secondary">z = (1+Γ)/(1−Γ)  (inverse transform)</div>
+      <div class="eq-note">VSWR = (1+|Γ|)/(1−|Γ|).  Return loss = −20 log|Γ| dB</div>
+    </div>
+    <div class="eq-col">
+      <div class="eq-label">Transmission Line Rotation</div>
+      <div class="eq-primary">Γ(l) = Γ_L · e^(−j2βl)</div>
+      <div class="eq-secondary">β = 2π/λ  →  2βl = 4πl/λ</div>
+      <div class="eq-secondary">One full rotation = λ/2 line length</div>
+      <div class="eq-note">Moving toward generator: clockwise rotation. |Γ| stays constant.</div>
+    </div>
+    <div class="eq-col">
+      <div class="eq-label">Single-Stub Matching</div>
+      <div class="eq-primary">Find l₁: Re(Y(l₁)) = Y₀</div>
+      <div class="eq-secondary">Stub length l_s: Im(Y_stub) = −Im(Y(l₁))</div>
+      <div class="eq-secondary">Short stub: l_s = (1/2β)·arctan(B/Y₀)</div>
+      <div class="eq-note">Two solutions exist per half-wavelength. Pozar 5.3.</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <div>
+    <div class="panel" style="margin-bottom:1rem">
+      <h3>Load Impedance Z_L</h3>
+      <div style="display:flex;gap:.5rem;margin-bottom:.7rem;align-items:center">
+        <label style="font-size:.83rem;color:var(--tm)">R<sub>L</sub></label>
+        <input class="ni" type="number" id="inRL" value="100" min="0" max="500" step="5"> Ω
+      </div>
+      <div style="display:flex;gap:.5rem;margin-bottom:.7rem;align-items:center">
+        <label style="font-size:.83rem;color:var(--tm)">jX<sub>L</sub></label>
+        <input class="ni" type="number" id="inXL" value="50" min="-300" max="300" step="5"> Ω
+      </div>
+      <div style="display:flex;gap:.5rem;margin-bottom:.7rem;align-items:center">
+        <label style="font-size:.83rem;color:var(--tm)">Z₀</label>
+        <input class="ni" type="number" id="inZ0" value="50" min="1" max="300" step="5"> Ω
+      </div>
+      <div class="panel-sep"></div>
+      <div class="eq-label" style="margin-bottom:.4rem">Snap to common loads</div>
+      <div class="snap-row">
+        <button class="snap-btn" onclick="snap(50,0)">50Ω</button>
+        <button class="snap-btn" onclick="snap(75,0)">75Ω</button>
+        <button class="snap-btn" onclick="snap(100,0)">100Ω</button>
+        <button class="snap-btn" onclick="snap(0,0)">Short</button>
+        <button class="snap-btn" onclick="snap(1e6,0)">Open</button>
+        <button class="snap-btn" onclick="snap(50,50)">50+j50</button>
+        <button class="snap-btn" onclick="snap(50,-50)">50−j50</button>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:1rem">
+      <h3>Transmission Line</h3>
+      <div class="sr">
+        <label>Line length l/λ <span id="vLen">0.000 λ</span></label>
+        <input type="range" id="sLen" min="0" max="2" step="0.001" value="0">
+        <div class="hints"><span>0</span><span>2λ</span></div>
+      </div>
+      <div id="elecLen" style="font-family:'Courier New',monospace;font-size:.8rem;color:var(--tm);margin-bottom:.6rem"></div>
+    </div>
+
+    <div class="panel" style="margin-bottom:1rem">
+      <h3>Results at load plane</h3>
+      <div class="metrics">
+        <div class="mc"><div class="mlb">|Γ_L|</div><div class="mv info" id="mGammaMag">—</div><div class="mu">linear</div></div>
+        <div class="mc"><div class="mlb">∠Γ_L</div><div class="mv info" id="mGammaAng">—</div><div class="mu">deg</div></div>
+        <div class="mc"><div class="mlb">VSWR</div><div class="mv warn" id="mVSWR">—</div><div class="mu"></div></div>
+        <div class="mc"><div class="mlb">Return Loss</div><div class="mv" id="mRL" style="color:var(--tm)">—</div><div class="mu">dB</div></div>
+        <div class="mc"><div class="mlb">Z_in (R)</div><div class="mv" id="mZinR" style="color:var(--t1)">—</div><div class="mu">Ω</div></div>
+        <div class="mc"><div class="mlb">Z_in (jX)</div><div class="mv" id="mZinX" style="color:var(--t1)">—</div><div class="mu">Ω</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Single-Stub Matching</h3>
+      <div class="stub-info" id="stubInfo">Computing stubs...</div>
+    </div>
+  </div>
+
+  <!-- Main: Smith Chart + TL plot -->
+  <div>
+    <div class="panel" style="margin-bottom:1rem">
+      <h3 style="margin-bottom:.7rem">Smith Chart — constant |Γ| = <span id="gammaCircle">—</span></h3>
+      <div class="smith-wrap">
+        <canvas id="smithCanvas"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-panel">
+      <h3>Standing Wave |V(z)/V⁺| along transmission line</h3>
+      <div class="chart-wrap"><canvas id="chartTL"></canvas></div>
+    </div>
+
+    <div class="annotation" id="annotation">Computing...</div>
+  </div>
+</div>
+
+<script>
+const PI=Math.PI;
+
+// Complex number ops
+const C={
+  add:(a,b)=>({re:a.re+b.re,im:a.im+b.im}),
+  sub:(a,b)=>({re:a.re-b.re,im:a.im-b.im}),
+  mul:(a,b)=>({re:a.re*b.re-a.im*b.im,im:a.re*b.im+a.im*b.re}),
+  div:(a,b)=>{const d=b.re*b.re+b.im*b.im;return{re:(a.re*b.re+a.im*b.im)/d,im:(a.im*b.re-a.re*b.im)/d}},
+  mag:(a)=>Math.sqrt(a.re*a.re+a.im*a.im),
+  ang:(a)=>Math.atan2(a.im,a.re)*180/PI,
+  fromPolar:(r,ang_rad)=>({re:r*Math.cos(ang_rad),im:r*Math.sin(ang_rad)})
+};
+
+function getGamma(ZL_R, ZL_X, Z0){
+  const ZL={re:ZL_R,im:ZL_X}, Z0c={re:Z0,im:0};
+  return C.div(C.sub(ZL,Z0c), C.add(ZL,Z0c));
+}
+
+function gammaToZ(g, Z0){
+  const one={re:1,im:0};
+  const z_norm=C.div(C.add(one,g), C.sub(one,g));
+  return {re:z_norm.re*Z0, im:z_norm.im*Z0};
+}
+
+function rotateGamma(gL, l_lam){
+  // Γ(l) = ΓL · e^(−j4πl/λ)
+  const angle=-4*PI*l_lam;
+  const factor=C.fromPolar(1, angle);
+  return C.mul(gL, factor);
+}
+
+// ─── Smith Chart Drawing ─────────────────────────────────────────────────────
+const smithCanvas=document.getElementById('smithCanvas');
+const smithCtx=smithCanvas.getContext('2d');
+
+function resizeSmith(){
+  const w=smithCanvas.offsetWidth, h=smithCanvas.offsetHeight;
+  smithCanvas.width=w; smithCanvas.height=h;
+}
+
+function drawSmith(gL, gAtLine, stubs){
+  const w=smithCanvas.width, h=smithCanvas.height;
+  const cx=w*0.5, cy=h*0.5;
+  const R=Math.min(w,h)*0.45;
+  const ctx=smithCtx;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#0d1117';
+  ctx.fillRect(0,0,w,h);
+
+  // Helper: map Γ (re,im) to canvas pixels
+  const toXY=(g)=>({x:cx+g.re*R, y:cy-g.im*R});
+
+  // Draw constant-r circles: r = 0, 0.5, 1, 2, 5
+  const rVals=[0,0.2,0.5,1,2,5];
+  rVals.forEach(r=>{
+    const rn=r; // normalized
+    const center={re:rn/(1+rn), im:0};
+    const radius=1/(1+rn);
+    const p=toXY(center);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, radius*R, 0, 2*PI);
+    ctx.strokeStyle=r===1?'rgba(88,166,255,.35)':'rgba(255,255,255,.08)';
+    ctx.lineWidth=r===1?1.5:0.8;
+    ctx.stroke();
+  });
+
+  // Draw constant-x circles: x = ±0.5, ±1, ±2
+  const xVals=[0.5,1,2,0.2,-0.5,-1,-2,-0.2];
+  xVals.forEach(x=>{
+    if(x===0) return;
+    const center_re=1, center_im=1/x;
+    const radius=Math.abs(1/x);
+    // These circles have center at (1, 1/x) in Γ-space... use approximate arc
+    // Actually for Smith chart: center in Γ plane = (1, 1/x), radius = 1/|x|
+    const p=toXY({re:center_re, im:center_im});
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, radius*R, 0, 2*PI);
+    ctx.strokeStyle='rgba(255,255,255,.07)';
+    ctx.lineWidth=0.7;
+    ctx.stroke();
+  });
+
+  // Outer unit circle
+  ctx.beginPath();
+  ctx.arc(cx,cy,R,0,2*PI);
+  ctx.strokeStyle='rgba(88,166,255,.5)';
+  ctx.lineWidth=1.5;
+  ctx.stroke();
+
+  // Axes
+  ctx.beginPath();ctx.moveTo(cx-R,cy);ctx.lineTo(cx+R,cy);
+  ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=0.8;ctx.stroke();
+
+  // Constant |Γ| circle through load
+  const magL=C.mag(gL);
+  if(magL>0.01){
+    ctx.beginPath();
+    ctx.arc(cx,cy,magL*R,0,2*PI);
+    ctx.strokeStyle='rgba(248,81,73,.4)';
+    ctx.lineWidth=1.2;
+    ctx.setLineDash([4,3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Stub overlay paths
+  stubs.forEach((stub,si)=>{
+    if(!stub) return;
+    const col=si===0?'rgba(63,185,80,.7)':'rgba(240,136,62,.7)';
+    // Arc from gL to stub point
+    const {l1,gAtMatch} = stub;
+    ctx.beginPath();
+    // Draw arc from gL angle to gAtMatch angle at radius |gL|
+    const ang0=Math.atan2(gL.im,gL.re);
+    const ang1=Math.atan2(gAtMatch.im,gAtMatch.re);
+    ctx.arc(cx,cy,magL*R,ang0,-2*(PI*2*(si===0?stub.l1_lam:stub.l1_lam_alt)),false);
+    // simplified: just show the matching point
+    const pm=toXY(gAtMatch);
+    ctx.beginPath();ctx.arc(pm.x,pm.y,5,0,2*PI);
+    ctx.fillStyle=col;ctx.fill();
+  });
+
+  // Current position on TL (rotated point)
+  const pg=toXY(gAtLine);
+  ctx.beginPath();ctx.arc(pg.x,pg.y,7,0,2*PI);
+  ctx.fillStyle='#58a6ff';ctx.fill();
+  ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+
+  // Load point (original)
+  const pl=toXY(gL);
+  ctx.beginPath();ctx.arc(pl.x,pl.y,5,0,2*PI);
+  ctx.fillStyle='#f85149';ctx.fill();
+
+  // Labels
+  ctx.fillStyle='#8b949e';ctx.font='10px monospace';
+  ctx.fillText('0',cx+R+4,cy+4);
+  ctx.fillText('∞',cx-R-18,cy+4);
+  ctx.fillStyle='#f85149';ctx.font='bold 11px sans-serif';
+  ctx.fillText('ZL',pl.x+8,pl.y-8);
+  ctx.fillStyle='#58a6ff';
+  ctx.fillText('Z_in',pg.x+8,pg.y-8);
+}
+
+// TL standing wave chart
+const tlCtx=document.getElementById('chartTL').getContext('2d');
+const tlChart=new Chart(tlCtx,{
+  type:'line',
+  data:{datasets:[
+    {label:'|V(z)/V⁺|',data:[],borderColor:'#58a6ff',borderWidth:2,pointRadius:0,fill:false},
+    {label:'|I(z)/I⁺|·Z₀',data:[],borderColor:'#bc8cff',borderDash:[4,3],borderWidth:1.5,pointRadius:0,fill:false},
+    {label:'Load Plane',data:[],borderColor:'rgba(248,81,73,.7)',borderDash:[3,3],borderWidth:1.5,pointRadius:0,showLine:true,fill:false}
+  ]},
+  options:{
+    animation:{duration:0},responsive:true,
+    plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+    scales:{
+      x:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Distance from load (wavelengths)'}},
+      y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Normalized voltage / current amplitude'},min:0}
+    }
+  }
+});
+
+function singleStubMatch(gL_mag, gL_ang_rad, Z0){
+  // Find l1 (distance from load) where Re(Y(l1)) = Y0 = 1/Z0
+  // Γ(l1) = |ΓL|·e^j(∠ΓL - 4πl1/λ)
+  // Re[Y] = Y0 → find l1
+  const G2=gL_mag*gL_mag;
+  // Re(Zin)/Z0 = (1-G2)/|1-Γ|^2
+  // Y_norm = 1/z_norm; we want Re(y_norm)=1
+  // => (1-G2)/(1-2|G|cos(phi)+G2) = 1
+  // => 1-G2 = 1 - 2|G|cos(phi) + G2
+  // => 2|G|cos(phi) = 2G2
+  // => cos(phi) = |G|
+  if(G2>=1) return null; // open/short — no solution
+  const cosPhi=gL_mag;
+  if(cosPhi>1) return null;
+  const phi=Math.acos(cosPhi); // two solutions: +phi and -phi
+  const solutions=[];
+  for(const sign of [1,-1]){
+    const phiTotal=gL_ang_rad+sign*phi; // target angle of Γ(l1)
+    // -4π·l1/λ = phiTotal - gL_ang_rad → l1 = (gL_ang_rad - phiTotal)/(4π)
+    let l1=(gL_ang_rad - phiTotal)/(4*PI);
+    // Normalize to 0..0.5λ (positive, mod λ/2)
+    while(l1<0) l1+=0.5;
+    while(l1>=0.5) l1-=0.5;
+    const gammaAtMatch=C.fromPolar(gL_mag, gL_ang_rad-4*PI*l1);
+    // Y at this point: Y = Y0·(1-Γ)/(1+Γ)
+    const z={re:1,im:0};
+    const zn=C.div(C.add(z,gammaAtMatch),C.sub(z,gammaAtMatch));
+    const yn=C.div({re:1,im:0},zn);
+    // yn.re should ≈ 1; stub must cancel yn.im
+    const B=-yn.im; // susceptance stub must provide (normalized)
+    // Short-circuit stub: y_stub = -j·cot(β·ls) → cot(βls) = B → ls = arctan(1/B)/(2π)
+    let ls_sc=Math.atan2(1,B)/(2*PI);
+    if(ls_sc<0) ls_sc+=0.5;
+    // Open-circuit stub: y_stub = j·tan(β·ls) → tan(βls) = B → ls = arctan(B)/(2π)
+    let ls_oc=Math.atan2(B,1)/(2*PI);
+    if(ls_oc<0) ls_oc+=0.5;
+    solutions.push({l1_lam:l1, ls_sc_lam:ls_sc, ls_oc_lam:ls_oc, gAtMatch:gammaAtMatch, B_norm:yn.im});
+  }
+  return solutions;
+}
+
+function update(){
+  const RL=parseFloat(document.getElementById('inRL').value)||100;
+  const XL=parseFloat(document.getElementById('inXL').value)||0;
+  const Z0=parseFloat(document.getElementById('inZ0').value)||50;
+  const l_lam=parseFloat(document.getElementById('sLen').value)||0;
+
+  document.getElementById('vLen').textContent=l_lam.toFixed(3)+' λ';
+  document.getElementById('elecLen').textContent=`= ${(l_lam*360).toFixed(1)}°  |  βl = ${(l_lam*2*PI).toFixed(3)} rad`;
+
+  const gL=getGamma(RL, XL, Z0);
+  const gLine=rotateGamma(gL, l_lam);
+  const magL=C.mag(gL);
+  const angL=C.ang(gL);
+  const Zin=gammaToZ(gLine, Z0);
+  const VSWR=magL<0.9999?(1+magL)/(1-magL):999;
+  const RL_dB=magL>0?-20*Math.log10(magL):Infinity;
+
+  document.getElementById('mGammaMag').textContent=magL.toFixed(4);
+  document.getElementById('mGammaMag').className='mv '+(magL<0.1?'good':magL<0.3?'warn':'bad');
+  document.getElementById('mGammaAng').textContent=angL.toFixed(1);
+  document.getElementById('mVSWR').textContent=VSWR>100?'>100':VSWR.toFixed(2);
+  document.getElementById('mVSWR').className='mv '+(VSWR<1.5?'good':VSWR<3?'warn':'bad');
+  document.getElementById('mRL').textContent=RL_dB>60?'>60':RL_dB.toFixed(1);
+  document.getElementById('mZinR').textContent=Zin.re.toFixed(1);
+  document.getElementById('mZinX').textContent=(Zin.im>=0?'+':'')+Zin.im.toFixed(1);
+  document.getElementById('gammaCircle').textContent='|Γ| = '+magL.toFixed(4);
+
+  // Standing wave
+  const npts=300;
+  const zArr=Array.from({length:npts},(_,i)=>i/(npts-1)*2); // 0 to 2λ from load
+  const vArr=zArr.map(z=>1+2*magL*Math.cos(4*PI*z)+magL*magL); // |V|^2 unnorm
+  const vMax=Math.sqrt(Math.max(...vArr));
+  const vNorm=zArr.map(z=>Math.sqrt(1+2*magL*Math.cos(4*PI*z)+magL*magL)/vMax);
+  // Current: |I|^2 ∝ 1 - 2|G|cos + G^2
+  const iNorm=zArr.map(z=>Math.sqrt(1-2*magL*Math.cos(4*PI*z)+magL*magL)/vMax);
+  tlChart.data.datasets[0].data=zArr.map((z,i)=>({x:z,y:vNorm[i]}));
+  tlChart.data.datasets[1].data=zArr.map((z,i)=>({x:z,y:iNorm[i]}));
+  // Mark current operating point (line length l_lam from load)
+  const lMod=l_lam%1;
+  tlChart.data.datasets[2].data=[{x:l_lam%2,y:0},{x:l_lam%2,y:VSWR/(VSWR>=999?1:VSWR)*1.1}];
+  tlChart.update();
+
+  // Smith chart
+  resizeSmith();
+  // Single-stub solutions
+  const stubs=singleStubMatch(magL, C.ang(gL)*PI/180, Z0);
+  drawSmith(gL, gLine, stubs||[]);
+
+  // Stub info
+  let stubHtml='';
+  if(stubs&&stubs.length>=2){
+    stubs.forEach((s,i)=>{
+      const col=i===0?'var(--grn)':'var(--org)';
+      stubHtml+=`<strong style="color:${col}">Solution ${i+1}:</strong>
+        l₁ = <b>${(s.l1_lam*1000).toFixed(1)} mλ</b> (${(s.l1_lam*360).toFixed(1)}°) from load.
+        Short stub: <b>${(s.ls_sc_lam*1000).toFixed(1)} mλ</b> (${(s.ls_sc_lam*360).toFixed(1)}°).
+        Open stub: <b>${(s.ls_oc_lam*1000).toFixed(1)} mλ</b> (${(s.ls_oc_lam*360).toFixed(1)}°).<br>`;
+    });
+  } else {
+    stubHtml=magL>=1?'Load is on unit circle — no matching needed or lossless (short/open).'
+      :'No real solution found.';
+  }
+  document.getElementById('stubInfo').innerHTML=stubHtml;
+
+  // Annotation
+  const matchedZ0=Math.abs(Zin.re-Z0)<1&&Math.abs(Zin.im)<1;
+  document.getElementById('annotation').innerHTML=
+    `<strong>Load:</strong> Z_L = ${RL}${XL>=0?'+j':'j'}${XL} Ω, Z₀ = ${Z0} Ω →
+    z_L (norm) = ${(RL/Z0).toFixed(2)}${(XL/Z0)>=0?'+j':'j'}${(XL/Z0).toFixed(2)}.
+    Γ_L = ${magL.toFixed(4)} ∠${angL.toFixed(1)}°.
+    VSWR = <b>${VSWR>100?'>100':VSWR.toFixed(2)}</b>, Return Loss = <b>${RL_dB>60?'>60':RL_dB.toFixed(1)} dB</b>.<br>
+    <strong>After ${l_lam.toFixed(3)}λ line (${(l_lam*360).toFixed(1)}°):</strong>
+    Z_in = ${Zin.re.toFixed(1)}${Zin.im>=0?'+j':'j'}${Math.abs(Zin.im).toFixed(1)} Ω.
+    ${matchedZ0?'<b style="color:var(--grn)">Matched! Z_in ≈ Z₀ = '+Z0+'Ω</b>':'Not yet matched to Z₀.'}
+    The slider rotates Γ clockwise on the constant-|Γ|=${magL.toFixed(3)} circle (λ/2 = full rotation).<br>
+    <strong>Standing wave:</strong> VSWR = ${VSWR>100?'>100':VSWR.toFixed(2)} →
+    ${VSWR<1.5?'excellent match, minimal standing wave':'significant standing wave — matching network recommended.'}
+    V_max/V_min = VSWR = ${VSWR>100?'>100':VSWR.toFixed(2)}.`;
+}
+
+function snap(R,X){
+  document.getElementById('inRL').value=R>1e5?1e6:R;
+  document.getElementById('inXL').value=X;
+  update();
+}
+
+['inRL','inXL','inZ0'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+document.getElementById('sLen').addEventListener('input',update);
+
+window.addEventListener('resize',()=>{resizeSmith();update();});
+
+function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#8b949e';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`smith_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
+function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+function copyLink(){navigator.clipboard.writeText(window.location.href).then(()=>{const b=document.getElementById('copyBtn');const o=b.textContent;b.textContent='✓ Copied!';b.style.color='#3fb950';b.style.borderColor='#3fb950';setTimeout(()=>{b.textContent=o;b.style.color='';b.style.borderColor='';},2000);});}
+
+update();
+</script>
+</body>
+</html>

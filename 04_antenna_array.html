@@ -6,70 +6,70 @@
 <title>Antenna Array Factor | RF Toolbox</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0d0d0f; --surface: #16161a; --card: #1e1e24; --border: #2a2a35;
-    --accent: #00c8ff; --accent2: #7b61ff; --text: #e2e2e8; --muted: #888899;
-    --green: #00e5a0; --orange: #ffaa00;
-  }
-  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#16181d;--card:#1e2128;--deep:#0d1117;
+  --bdr:#30363d;--t1:#e6edf3;--t2:#c9d1d9;--tm:#8b949e;
+  --blue:#58a6ff;--grn:#3fb950;--org:#f0883e;--red:#f85149;--yel:#e6c547;--pur:#bc8cff;
+}
+body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
 
-  /* ── Toolbar ── */
-  .toolbar { position: fixed; top: 14px; right: 16px; display: flex; gap: 6px; z-index: 100; }
-  .tbtn {
-    background: var(--card); border: 1px solid var(--border); color: var(--muted);
-    border-radius: 5px; padding: 5px 10px; font-size: .75rem; cursor: pointer;
-    transition: border-color .15s, color .15s;
-  }
-  .tbtn:hover { border-color: var(--accent); color: var(--accent); }
+.toolbar{position:fixed;top:14px;right:16px;display:flex;gap:6px;z-index:100}
+.tbtn{background:var(--card);border:1px solid var(--bdr);color:var(--tm);border-radius:5px;padding:5px 10px;font-size:.75rem;cursor:pointer;transition:border-color .15s,color .15s}
+.tbtn:hover{border-color:var(--blue);color:var(--blue)}
 
-  nav { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
-  nav a { color: var(--accent); text-decoration: none; font-size: 0.88rem; }
-  nav span { color: var(--muted); }
-  header { padding: 2rem 1.5rem 1.5rem; max-width: 1100px; margin: 0 auto; }
-  header .tag { font-size: 0.72rem; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.4rem; }
-  header h1 { font-size: 2rem; font-weight: 700; }
-  header p { color: var(--muted); margin-top: 0.4rem; }
+nav{padding:.75rem 1.5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.75rem;background:var(--card)}
+nav .sep{color:var(--bdr)}
+nav span{color:var(--tm);font-size:.85rem}
 
-  .equation-box { max-width: 1100px; margin: 0 auto 1.5rem; padding: 0 1.5rem; }
-  .eq-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem 1.5rem; display: flex; flex-wrap: wrap; gap: 2rem; }
-  .eq-primary { font-family: 'Courier New', monospace; font-size: 1rem; color: var(--accent); margin-bottom: 0.3rem; }
-  .eq-secondary { font-family: 'Courier New', monospace; font-size: 0.84rem; color: var(--accent2); }
-  .eq-note { font-size: 0.79rem; color: var(--muted); margin-top: 0.3rem; }
+header{padding:1.5rem 1.5rem 1rem;max-width:1180px;margin:0 auto}
+header .tag{font-size:.72rem;font-weight:600;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:.3rem}
+header h1{font-size:1.7rem;font-weight:700;color:var(--t1)}
+header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 
-  .layout { display: grid; grid-template-columns: 300px 1fr; gap: 1.4rem; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem; }
-  @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
+.eq-box{max-width:1180px;margin:0 auto .9rem;padding:0 1.5rem}
+.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.4rem;display:flex;flex-wrap:wrap;gap:1.5rem}
+.eq-col{flex:1;min-width:230px}
+.eq-label{font-size:.68rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-primary{font-family:'Courier New',monospace;font-size:.9rem;color:var(--blue);line-height:2}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.8rem;color:var(--pur);line-height:2}
+.eq-note{font-size:.74rem;color:var(--tm);margin-top:.25rem}
 
-  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
-  .panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
+.layout{display:grid;grid-template-columns:300px 1fr;gap:1.2rem;max-width:1180px;margin:0 auto;padding:0 1.5rem 2rem}
+@media(max-width:768px){.layout{grid-template-columns:1fr}}
 
-  .slider-row { margin-bottom: 1rem; }
-  .slider-row label { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.3rem; }
-  .slider-row label span { color: var(--orange); font-family: 'Courier New', monospace; font-weight: 600; transition: all 200ms ease; }
-  input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
-  .hints { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 0.15rem; }
+.panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem}
+.panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
+.panel-sep{border-top:1px solid var(--bdr);margin:.85rem 0}
 
-  .results { margin-top: 1.2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
-  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem; }
-  .result-card .label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-  .result-card .value { font-size: 1.2rem; font-weight: 700; color: var(--green); font-family: 'Courier New', monospace; transition: all 200ms ease; }
-  .result-card .unit { font-size: 0.68rem; color: var(--muted); }
+.sr{margin-bottom:.9rem}
+.sr label{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem}
+.sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
+input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
+.hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
 
-  .chart-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; display: flex; flex-direction: column; gap: 1rem; }
-  .chart-panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
-  .chart-wrap { position: relative; min-height: 360px; }
-  .polar-wrap { position: relative; min-height: 360px; }
+select.sel{width:100%;background:var(--deep);border:1px solid var(--bdr);color:var(--t2);border-radius:5px;padding:.35rem .5rem;font-size:.84rem;margin-bottom:.9rem}
 
-  .plot-tabs { display: flex; gap: 0.5rem; }
-  .tab-btn { padding: 0.3rem 0.8rem; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 0.78rem; cursor: pointer; transition: 0.15s; }
-  .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:1rem}
+.mc{background:var(--deep);border:1px solid var(--bdr);border-radius:6px;padding:.55rem .75rem}
+.mc .mlb{font-size:.67rem;color:var(--tm);text-transform:uppercase;letter-spacing:.9px}
+.mc .mv{font-family:'Courier New',monospace;font-size:1rem;font-weight:700;margin-top:.1rem;transition:color 200ms}
+.mc .mu{font-size:.65rem;color:var(--tm)}
+.info{color:var(--blue)}.info2{color:var(--pur)}.good{color:var(--grn)}.warn{color:var(--org)}
 
-  .annotation {
-    border-left: 3px solid var(--accent); background: var(--surface);
-    padding: 11px 14px; border-radius: 0 8px 8px 0;
-    font-size: 0.83rem; color: var(--muted); line-height: 1.65;
-  }
-  .annotation strong { color: var(--text); }
+.chart-panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem;margin-bottom:1rem}
+.chart-panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.8rem}
+.chart-tabs{display:flex;gap:.4rem;margin-bottom:.7rem}
+.tab{padding:.25rem .75rem;border-radius:20px;border:1px solid var(--bdr);background:var(--deep);color:var(--tm);font-size:.77rem;cursor:pointer;transition:.15s}
+.tab.active{background:var(--blue);border-color:var(--blue);color:#000;font-weight:600}
+.chart-wrap{position:relative;min-height:300px}
+
+.cmp-box{background:rgba(188,140,255,.06);border:1px solid rgba(188,140,255,.25);border-radius:7px;padding:.7rem .9rem;margin-top:.8rem}
+.cmp-box h4{font-size:.7rem;color:var(--pur);text-transform:uppercase;letter-spacing:1px;margin-bottom:.5rem}
+
+.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.82rem;color:var(--tm);line-height:1.7}
+.annotation strong{color:var(--t1)}
+.annotation b{color:var(--blue)}
 </style>
 </head>
 <body>
@@ -81,286 +81,381 @@
 </div>
 
 <nav>
-  <a href="index.html">← RF Toolbox</a>
-  <span>/</span>
-  <span>04 Antenna Array Factor</span>
+  <a href="index.html">RF Toolbox</a>
+  <span class="sep">›</span>
+  <span>Antenna Array Factor</span>
 </nav>
 
 <header>
-  <div class="tag">Tool 04</div>
-  <h1>Antenna Array Factor (ULA)</h1>
-  <p>Uniform Linear Array beam pattern with phase-steering</p>
+  <div class="tag">Tool 04 · Array Theory</div>
+  <h1>ULA Array Factor</h1>
+  <p>Element pattern × amplitude taper → total array pattern. Compare uniform vs tapered; grating lobe markers; Balanis Ch. 6.</p>
 </header>
 
-<div class="equation-box">
+<div class="eq-box">
   <div class="eq-card">
-    <div>
-      <div class="eq-primary">AF(θ) = sin(N·ψ/2) / [N · sin(ψ/2)]</div>
-      <div class="eq-note">normalised array factor for N isotropic elements</div>
+    <div class="eq-col">
+      <div class="eq-label">Array Factor (Balanis 6-10)</div>
+      <div class="eq-primary">AF(θ) = Σ aₙ · e^(jnψ)</div>
+      <div class="eq-secondary">ψ = kd·cosθ + β  [k = 2π/λ]</div>
+      <div class="eq-secondary">Uniform: |AF| = sin(Nψ/2) / sin(ψ/2)</div>
+      <div class="eq-note">aₙ = amplitude taper weights, β = progressive phase shift for beam steering</div>
     </div>
-    <div>
-      <div class="eq-secondary">ψ = k·d·cos(θ) + β</div>
-      <div class="eq-secondary">k = 2π/λ &nbsp;|&nbsp; β = −k·d·cos(θ₀)</div>
-      <div class="eq-note">d = element spacing, θ₀ = scan angle</div>
+    <div class="eq-col">
+      <div class="eq-label">Element Pattern × Array Factor</div>
+      <div class="eq-primary">E_total(θ) = E_elem(θ) × AF(θ)</div>
+      <div class="eq-secondary">Isotropic: E_elem = 1</div>
+      <div class="eq-secondary">Cosine: E_elem = |cosθ|</div>
+      <div class="eq-secondary">Patch: E_elem = cos²θ</div>
+      <div class="eq-note">Pattern multiplication principle — valid for identical, uniformly spaced elements</div>
     </div>
-    <div>
-      <div class="eq-secondary">HPBW ≈ 0.886·λ / (N·d) [rad]</div>
-      <div class="eq-secondary">SLL ≈ −13.3 dBc (uniform taper)</div>
-      <div class="eq-note">first null at ψ = ±2π/N</div>
+    <div class="eq-col">
+      <div class="eq-label">Grating Lobes</div>
+      <div class="eq-primary">θ_GL = arccos(cosθ₀ ± m·λ/d)</div>
+      <div class="eq-secondary">Occur when d/λ > 1/(1+|cosθ_steer|)</div>
+      <div class="eq-secondary">HPBW ≈ 0.886·λ/(N·d·cosθ₀)  [rad]</div>
+      <div class="eq-note">Grating lobes appear for d ≥ λ. Sidelobe level varies with taper window.</div>
     </div>
   </div>
 </div>
 
 <div class="layout">
-  <div class="panel">
-    <h3>Array Parameters</h3>
+  <div>
+    <div class="panel" style="margin-bottom:1rem">
+      <h3>Array A (primary — blue)</h3>
+      <div class="sr">
+        <label>Elements N <span id="vN">16</span></label>
+        <input type="range" id="sN" min="2" max="64" step="1" value="16">
+        <div class="hints"><span>2</span><span>64</span></div>
+      </div>
+      <div class="sr">
+        <label>Spacing d/λ <span id="vD">0.50</span></label>
+        <input type="range" id="sD" min="0.1" max="2" step="0.05" value="0.5">
+        <div class="hints"><span>0.1λ</span><span>2.0λ</span></div>
+      </div>
+      <div class="sr">
+        <label>Steer angle θ₀ <span id="vTheta">0°</span></label>
+        <input type="range" id="sTheta" min="-60" max="60" step="1" value="0">
+        <div class="hints"><span>−60°</span><span>+60°</span></div>
+      </div>
+      <div class="eq-label" style="margin-bottom:.3rem">Element Pattern</div>
+      <select class="sel" id="selElem">
+        <option value="iso">Isotropic</option>
+        <option value="cos">Cosine |cos θ|</option>
+        <option value="cos2" selected>Patch cos²θ</option>
+      </select>
+      <div class="eq-label" style="margin-bottom:.3rem">Amplitude Taper</div>
+      <select class="sel" id="selTaper">
+        <option value="uniform">Uniform (−13 dB SLL)</option>
+        <option value="hamming">Hamming (−43 dB SLL)</option>
+        <option value="hann">Hann (−31 dB SLL)</option>
+        <option value="cheby">Chebyshev (−40 dB SLL)</option>
+        <option value="taylor">Taylor −35 dB</option>
+      </select>
+    </div>
 
-    <div class="slider-row">
-      <label>Elements (N) <span id="lN">8</span></label>
-      <input type="range" id="sN" min="2" max="64" value="8" step="1">
-      <div class="hints"><span>2</span><span>64</span></div>
-    </div>
-    <div class="slider-row">
-      <label>Spacing (d/λ) <span id="lD">0.50 λ</span></label>
-      <input type="range" id="sD" min="0.1" max="1.5" value="0.5" step="0.05">
-      <div class="hints"><span>0.1λ</span><span>1.5λ</span></div>
-    </div>
-    <div class="slider-row">
-      <label>Scan Angle (θ₀) <span id="lTheta">90°</span></label>
-      <input type="range" id="sTheta" min="0" max="180" value="90" step="1">
-      <div class="hints"><span>0° (endfire)</span><span>180°</span></div>
-    </div>
-    <div class="slider-row">
-      <label>Element Taper <span id="lTaper">Uniform</span></label>
-      <input type="range" id="sTaper" min="0" max="2" value="0" step="1">
-      <div class="hints"><span>Uniform</span><span>Cosine</span></div>
+    <div class="panel" style="margin-bottom:1rem">
+      <div class="cmp-box">
+        <h4>Array B (compare — purple)</h4>
+        <div class="sr">
+          <label>Elements N_B <span id="vNB">8</span></label>
+          <input type="range" id="sNB" min="2" max="64" step="1" value="8">
+          <div class="hints"><span>2</span><span>64</span></div>
+        </div>
+        <div class="sr">
+          <label>d/λ_B <span id="vDB">0.50</span></label>
+          <input type="range" id="sDB" min="0.1" max="2" step="0.05" value="0.5">
+          <div class="hints"><span>0.1λ</span><span>2.0λ</span></div>
+        </div>
+        <div class="eq-label" style="margin-bottom:.3rem">Taper B</div>
+        <select class="sel" id="selTaperB">
+          <option value="uniform" selected>Uniform</option>
+          <option value="hamming">Hamming</option>
+          <option value="hann">Hann</option>
+          <option value="cheby">Chebyshev −40 dB</option>
+          <option value="taylor">Taylor −35 dB</option>
+        </select>
+      </div>
     </div>
 
-    <div class="results">
-      <div class="result-card"><div class="label">Directivity (boresight)</div><div class="value" id="rGain">—</div><div class="unit">dBi (isotropic elem.)</div></div>
-      <div class="result-card"><div class="label">Scan Loss</div><div class="value" id="rScanLoss">—</div><div class="unit">dB below boresight</div></div>
-      <div class="result-card"><div class="label">HPBW</div><div class="value" id="rHPBW">—</div><div class="unit">degrees</div></div>
-      <div class="result-card"><div class="label">First Null</div><div class="value" id="rNull">—</div><div class="unit">° from θ₀</div></div>
-      <div class="result-card"><div class="label">SLL</div><div class="value" id="rSLL">—</div><div class="unit">dBc</div></div>
-      <div class="result-card"><div class="label">Grating Lobe</div><div class="value" id="rGrating">—</div><div class="unit"></div></div>
+    <div class="panel">
+      <h3>Pattern Results</h3>
+      <div class="metrics">
+        <div class="mc"><div class="mlb">Directivity</div><div class="mv info" id="mDir">—</div><div class="mu">dBi</div></div>
+        <div class="mc"><div class="mlb">HPBW</div><div class="mv info" id="mHPBW">—</div><div class="mu">deg</div></div>
+        <div class="mc"><div class="mlb">1st SLL</div><div class="mv warn" id="mSLL">—</div><div class="mu">dBc</div></div>
+        <div class="mc"><div class="mlb">Grating Lobes</div><div class="mv" id="mGL" style="color:var(--tm)">—</div><div class="mu"></div></div>
+      </div>
     </div>
   </div>
 
-  <div class="chart-panel">
-    <div class="plot-tabs">
-      <button class="tab-btn active" onclick="setTab('rect',event)">Rectangular (dB vs θ)</button>
-      <button class="tab-btn" onclick="setTab('polar',event)">Polar Pattern</button>
+  <div>
+    <div class="chart-panel">
+      <h3>Array Pattern</h3>
+      <div class="chart-tabs">
+        <button class="tab active" onclick="setView('cartesian',this)">Cartesian (dB)</button>
+        <button class="tab" onclick="setView('polar',this)">Polar</button>
+      </div>
+      <div class="chart-wrap"><canvas id="chartMain"></canvas></div>
     </div>
-    <div id="rectView" class="chart-wrap"><canvas id="chartAF"></canvas></div>
-    <div id="polarView" class="polar-wrap" style="display:none;"><canvas id="polar"></canvas></div>
-    <div class="annotation" id="annotation">Updating…</div>
+    <div class="annotation" id="annotation">Computing...</div>
   </div>
 </div>
 
 <script>
-let activeTab = 'rect';
+const PI=Math.PI;
+let viewMode='cartesian';
 
-function setTab(tab, ev) {
-  activeTab = tab;
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  ev.target.classList.add('active');
-  document.getElementById('rectView').style.display  = tab === 'rect'  ? '' : 'none';
-  document.getElementById('polarView').style.display = tab === 'polar' ? '' : 'none';
-  if (tab === 'polar') drawPolar();
-}
-
-function get(id) { return +document.getElementById(id).value; }
-const taperNames = ['Uniform', 'Hann', 'Cosine'];
-
-function arrayFactor(theta_rad, N, d_lambda, theta0_rad, taperType) {
-  const k_times_d = 2 * Math.PI * d_lambda;
-  let re = 0, im = 0;
-  for (let n = 0; n < N; n++) {
-    let w = 1;
-    if (taperType === 1) w = 0.5 - 0.5 * Math.cos(2 * Math.PI * n / (N - 1));
-    if (taperType === 2) w = Math.cos(Math.PI * (n - (N-1)/2) / N);
-    const phase = k_times_d * (Math.cos(theta_rad) - Math.cos(theta0_rad)) * n;
-    re += w * Math.cos(phase); im += w * Math.sin(phase);
-  }
-  return Math.sqrt(re*re + im*im);
-}
-
-function buildPattern() {
-  const N = get('sN'), d = get('sD'), th0 = get('sTheta') * Math.PI / 180, taper = get('sTaper');
-  const pts = 360;
-  const raw = [];
-  let maxVal = 0;
-  for (let i = 0; i <= pts; i++) {
-    const af = arrayFactor(i * Math.PI / pts, N, d, th0, taper);
-    raw.push(af);
-    if (af > maxVal) maxVal = af;
-  }
-  const thetas = [], vals_dB = [], vals_lin = [];
-  for (let i = 0; i <= pts; i++) {
-    const af = raw[i] / maxVal;
-    thetas.push(i.toFixed(1));
-    vals_dB.push(20 * Math.log10(Math.max(af, 1e-6)));
-    vals_lin.push(af);
-  }
-  return { thetas, vals_dB, vals_lin };
-}
-
-const ctx = document.getElementById('chartAF').getContext('2d');
-const chartAF = new Chart(ctx, {
-  type: 'line',
-  data: { labels: [], datasets: [{ label: 'Array Factor (dB)', data: [], borderColor: '#00c8ff', backgroundColor: 'rgba(0,200,255,0.07)', borderWidth: 2, pointRadius: 0, fill: true }] },
-  options: {
-    responsive: true, maintainAspectRatio: false, animation: { duration: 0 },
-    plugins: { legend: { labels: { color: '#888899', font: { size: 11 } } } },
-    scales: {
-      x: { ticks: { color: '#888899', maxTicksLimit: 10, font: { size: 10 }, callback: (v,i) => i%36===0 ? i+'°' : '' }, grid: { color: '#2a2a35' }, title: { display: true, text: 'θ (degrees)', color: '#888899', font: { size: 11 } } },
-      y: { min: -50, max: 5, ticks: { color: '#888899', font: { size: 10 } }, grid: { color: '#2a2a35' }, title: { display: true, text: 'Array Factor (dB)', color: '#888899', font: { size: 11 } } }
+// Taper weight generators
+function weights(N, type) {
+  const w=[];
+  for(let n=0;n<N;n++){
+    switch(type){
+      case 'uniform': w.push(1); break;
+      case 'hamming': w.push(0.54-0.46*Math.cos(2*PI*n/(N-1))); break;
+      case 'hann':    w.push(0.5-0.5*Math.cos(2*PI*n/(N-1))); break;
+      case 'cheby': {
+        // Dolph-Chebyshev: approximate via cosine series
+        const R=40, x0=Math.cosh(Math.acosh(Math.pow(10,R/20))/(N-1));
+        const Tn=k=>Math.abs(k)<=1?Math.cos(N*Math.acos(k)):Math.cosh(N*Math.acosh(k));
+        // Use standard Chebyshev approximation
+        let s=0;
+        for(let k=1;k<=(N-1)/2;k++){
+          s+=Tn(x0*Math.cos(PI*k/N))*Math.cos(2*PI*k*(n-(N-1)/2)/N);
+        }
+        w.push(Tn(x0*Math.cos(0))+2*s);
+        break;
+      }
+      case 'taylor': {
+        // Taylor −35 dB, nbar=4 approximation
+        const SLL=35,nbar=4;
+        const A=Math.acosh(Math.pow(10,SLL/20))/PI;
+        let wt=0;
+        for(let m=1;m<nbar;m++){
+          let Fm=1;
+          for(let p=1;p<nbar;p++){if(p!==m)Fm*=(1-(m*m)/(A*A+p*p))/(1-m*m/(p*p));}
+          wt+=Fm*Math.cos(2*PI*m*(n-(N-1)/2)/N);
+        }
+        w.push(1+2*wt);
+        break;
+      }
+      default: w.push(1);
     }
   }
-});
-
-function drawPolar() {
-  const canvas = document.getElementById('polar');
-  canvas.width = canvas.offsetWidth || 500; canvas.height = canvas.offsetHeight || 360;
-  const cx = canvas.width/2, cy = canvas.height/2, R = Math.min(cx,cy) - 30;
-  const c = canvas.getContext('2d');
-  c.clearRect(0, 0, canvas.width, canvas.height);
-  c.strokeStyle = '#2a2a35'; c.lineWidth = 1;
-  [1, 0.316, 0.1, 0.0316].forEach((r,i) => {
-    c.beginPath(); c.arc(cx, cy, R*r, 0, 2*Math.PI); c.stroke();
-    if (i>0) { c.fillStyle='#555'; c.font='10px monospace'; c.fillText([-10,-20,-30][i-1]+'dB', cx+R*r+2, cy-2); }
-  });
-  for (let a=0; a<360; a+=30) {
-    const rad = a*Math.PI/180;
-    c.beginPath(); c.moveTo(cx,cy); c.lineTo(cx+R*Math.cos(rad), cy-R*Math.sin(rad)); c.stroke();
-    c.fillStyle='#666'; c.font='10px sans-serif';
-    c.fillText(a+'°', cx+(R+16)*Math.cos(rad)-8, cy-(R+16)*Math.sin(rad)+4);
-  }
-  const N=get('sN'), d=get('sD'), th0=get('sTheta')*Math.PI/180, tap=get('sTaper');
-  let mx=0; for (let i=0;i<360;i++) { const a=arrayFactor(i*Math.PI/180,N,d,th0,tap); if(a>mx) mx=a; }
-  c.beginPath(); c.strokeStyle='#00c8ff'; c.lineWidth=2;
-  for (let i=0; i<=360; i++) {
-    const theta=i*Math.PI/180;
-    const af=arrayFactor(theta%Math.PI,N,d,th0,tap)/mx;
-    const rr=R*Math.max(af,1e-6);
-    const px=cx+rr*Math.cos(theta-Math.PI/2), py=cy+rr*Math.sin(theta-Math.PI/2);
-    if(i===0) c.moveTo(px,py); else c.lineTo(px,py);
-  }
-  c.stroke();
+  // Normalize
+  const mx=Math.max(...w.map(Math.abs));
+  return w.map(v=>v/mx);
 }
 
-function computeMetrics(vals_lin) {
-  const N=get('sN'), d=get('sD'), th0_deg=get('sTheta');
-  const half=1/Math.sqrt(2);
-  let crossings=[], abovePrev=false, inMainLobe=true, firstNull=-1, sll=-13.3;
-  for (let i=0; i<vals_lin.length; i++) {
-    const above=vals_lin[i]>=half;
-    if(i>0 && above!==abovePrev) crossings.push(i);
-    abovePrev=above;
-    if(i>0 && i<vals_lin.length-1) {
-      if(inMainLobe&&vals_lin[i]<0.05){firstNull=i;inMainLobe=false;}
-      if(!inMainLobe&&vals_lin[i]>vals_lin[i-1]&&vals_lin[i]>vals_lin[i+1]){sll=20*Math.log10(Math.max(vals_lin[i],1e-6));}
+function elemPattern(theta_rad, type){
+  const ct=Math.cos(theta_rad);
+  if(type==='cos') return Math.abs(ct);
+  if(type==='cos2') return ct*ct;
+  return 1;
+}
+
+function computeAF(N, d_lam, theta_deg_0, theta_arr, taperType, elemType){
+  const w=weights(N, taperType);
+  const beta=-2*PI*d_lam*Math.cos(theta_deg_0*PI/180); // progressive phase for steering
+  const out=[];
+  for(const th of theta_arr){
+    const th_rad=th*PI/180;
+    let re=0,im=0;
+    for(let n=0;n<N;n++){
+      const psi=2*PI*d_lam*Math.cos(th_rad)+beta;
+      const ang=n*psi;
+      re+=w[n]*Math.cos(ang);
+      im+=w[n]*Math.sin(ang);
+    }
+    const af=Math.sqrt(re*re+im*im);
+    const ep=elemPattern(th_rad, elemType);
+    out.push(af*ep);
+  }
+  // Normalize
+  const mx=Math.max(...out);
+  return out.map(v=>v/mx);
+}
+
+function dB(v){ return v<=0?-60:Math.max(-60, 20*Math.log10(v)); }
+
+function findHPBW(thArr, patNorm){
+  let half=-1,halfR=-1;
+  const pk=thArr[patNorm.indexOf(Math.max(...patNorm))];
+  for(let i=1;i<thArr.length;i++){
+    if(patNorm[i-1]>0.707 && patNorm[i]<=0.707 && thArr[i]<pk && half<0) half=thArr[i];
+    if(patNorm[i-1]<=0.707 && patNorm[i]>0.707 && thArr[i]>pk && halfR<0) halfR=thArr[i];
+  }
+  return (half>=0&&halfR>=0)?halfR-half:null;
+}
+
+function findSLL(thArr, patdB, theta0){
+  // Find highest sidelobe (not in main lobe region ±3*(HPBW/2))
+  let mainPeakIdx=0;
+  for(let i=1;i<patdB.length;i++) if(patdB[i]>patdB[mainPeakIdx]) mainPeakIdx=i;
+  const mainTh=thArr[mainPeakIdx];
+  const excl=15; // degrees exclusion around main lobe
+  let sll=-60;
+  let localPeak=-60;
+  let inPeak=false;
+  for(let i=1;i<patdB.length-1;i++){
+    if(Math.abs(thArr[i]-mainTh)<excl) continue;
+    if(patdB[i]>patdB[i-1]&&patdB[i]>patdB[i+1]){ // local max
+      if(patdB[i]>sll) sll=patdB[i];
     }
   }
-  const hpbw = crossings.length>=2 ? crossings[crossings.length-1]-crossings[0] : Math.round(0.886/(N*d)*180/Math.PI);
-  const firstNullDeg = firstNull>0 ? Math.abs(firstNull-th0_deg) : Math.round(180/N);
-  return { hpbw, sll, firstNullDeg };
+  return sll; // relative to peak (which is 0 dB)
 }
 
-function update() {
-  const N=get('sN'), d=get('sD'), th0=get('sTheta'), tap=get('sTaper');
-  document.getElementById('lN').textContent     = N;
-  document.getElementById('lD').textContent     = d.toFixed(2)+' λ';
-  document.getElementById('lTheta').textContent = th0+'°';
-  document.getElementById('lTaper').textContent = taperNames[tap];
-
-  const { thetas, vals_dB, vals_lin } = buildPattern();
-  chartAF.data.labels = thetas;
-  chartAF.data.datasets[0].data = vals_dB.map(v => +v.toFixed(2));
-  chartAF.update('none');
-  if (activeTab==='polar') drawPolar();
-
-  const { hpbw, sll, firstNullDeg } = computeMetrics(vals_lin);
-
-  // Directivity (ULA with λ/2 spacing): D_max ≈ N at broadside.
-  // When scanned to θ₀, effective aperture reduces by cos(θ_scan) where θ_scan is from broadside.
-  // Broadside in this code is θ₀ = 90° (cos=0 from endfire), so θ_scan_from_broadside = |90° - θ₀|.
-  const th0_rad = th0 * Math.PI / 180;
-  const theta_scan_rad = Math.abs(Math.PI/2 - th0_rad);
-  const cosScan = Math.max(Math.cos(theta_scan_rad), 0.01);
-  const D_boresight_dBi = 10 * Math.log10(N);
-  const scanLoss_dB = -10 * Math.log10(cosScan);
-
-  // Grating lobe: appears when d > λ/(1 + |cos(θ₀)|)
-  // Note: this uses endfire-convention θ₀ directly since formula applies in those coords.
-  const d_grating_threshold = 1 / (1 + Math.abs(Math.cos(th0_rad)));
-  const hasGrating = d > d_grating_threshold;
-  // Grating lobe angle: cos(θ_gl) = cos(θ₀) ± λ/d — pick visible one
-  let gratingAngle = null;
-  if (hasGrating) {
-    const cand1 = Math.cos(th0_rad) - 1/d;
-    const cand2 = Math.cos(th0_rad) + 1/d;
-    const vis = [cand1, cand2].filter(c => Math.abs(c) <= 1 && Math.abs(c - Math.cos(th0_rad)) > 0.1);
-    if (vis.length) gratingAngle = Math.acos(vis[0]) * 180 / Math.PI;
+function gratingLobes(N,d_lam,theta0_deg){
+  const ct0=Math.cos(theta0_deg*PI/180);
+  const locs=[];
+  for(let m=-3;m<=3;m++){
+    if(m===0) continue;
+    const ct=ct0+m/d_lam;
+    if(Math.abs(ct)<=1) locs.push((Math.acos(ct)*180/PI).toFixed(1)+'°');
   }
-
-  document.getElementById('rGain').textContent = D_boresight_dBi.toFixed(1);
-  document.getElementById('rScanLoss').textContent = scanLoss_dB.toFixed(1);
-  document.getElementById('rHPBW').textContent = hpbw.toFixed(0);
-  document.getElementById('rSLL').textContent  = sll.toFixed(1);
-  document.getElementById('rNull').textContent = firstNullDeg.toFixed(0);
-  const grEl = document.getElementById('rGrating');
-  grEl.textContent  = hasGrating ? (gratingAngle !== null ? gratingAngle.toFixed(0)+'°' : 'Yes') : 'None';
-  grEl.style.color  = hasGrating ? '#ffaa00' : '#00e5a0';
-  grEl.nextElementSibling.textContent = hasGrating ? '← grating lobe angle' : '✓ grating-free';
-
-  // Annotation
-  const taperNote = tap===0 ? 'Uniform taper: maximum gain, SLL ≈ −13.3 dBc.' :
-                    tap===1 ? 'Hann taper: SLL suppressed ~−31 dBc, 50% wider beam.' :
-                              'Cosine taper: moderate SLL and beam-width tradeoff.';
-  const gratingWarn = hasGrating ? ` <span style="color:#ffaa00">d = ${d.toFixed(2)}λ exceeds grating-lobe threshold ${d_grating_threshold.toFixed(2)}λ — grating lobe at ~${gratingAngle!==null?gratingAngle.toFixed(0)+'°':'visible space'}!</span>` : '';
-  document.getElementById('annotation').innerHTML =
-    `<strong>N = ${N}, d = ${d.toFixed(2)}λ, θ₀ = ${th0}°, scan loss = ${scanLoss_dB.toFixed(1)} dB:</strong> ` +
-    `HPBW = <strong>${hpbw}°</strong>, SLL = <strong>${sll.toFixed(1)} dBc</strong>, ` +
-    `first null at <strong>${firstNullDeg}°</strong> from θ₀, D ≈ <strong>${D_boresight_dBi.toFixed(1)} dBi</strong> at broadside.${gratingWarn} ` +
-    taperNote;
+  return locs;
 }
 
-document.querySelectorAll('input[type=range]').forEach(el => el.addEventListener('input', update));
-window.addEventListener('resize', () => { if (activeTab==='polar') drawPolar(); });
+const thArr=Array.from({length:721},(_,i)=>-180+i*0.5);
+
+// Charts
+let mainChart=null;
+
+function initChart(){
+  if(mainChart) mainChart.destroy();
+  const ctx=document.getElementById('chartMain').getContext('2d');
+  if(viewMode==='cartesian'){
+    mainChart=new Chart(ctx,{
+      type:'line',
+      data:{datasets:[
+        {label:'Array A',data:[],borderColor:'#58a6ff',borderWidth:2,pointRadius:0,fill:false},
+        {label:'Array B',data:[],borderColor:'#bc8cff',borderDash:[4,3],borderWidth:1.5,pointRadius:0,fill:false}
+      ]},
+      options:{
+        animation:{duration:0},responsive:true,
+        plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+        scales:{
+          x:{type:'linear',grid:{color:'#252830'},ticks:{color:'#8b949e',maxTicksLimit:13},title:{display:true,color:'#8b949e',text:'Angle θ (degrees)'}},
+          y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Normalized Pattern (dB)'},min:-60,max:3}
+        }
+      }
+    });
+  } else {
+    mainChart=new Chart(ctx,{
+      type:'radar',
+      data:{datasets:[
+        {label:'Array A',data:[],borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,.07)',borderWidth:2,pointRadius:0},
+        {label:'Array B',data:[],borderColor:'#bc8cff',backgroundColor:'rgba(188,140,255,.05)',borderDash:[4,3],borderWidth:1.5,pointRadius:0}
+      ]},
+      options:{
+        animation:{duration:0},responsive:true,
+        plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+        scales:{r:{grid:{color:'#252830'},ticks:{color:'#8b949e',stepSize:20},min:-60,max:0,
+          pointLabels:{color:'#8b949e',font:{size:10}}}}
+      }
+    });
+  }
+}
+
+function setView(mode,btn){
+  viewMode=mode;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  initChart();
+  update();
+}
+
+function update(){
+  const N     =+document.getElementById('sN').value;
+  const d_lam =+document.getElementById('sD').value;
+  const theta0=+document.getElementById('sTheta').value;
+  const elem  =document.getElementById('selElem').value;
+  const taper =document.getElementById('selTaper').value;
+  const NB    =+document.getElementById('sNB').value;
+  const dB_lam=+document.getElementById('sDB').value;
+  const taperB=document.getElementById('selTaperB').value;
+
+  document.getElementById('vN').textContent=N;
+  document.getElementById('vD').textContent=d_lam.toFixed(2);
+  document.getElementById('vTheta').textContent=theta0+'°';
+  document.getElementById('vNB').textContent=NB;
+  document.getElementById('vDB').textContent=dB_lam.toFixed(2);
+
+  // Compute patterns (0° to 180°, standard elevation)
+  const thFull=Array.from({length:361},(_,i)=>i*0.5-90); // -90 to +90
+  const patA=computeAF(N, d_lam, theta0, thFull, taper, elem);
+  const patB=computeAF(NB, dB_lam, theta0, thFull, taperB, elem);
+  const patA_dB=patA.map(dB);
+  const patB_dB=patB.map(dB);
+
+  const hpbw=findHPBW(thFull,patA);
+  const sll=findSLL(thFull,patA_dB,theta0);
+  const gl=gratingLobes(N,d_lam,theta0);
+  const dir_approx=10*Math.log10(2*N); // rough: ~N for ULA with d=λ/2
+
+  document.getElementById('mDir').textContent=dir_approx.toFixed(1);
+  document.getElementById('mHPBW').textContent=hpbw?hpbw.toFixed(1):'—';
+  document.getElementById('mSLL').textContent=sll.toFixed(1);
+  document.getElementById('mGL').textContent=gl.length?gl.join(', '):'None';
+  document.getElementById('mGL').style.color=gl.length?'var(--red)':'var(--grn)';
+
+  if(!mainChart) initChart();
+  if(viewMode==='cartesian'){
+    mainChart.data.datasets[0].data=thFull.map((t,i)=>({x:t,y:patA_dB[i]}));
+    mainChart.data.datasets[1].data=thFull.map((t,i)=>({x:t,y:patB_dB[i]}));
+    // Add vertical grating lobe markers via dataset
+    const glAngles=[];
+    const ct0=Math.cos(theta0*PI/180);
+    for(let m=-3;m<=3;m++){if(m===0)continue;const ct=ct0+m/d_lam;if(Math.abs(ct)<=1)glAngles.push(Math.acos(ct)*180/PI);}
+    if(mainChart.data.datasets.length>2) mainChart.data.datasets.splice(2);
+    glAngles.forEach((g,i)=>{
+      mainChart.data.datasets.push({
+        label:i===0?'Grating Lobe':'',data:[{x:g,y:-60},{x:g,y:0}],
+        borderColor:'rgba(248,81,73,.6)',borderDash:[3,3],borderWidth:1.5,pointRadius:0,showLine:true,fill:false
+      });
+    });
+  } else {
+    // Polar: use angles 0-360 (convert elevation to azimuth-like display)
+    const polarLabels=thFull.map(t=>t+'°');
+    mainChart.data.labels=polarLabels;
+    mainChart.data.datasets[0].data=patA_dB.map(v=>v+60); // shift so -60dB=0
+    mainChart.data.datasets[1].data=patB_dB.map(v=>v+60);
+  }
+  mainChart.update();
+
+  const taperNames={uniform:'Uniform (−13 dB SLL)',hamming:'Hamming (−43 dB SLL)',hann:'Hann (−31 dB SLL)',cheby:'Chebyshev (−40 dB SLL)',taylor:'Taylor −35 dB'};
+  const elemNames={iso:'isotropic',cos:'cosine',cos2:'patch (cos²θ)'};
+  document.getElementById('annotation').innerHTML=
+    `<strong>Array A (${N} elements, d=${d_lam}λ, ${taperNames[taper]}):</strong>
+    Directivity ≈ <b>${dir_approx.toFixed(1)} dBi</b>, HPBW = <b>${hpbw?hpbw.toFixed(1)+'°':'—'}</b>,
+    First SLL = <b>${sll.toFixed(1)} dBc</b>.
+    Element pattern: <b>${elemNames[elem]}</b>
+    ${elem!=='iso'?'(pattern multiplication narrows effective beam and suppresses end-fire lobes)':''}.<br>
+    <strong>Grating lobes:</strong> ${gl.length?'Found at '+gl.join(', ')+' — spacing exceeds λ/2, reduce d/λ to eliminate.':'None — d/λ ≤ 0.5 prevents grating lobes for all scan angles.'}
+    ${d_lam>0.5?'Increase d/λ improves directivity but introduces grating lobes.':''}<br>
+    <strong>Taper effect:</strong> ${taper==='uniform'?'Uniform: minimum HPBW but highest sidelobes (−13 dBc).':
+    taper==='hamming'?'Hamming: −43 dB sidelobes at cost of 1.5× wider beam.':
+    taper==='cheby'?'Chebyshev: equiripple sidelobes — all lobes equal height for specified SLL.':
+    taper==='taylor'?'Taylor: near-equiripple, near-sidelobe region controlled, good balance.':
+    'Hann: smooth taper, −31 dB sidelobes, moderate beam broadening.'}
+    Comparing B (${NB} el, ${taperNames[taperB]}): ${NB>N?'B has more elements → narrower beam':NB<N?'B has fewer elements → wider beam':'Same element count'}.`;
+}
+
+[document.getElementById('sN'),document.getElementById('sD'),document.getElementById('sTheta'),
+ document.getElementById('sNB'),document.getElementById('sDB'),
+ document.getElementById('selElem'),document.getElementById('selTaper'),document.getElementById('selTaperB')
+].forEach(el=>el.addEventListener('input',update));
+document.getElementById('selElem').addEventListener('change',update);
+document.getElementById('selTaper').addEventListener('change',update);
+document.getElementById('selTaperB').addEventListener('change',update);
+
+function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#8b949e';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`array_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
+function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+function copyLink(){navigator.clipboard.writeText(window.location.href).then(()=>{const b=document.getElementById('copyBtn');const o=b.textContent;b.textContent='✓ Copied!';b.style.color='#3fb950';b.style.borderColor='#3fb950';setTimeout(()=>{b.textContent=o;b.style.color='';b.style.borderColor='';},2000);});}
+
+initChart();
 update();
-
-// ── Toolbar ──
-function takeScreenshot(toolName) {
-  const canvases = [...document.querySelectorAll('canvas')].filter(c => c.width > 0);
-  const padding = 16, titleHeight = 40;
-  const totalWidth = canvases.reduce((s,c) => s + c.width + padding, padding);
-  const maxHeight = Math.max(...canvases.map(c => c.height));
-  const out = document.createElement('canvas');
-  out.width = totalWidth; out.height = maxHeight + titleHeight + padding * 2;
-  const c = out.getContext('2d');
-  c.fillStyle = '#0d0d0f'; c.fillRect(0,0,out.width,out.height);
-  c.fillStyle = '#e2e2e8'; c.font = 'bold 14px Segoe UI, system-ui, sans-serif';
-  c.fillText(toolName + '  ·  RF Toolbox  ·  hinckster.github.io/RF-Toolbox', padding, titleHeight/2+5);
-  c.fillStyle = '#888899'; c.font = '11px monospace';
-  c.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC', padding, titleHeight-4);
-  let x = padding;
-  canvases.forEach(cv => { c.drawImage(cv,x,titleHeight+padding); x += cv.width+padding; });
-  const link = document.createElement('a');
-  const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
-  link.download = `antenna_array_${ts}.png`; link.href = out.toDataURL('image/png'); link.click();
-}
-function toggleFullscreen() {
-  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-  else document.exitFullscreen();
-}
-function copyLink() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    const btn = document.getElementById('copyBtn'), orig = btn.textContent;
-    btn.textContent = '✓ Copied!'; btn.style.color = '#00e5a0'; btn.style.borderColor = '#00e5a0';
-    setTimeout(() => { btn.textContent = orig; btn.style.color=''; btn.style.borderColor=''; }, 2000);
-  });
-}
 </script>
 </body>
 </html>

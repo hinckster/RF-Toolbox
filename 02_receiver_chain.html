@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receiver Dynamic Range | RF Toolbox</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#16181d;--card:#1e2128;--deep:#0d1117;
+  --bdr:#30363d;--t1:#e6edf3;--t2:#c9d1d9;--tm:#8b949e;
+  --blue:#58a6ff;--grn:#3fb950;--org:#f0883e;--red:#f85149;--yel:#e6c547;--pur:#bc8cff;
+}
+body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+
+.toolbar{position:fixed;top:14px;right:16px;display:flex;gap:6px;z-index:100}
+.tbtn{background:var(--card);border:1px solid var(--bdr);color:var(--tm);border-radius:5px;padding:5px 10px;font-size:.75rem;cursor:pointer;transition:border-color .15s,color .15s}
+.tbtn:hover{border-color:var(--blue);color:var(--blue)}
+
+nav{padding:.75rem 1.5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.75rem;background:var(--card)}
+nav .sep{color:var(--bdr)}
+nav span{color:var(--tm);font-size:.85rem}
+
+header{padding:1.5rem 1.5rem 1rem;max-width:1200px;margin:0 auto}
+header .tag{font-size:.72rem;font-weight:600;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:.3rem}
+header h1{font-size:1.7rem;font-weight:700;color:var(--t1)}
+header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
+
+.eq-box{max-width:1200px;margin:0 auto .9rem;padding:0 1.5rem}
+.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.4rem;display:flex;flex-wrap:wrap;gap:1.5rem}
+.eq-col{flex:1;min-width:230px}
+.eq-label{font-size:.68rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-primary{font-family:'Courier New',monospace;font-size:.9rem;color:var(--blue);line-height:2}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.8rem;color:var(--pur);line-height:2}
+.eq-note{font-size:.74rem;color:var(--tm);margin-top:.25rem}
+
+/* Stage table */
+.tbl-wrap{max-width:1200px;margin:0 auto .9rem;padding:0 1.5rem;overflow-x:auto}
+table.stages{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;font-size:.8rem}
+table.stages thead tr{background:var(--deep)}
+table.stages th{padding:.45rem .6rem;color:var(--tm);font-size:.67rem;font-weight:600;text-transform:uppercase;letter-spacing:.8px;text-align:right;border-bottom:1px solid var(--bdr)}
+table.stages th:first-child,table.stages th:nth-child(2){text-align:left}
+table.stages td{padding:.4rem .55rem;border-bottom:1px solid rgba(255,255,255,.03);text-align:right;font-family:'Courier New',monospace;font-size:.79rem}
+table.stages td:first-child{text-align:left;font-family:'Segoe UI',system-ui,sans-serif;font-weight:600;color:var(--t1)}
+table.stages td:nth-child(2){text-align:left;font-size:.75rem;color:var(--tm)}
+table.stages tr.total td{background:var(--deep);font-weight:700;font-size:.85rem;color:var(--blue)}
+table.stages tr.total td:first-child{color:var(--t1)}
+.ni{background:var(--deep);border:1px solid var(--bdr);border-radius:4px;color:var(--blue);font-family:'Courier New',monospace;font-size:.79rem;padding:.25rem .4rem;width:62px;text-align:right}
+.ni:focus{outline:none;border-color:var(--blue)}
+.bn{font-size:.67rem;padding:.12rem .35rem;border-radius:10px;font-weight:600;font-family:'Segoe UI',system-ui,sans-serif}
+.bn-b{background:rgba(248,81,73,.15);color:var(--red)}
+.bn-g{background:rgba(63,185,80,.15);color:var(--grn)}
+
+/* Metrics bar */
+.metrics-bar{max-width:1200px;margin:0 auto .9rem;padding:0 1.5rem}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.55rem}
+.mc{background:var(--card);border:1px solid var(--bdr);border-radius:7px;padding:.6rem .8rem}
+.mc .mlb{font-size:.67rem;color:var(--tm);text-transform:uppercase;letter-spacing:.9px}
+.mc .mv{font-family:'Courier New',monospace;font-size:1.05rem;font-weight:700;margin-top:.1rem;transition:color 200ms}
+.mc .mu{font-size:.65rem;color:var(--tm)}
+.good{color:var(--grn)}.warn{color:var(--org)}.bad{color:var(--red)}.info{color:var(--blue)}.info2{color:var(--pur)}
+
+/* Chart */
+.charts-wrap{max-width:1200px;margin:0 auto;padding:0 1.5rem 1rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:768px){.charts-wrap{grid-template-columns:1fr}}
+.chart-panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem}
+.chart-panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.8rem}
+.chart-wrap{position:relative;min-height:280px}
+
+.annotation-wrap{max-width:1200px;margin:0 auto .9rem;padding:0 1.5rem}
+.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.82rem;color:var(--tm);line-height:1.7}
+.annotation strong{color:var(--t1)}
+.annotation b{color:var(--blue)}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="tbtn" onclick="takeScreenshot('Receiver Dynamic Range')">📷 Screenshot</button>
+  <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
+</div>
+
+<nav>
+  <a href="index.html">RF Toolbox</a>
+  <span class="sep">›</span>
+  <span>Receiver Dynamic Range</span>
+</nav>
+
+<header>
+  <div class="tag">Tool 02 · Receiver Analysis</div>
+  <h1>Receiver Dynamic Range</h1>
+  <p>Cascaded noise figure (Friis) + cascaded IIP3 + noise floor + SFDR — the complete receiver DR analysis in one view.</p>
+</header>
+
+<div class="eq-box">
+  <div class="eq-card">
+    <div class="eq-col">
+      <div class="eq-label">Friis NF Cascade (Pozar 10.1)</div>
+      <div class="eq-primary">F_sys = F₁ + (F₂−1)/G₁ + (F₃−1)/(G₁G₂) + ···</div>
+      <div class="eq-secondary">NF_sys = 10 log₁₀(F_sys)  [dB]</div>
+      <div class="eq-note">F = 10^(NF/10). First stage dominates if G₁ is large.</div>
+    </div>
+    <div class="eq-col">
+      <div class="eq-label">IIP3 Cascade (Pozar 10.3)</div>
+      <div class="eq-primary">1/IIP3_sys² = 1/IIP3₁² + G₁²/IIP3₂² + ···</div>
+      <div class="eq-secondary">OIP3 = IIP3 + Gain  [dB, per stage]</div>
+      <div class="eq-note">Last high-gain stage usually limits IIP3. OIP3_sys = IIP3_sys + G_total.</div>
+    </div>
+    <div class="eq-col">
+      <div class="eq-label">Dynamic Range</div>
+      <div class="eq-primary">SFDR = ⅔(OIP3_sys − N_floor)  [dB]</div>
+      <div class="eq-secondary">N_floor = kTB + NF_sys  [dBm]</div>
+      <div class="eq-secondary">P1dB ≈ OIP3 − 9.6 dB  [rule of thumb]</div>
+      <div class="eq-note">SFDR: largest signal before IM3 = noise. Spurious-free dynamic range.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Stage table (editable inline) -->
+<div class="tbl-wrap">
+  <table class="stages">
+    <thead>
+      <tr>
+        <th style="text-align:left">Stage</th>
+        <th style="text-align:left">Type</th>
+        <th>NF (dB)</th>
+        <th>Gain (dB)</th>
+        <th>IIP3 (dBm)</th>
+        <th>Casc. NF (dB)</th>
+        <th>Casc. OIP3 (dBm)</th>
+        <th>NF bottleneck?</th>
+        <th>IIP3 bottleneck?</th>
+      </tr>
+    </thead>
+    <tbody id="stageBody"></tbody>
+    <tfoot>
+      <tr class="total">
+        <td>System</td><td></td><td></td><td id="tG">—</td><td></td>
+        <td id="tNF">—</td><td id="tOIP3">—</td><td></td><td></td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<!-- System metrics -->
+<div class="metrics-bar">
+  <div class="metrics-grid">
+    <div class="mc"><div class="mlb">Cascaded NF</div><div class="mv info" id="mSysNF">—</div><div class="mu">dB</div></div>
+    <div class="mc"><div class="mlb">Cascaded IIP3</div><div class="mv info" id="mSysIIP3">—</div><div class="mu">dBm</div></div>
+    <div class="mc"><div class="mlb">Cascaded OIP3</div><div class="mv info2" id="mSysOIP3">—</div><div class="mu">dBm</div></div>
+    <div class="mc"><div class="mlb">Total Gain</div><div class="mv" id="mSysG" style="color:var(--t1)">—</div><div class="mu">dB</div></div>
+    <div class="mc"><div class="mlb">Noise Floor</div><div class="mv" id="mNoiseFloor" style="color:var(--tm)">—</div><div class="mu">dBm</div></div>
+    <div class="mc"><div class="mlb">P1dB (output)</div><div class="mv warn" id="mP1dB">—</div><div class="mu">dBm</div></div>
+    <div class="mc"><div class="mlb">SFDR</div><div class="mv good" id="mSFDR">—</div><div class="mu">dB</div></div>
+    <div class="mc"><div class="mlb">Bandwidth</div><div class="mv" id="mBW" style="color:var(--tm)">—</div><div class="mu">MHz</div></div>
+  </div>
+</div>
+
+<!-- System BW control -->
+<div style="max-width:1200px;margin:0 auto .6rem;padding:0 1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+  <label style="font-size:.83rem;color:var(--tm);display:flex;align-items:center;gap:.5rem">
+    System Bandwidth:
+    <input class="ni" type="number" id="inBW" value="20" min="0.001" max="1000" step="1"> MHz
+  </label>
+  <label style="font-size:.83rem;color:var(--tm);display:flex;align-items:center;gap:.5rem">
+    Input signal level:
+    <input class="ni" type="number" id="inPin" value="-50" min="-120" max="20" step="1"> dBm
+  </label>
+</div>
+
+<div class="charts-wrap">
+  <div class="chart-panel">
+    <h3>Dynamic Range Window — noise floor, P1dB, IM3, SFDR</h3>
+    <div class="chart-wrap"><canvas id="chartDR"></canvas></div>
+  </div>
+  <div class="chart-panel">
+    <h3>Stage-by-Stage Cascaded NF &amp; OIP3 buildup</h3>
+    <div class="chart-wrap"><canvas id="chartCasc"></canvas></div>
+  </div>
+</div>
+
+<div class="annotation-wrap">
+  <div class="annotation" id="annotation">Computing...</div>
+</div>
+
+<script>
+// Default 4-stage receiver: LNA → filter → mixer → IF amp
+// Defaults: 2.4 GHz WiFi-like front end
+const stages = [
+  {name:'LNA',       nf:1.5,  gain:20,  iip3:-5},
+  {name:'BPF',       nf:1.0,  gain:-1,  iip3:40},
+  {name:'Mixer',     nf:7.0,  gain:6,   iip3:10},
+  {name:'IF Amp',    nf:5.0,  gain:20,  iip3:15},
+];
+
+function cascade(sts) {
+  let F_casc = 1;      // linear noise factor
+  let g_casc = 1;      // linear gain product (for IIP3 calc)
+  let iip3_inv_sq = 0; // sum of 1/IIP3_i^2 * (gain to that point)^2
+  const nfArr=[], oip3Arr=[];
+  let g_total_dB = 0;
+
+  for(let i=0;i<sts.length;i++){
+    const st = sts[i];
+    const F_i = Math.pow(10, st.nf/10);
+    const G_i = Math.pow(10, st.gain/10);
+    const iip3_i_lin = Math.pow(10, st.iip3/10) * 1e-3; // convert dBm to W
+    if(i===0){
+      F_casc = F_i;
+      g_casc = G_i;
+      iip3_inv_sq = 1/(iip3_i_lin*iip3_i_lin);
+    } else {
+      F_casc += (F_i-1)/g_casc;
+      iip3_inv_sq += (g_casc*g_casc)/(iip3_i_lin*iip3_i_lin);
+      g_casc *= G_i;
+    }
+    g_total_dB += st.gain;
+    const nf_casc_dB = 10*Math.log10(F_casc);
+    const iip3_casc_lin = 1/Math.sqrt(iip3_inv_sq);
+    const iip3_casc_dBm = 10*Math.log10(iip3_casc_lin*1e3);
+    const oip3_casc_dBm = iip3_casc_dBm + g_total_dB;
+    nfArr.push(nf_casc_dB);
+    oip3Arr.push({iip3:iip3_casc_dBm, oip3:oip3_casc_dBm});
+  }
+  return {F_casc, g_casc, g_total_dB, iip3_inv_sq, nfArr, oip3Arr};
+}
+
+function fmtdB(v,d=1){return (v>=0?'+':'')+v.toFixed(d)}
+function td(v,cls=''){return `<td class="${cls}">${v}</td>`}
+
+function buildTable(casc, bw_Hz) {
+  const {nfArr, oip3Arr, g_total_dB} = casc;
+  const body = document.getElementById('stageBody');
+  body.innerHTML='';
+  const maxNFContrib = Math.max(...nfArr);
+  const minOIP3 = Math.min(...oip3Arr.map(o=>o.oip3));
+
+  stages.forEach((st,i)=>{
+    const tr=document.createElement('tr');
+    const nfBot = nfArr[i]===Math.max(...nfArr) ? `<span class="bn bn-b">bottleneck</span>` : '';
+    const oip3Bot = oip3Arr[i].oip3===minOIP3 ? `<span class="bn bn-b">bottleneck</span>` : '';
+    const nfCol = i===0?'var(--blue)': nfArr[i]>nfArr[i-1]+0.5?'var(--red)':'var(--grn)';
+    const oip3Col = i===0?'var(--blue)': oip3Arr[i].oip3<oip3Arr[i>0?i-1:0].oip3+0.5?'var(--red)':'var(--grn)';
+    tr.innerHTML=`
+      <td><input class="ni" style="width:90px" type="text" value="${st.name}" onchange="stages[${i}].name=this.value;update()"></td>
+      <td style="color:var(--tm)">Stage ${i+1}</td>
+      <td><input class="ni" type="number" value="${st.nf}" step="0.25" min="0" max="30" onchange="stages[${i}].nf=+this.value;update()"></td>
+      <td><input class="ni" type="number" value="${st.gain}" step="0.5" min="-20" max="40" onchange="stages[${i}].gain=+this.value;update()"></td>
+      <td><input class="ni" type="number" value="${st.iip3}" step="1" min="-30" max="50" onchange="stages[${i}].iip3=+this.value;update()"></td>
+      <td style="color:${nfCol}">${nfArr[i].toFixed(2)}</td>
+      <td style="color:${oip3Col}">${oip3Arr[i].oip3.toFixed(1)}</td>
+      <td style="text-align:center">${nfBot}</td>
+      <td style="text-align:center">${oip3Bot}</td>`;
+    body.appendChild(tr);
+  });
+
+  document.getElementById('tG').textContent = fmtdB(g_total_dB)+' dB';
+  document.getElementById('tNF').textContent = nfArr[nfArr.length-1].toFixed(2)+' dB';
+  document.getElementById('tOIP3').textContent = oip3Arr[oip3Arr.length-1].oip3.toFixed(1)+' dBm';
+}
+
+// Charts
+const ctxDR = document.getElementById('chartDR').getContext('2d');
+const ctxCasc = document.getElementById('chartCasc').getContext('2d');
+
+const chartDR = new Chart(ctxDR,{
+  type:'scatter',
+  data:{datasets:[
+    {label:'Fundamental',data:[],borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,.08)',borderWidth:2,pointRadius:0,showLine:true,fill:false},
+    {label:'IM3 product',data:[],borderColor:'#f85149',backgroundColor:'rgba(248,81,73,.08)',borderWidth:2,pointRadius:0,showLine:true,fill:false},
+    {label:'Noise Floor',data:[],borderColor:'#8b949e',borderDash:[6,4],borderWidth:1.5,pointRadius:0,showLine:true,fill:false},
+    {label:'P1dB',data:[],borderColor:'#f0883e',borderDash:[3,3],borderWidth:1.5,pointRadius:0,showLine:true,fill:false},
+    {label:'Operating Point',data:[],borderColor:'#3fb950',backgroundColor:'#3fb950',pointRadius:5,showLine:false}
+  ]},
+  options:{
+    animation:{duration:0},responsive:true,
+    plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+    scales:{
+      x:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Input Power (dBm)'}},
+      y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Output Power (dBm)'}}
+    }
+  }
+});
+
+const chartCasc = new Chart(ctxCasc,{
+  type:'bar',
+  data:{
+    labels:[],
+    datasets:[
+      {label:'Cascaded NF (dB)',data:[],backgroundColor:'rgba(88,166,255,.65)',yAxisID:'yNF',order:1},
+      {label:'Cascaded OIP3 (dBm)',data:[],backgroundColor:'rgba(188,140,255,.65)',yAxisID:'yOIP3',order:2}
+    ]
+  },
+  options:{
+    animation:{duration:0},responsive:true,
+    plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+    scales:{
+      x:{grid:{color:'#252830'},ticks:{color:'#8b949e'}},
+      yNF:{position:'left',grid:{color:'#252830'},ticks:{color:'#58a6ff'},title:{display:true,color:'#58a6ff',text:'NF (dB)'}},
+      yOIP3:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#bc8cff'},title:{display:true,color:'#bc8cff',text:'OIP3 (dBm)'}}
+    }
+  }
+});
+
+function update(){
+  const bw = parseFloat(document.getElementById('inBW').value)||20;
+  const Pin = parseFloat(document.getElementById('inPin').value)||-50;
+  const bw_Hz = bw*1e6;
+
+  const casc = cascade(stages);
+  const {F_casc, g_total_dB, iip3_inv_sq, nfArr, oip3Arr} = casc;
+
+  const NF_sys = 10*Math.log10(F_casc);
+  const iip3_sys_lin = 1/Math.sqrt(iip3_inv_sq);
+  const IIP3_sys = 10*Math.log10(iip3_sys_lin*1e3);
+  const OIP3_sys = IIP3_sys + g_total_dB;
+  const P1dB_out = OIP3_sys - 9.6;
+  const noiseFloor = -174 + 10*Math.log10(bw_Hz) + NF_sys;
+  const SFDR = (2/3)*(OIP3_sys - noiseFloor);
+
+  document.getElementById('mSysNF').textContent  = NF_sys.toFixed(2);
+  document.getElementById('mSysNF').className = 'mv '+(NF_sys<3?'good':NF_sys<8?'warn':'bad');
+  document.getElementById('mSysIIP3').textContent = IIP3_sys.toFixed(1);
+  document.getElementById('mSysOIP3').textContent = OIP3_sys.toFixed(1);
+  document.getElementById('mSysG').textContent   = fmtdB(g_total_dB)+' dB';
+  document.getElementById('mNoiseFloor').textContent = noiseFloor.toFixed(1);
+  document.getElementById('mP1dB').textContent   = P1dB_out.toFixed(1);
+  document.getElementById('mSFDR').textContent   = SFDR.toFixed(1);
+  document.getElementById('mBW').textContent     = bw.toFixed(1);
+
+  buildTable(casc, bw_Hz);
+
+  // DR chart: output power vs input power
+  const Pmin = noiseFloor - g_total_dB - 10;
+  const Pmax = P1dB_out - g_total_dB + 5;
+  const pts = 200;
+  const pinArr = Array.from({length:pts},(_,i)=>Pmin+(Pmax-Pmin)*i/(pts-1));
+
+  const fundamental = pinArr.map(p=>({x:p, y:p+g_total_dB}));
+  // IM3 output = 3*Pin - 2*IIP3 + Gain (dBm)
+  const im3 = pinArr.map(p=>({x:p, y:3*p - 2*IIP3_sys + g_total_dB}));
+  const noiseArr = [{x:Pmin,y:noiseFloor},{x:Pmax,y:noiseFloor}];
+  const p1dBArr  = [{x:Pmin,y:P1dB_out},{x:Pmax,y:P1dB_out}];
+
+  chartDR.data.datasets[0].data = fundamental;
+  chartDR.data.datasets[1].data = im3;
+  chartDR.data.datasets[2].data = noiseArr;
+  chartDR.data.datasets[3].data = p1dBArr;
+  chartDR.data.datasets[4].data = [{x:Pin, y:Pin+g_total_dB}];
+  chartDR.options.scales.x.min = Pmin;
+  chartDR.options.scales.x.max = Pmax;
+  chartDR.update();
+
+  // Cascade buildup chart
+  chartCasc.data.labels = stages.map(s=>s.name);
+  chartCasc.data.datasets[0].data = nfArr.map(v=>parseFloat(v.toFixed(2)));
+  chartCasc.data.datasets[1].data = oip3Arr.map(o=>parseFloat(o.oip3.toFixed(1)));
+  chartCasc.update();
+
+  // Identify bottlenecks
+  const nfBottleneck = stages[nfArr.indexOf(Math.max(...nfArr))].name;
+  const oip3Stage = oip3Arr.map(o=>o.oip3);
+  const oip3BotIdx = oip3Stage.indexOf(Math.min(...oip3Stage));
+  const oip3Bottleneck = stages[oip3BotIdx].name;
+
+  // SNR for operating point
+  const Pout = Pin + g_total_dB;
+  const SNR_out = Pout - noiseFloor;
+
+  document.getElementById('annotation').innerHTML =
+    `<strong>System summary:</strong> NF = <b>${NF_sys.toFixed(2)} dB</b>, OIP3 = <b>${OIP3_sys.toFixed(1)} dBm</b>,
+    SFDR = <b>${SFDR.toFixed(1)} dB</b>, Noise floor = <b>${noiseFloor.toFixed(1)} dBm</b> @ ${bw.toFixed(0)} MHz BW.<br>
+    <strong>NF bottleneck:</strong> <b>${nfBottleneck}</b> — ${nfArr[0].toFixed(2)} dB after LNA; reducing LNA NF by 1 dB drops system NF by ~1 dB.
+    First stage must have maximum gain to suppress subsequent stage noise contributions (Friis).<br>
+    <strong>IIP3 bottleneck:</strong> <b>${oip3Bottleneck}</b> sets cascaded OIP3 = <b>${OIP3_sys.toFixed(1)} dBm</b>.
+    P1dB = <b>${P1dB_out.toFixed(1)} dBm</b> (OIP3 − 9.6 dB).
+    Operating point: Pin = <b>${Pin} dBm</b>, SNR = <b>${SNR_out.toFixed(1)} dB</b>${SNR_out<10?' — marginal, consider more gain':''}.<br>
+    <strong>Design rule:</strong> ${NF_sys>5?'System NF >5 dB — consider lower-NF LNA or reducing insertion loss before LNA.':
+    OIP3_sys<20?'System OIP3 <20 dBm — improve linearity of high-gain stages.':
+    'Receiver is well-optimized. SFDR = '+SFDR.toFixed(1)+' dB provides adequate dynamic range.'}`;
+}
+
+document.getElementById('inBW').addEventListener('input',update);
+document.getElementById('inPin').addEventListener('input',update);
+
+function takeScreenshot(toolName){
+  const canvases=[...document.querySelectorAll('canvas')];
+  const padding=16,titleHeight=40;
+  const totalWidth=canvases.reduce((s,c)=>s+c.width+padding,padding);
+  const maxHeight=Math.max(...canvases.map(c=>c.height));
+  const out=document.createElement('canvas');
+  out.width=totalWidth;out.height=maxHeight+titleHeight+padding*2;
+  const ctx2=out.getContext('2d');
+  ctx2.fillStyle='#16181d';ctx2.fillRect(0,0,out.width,out.height);
+  ctx2.fillStyle='#e6edf3';ctx2.font='bold 14px Segoe UI,system-ui,sans-serif';
+  ctx2.fillText(toolName+' · RF Toolbox · hinckster.github.io/RF-Toolbox',padding,titleHeight/2+5);
+  ctx2.fillStyle='#8b949e';ctx2.font='11px monospace';
+  ctx2.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',padding,titleHeight-4);
+  let x=padding;
+  canvases.forEach(c=>{ctx2.drawImage(c,x,titleHeight+padding);x+=c.width+padding;});
+  const link=document.createElement('a');
+  link.download=`receiver_chain_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;
+  link.href=out.toDataURL('image/png');link.click();
+}
+function toggleFullscreen(){
+  if(!document.fullscreenElement)document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+function copyLink(){
+  navigator.clipboard.writeText(window.location.href).then(()=>{
+    const btn=document.getElementById('copyBtn');
+    const orig=btn.textContent;btn.textContent='✓ Copied!';
+    btn.style.color='#3fb950';btn.style.borderColor='#3fb950';
+    setTimeout(()=>{btn.textContent=orig;btn.style.color='';btn.style.borderColor='';},2000);
+  });
+}
+
+update();
+</script>
+</body>
+</html>

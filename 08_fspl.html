@@ -3,309 +3,362 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FSPL Multi-Band Sweep | RF Toolbox</title>
+<title>Path Loss Comparison | RF Toolbox</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg: #0d0d0f; --surface: #16161a; --card: #1e1e24; --border: #2a2a35;
-  --accent: #00c8ff; --accent2: #7b61ff; --text: #e2e2e8; --muted: #888899;
-  --green: #00e5a0; --orange: #ffaa00; --red: #ff4d6d;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#16181d;--card:#1e2128;--deep:#0d1117;
+  --bdr:#30363d;--t1:#e6edf3;--t2:#c9d1d9;--tm:#8b949e;
+  --blue:#58a6ff;--grn:#3fb950;--org:#f0883e;--red:#f85149;--yel:#e6c547;--pur:#bc8cff;
 }
-body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
-.toolbar { position: fixed; top: 14px; right: 16px; display: flex; gap: 6px; z-index: 100; }
-.tbtn { background: var(--card); border: 1px solid var(--border); color: var(--muted); border-radius: 5px; padding: 5px 10px; font-size: .75rem; cursor: pointer; transition: border-color .15s, color .15s; }
-.tbtn:hover { border-color: var(--accent); color: var(--accent); }
-nav { padding: .9rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
-nav a { color: var(--accent); text-decoration: none; font-size: .88rem; }
-nav a:hover { text-decoration: underline; }
-nav span { color: var(--muted); }
-header { padding: 1.5rem 1.5rem 1rem; max-width: 1100px; margin: 0 auto; }
-header .tag { font-size: .72rem; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: .3rem; }
-header h1 { font-size: 1.7rem; font-weight: 700; }
-header p { color: var(--muted); margin-top: .3rem; font-size: .88rem; }
-.eq-bar { max-width: 1100px; margin: 0 auto .8rem; padding: 0 1.5rem; }
-.eq-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: .9rem 1.2rem; display: flex; flex-wrap: wrap; gap: 1.5rem; }
-.eq-primary { font-family: 'Courier New', monospace; font-size: .95rem; color: var(--accent); }
-.eq-secondary { font-family: 'Courier New', monospace; font-size: .82rem; color: var(--accent2); }
-.eq-note { font-size: .76rem; color: var(--muted); margin-top: .2rem; }
-.layout { display: grid; grid-template-columns: 300px 1fr; gap: 1.2rem; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem; }
-@media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
-.panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
-.panel h3 { font-size: .78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: .9rem; }
-.sl-row { margin-bottom: .9rem; }
-.sl-row label { display: flex; justify-content: space-between; font-size: .88rem; margin-bottom: .25rem; }
-.sl-row label span { color: var(--orange); font-family: 'Courier New', monospace; font-weight: 600; transition: all 200ms ease; }
-input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
-.hints { display: flex; justify-content: space-between; font-size: .7rem; color: var(--muted); margin-top: .12rem; }
-.band-list { display: flex; flex-direction: column; gap: .5rem; margin-bottom: .9rem; }
-.band-row { display: flex; align-items: center; gap: .5rem; }
-.band-row input[type=checkbox] { accent-color: var(--accent); width: 14px; height: 14px; flex-shrink: 0; }
-.band-row select { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 5px; padding: .25rem .4rem; font-size: .79rem; flex: 1; }
-.band-swatch { width: 13px; height: 13px; border-radius: 3px; flex-shrink: 0; }
-.divider { border: none; border-top: 1px solid var(--border); margin: .9rem 0; }
-.ref-row { display: flex; align-items: center; gap: .5rem; font-size: .85rem; margin-bottom: .6rem; }
-.ref-row input[type=number] { background: var(--surface); border: 1px solid var(--border); color: var(--accent); border-radius: 5px; padding: .28rem .45rem; width: 80px; font-size: .82rem; font-family: 'Courier New', monospace; }
-.ref-row span { color: var(--muted); }
-.results { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-top: .8rem; }
-.result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 7px; padding: .5rem .65rem; }
-.result-card .rl { font-size: .65rem; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
-.result-card .rv { font-family: 'Courier New', monospace; font-size: 1rem; font-weight: 700; margin-top: .1rem; }
-.result-card .ru { font-size: .65rem; color: var(--muted); }
-.chart-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; display: flex; flex-direction: column; gap: 1rem; }
-.chart-panel h3 { font-size: .78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
-.chart-wrap { position: relative; min-height: 400px; }
-.annotation { border-left: 3px solid var(--accent); background: var(--surface); padding: 11px 14px; border-radius: 0 8px 8px 0; font-size: .83rem; color: var(--muted); line-height: 1.65; }
-.annotation strong { color: var(--text); }
+body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+
+.toolbar{position:fixed;top:14px;right:16px;display:flex;gap:6px;z-index:100}
+.tbtn{background:var(--card);border:1px solid var(--bdr);color:var(--tm);border-radius:5px;padding:5px 10px;font-size:.75rem;cursor:pointer;transition:border-color .15s,color .15s}
+.tbtn:hover{border-color:var(--blue);color:var(--blue)}
+
+nav{padding:.75rem 1.5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.75rem;background:var(--card)}
+nav .sep{color:var(--bdr)}
+nav span{color:var(--tm);font-size:.85rem}
+
+header{padding:1.5rem 1.5rem 1rem;max-width:1180px;margin:0 auto}
+header .tag{font-size:.72rem;font-weight:600;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:.3rem}
+header h1{font-size:1.7rem;font-weight:700;color:var(--t1)}
+header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
+
+.eq-box{max-width:1180px;margin:0 auto .9rem;padding:0 1.5rem}
+.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.4rem;display:flex;flex-wrap:wrap;gap:1.5rem}
+.eq-col{flex:1;min-width:220px}
+.eq-label{font-size:.68rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-primary{font-family:'Courier New',monospace;font-size:.9rem;color:var(--blue);line-height:2}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.8rem;color:var(--pur);line-height:2}
+.eq-note{font-size:.74rem;color:var(--tm);margin-top:.25rem}
+
+.layout{display:grid;grid-template-columns:290px 1fr;gap:1.2rem;max-width:1180px;margin:0 auto;padding:0 1.5rem 2rem}
+@media(max-width:768px){.layout{grid-template-columns:1fr}}
+
+.panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem}
+.panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
+.panel-sep{border-top:1px solid var(--bdr);margin:.85rem 0}
+
+.sr{margin-bottom:.9rem}
+.sr label{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem}
+.sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
+input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
+.hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
+
+.band-grid{display:grid;grid-template-columns:1fr;gap:.4rem;margin-bottom:.9rem}
+.band-row{display:flex;align-items:center;gap:.5rem;padding:.3rem .5rem;border-radius:6px;background:var(--deep);border:1px solid var(--bdr)}
+.band-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.band-name{font-size:.8rem;color:var(--t2);flex:1}
+.band-freq{font-family:'Courier New',monospace;font-size:.75rem;color:var(--tm)}
+.band-fspl{font-family:'Courier New',monospace;font-size:.75rem;text-align:right;min-width:75px}
+
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.9rem}
+.mc{background:var(--deep);border:1px solid var(--bdr);border-radius:6px;padding:.6rem .8rem}
+.mc .mlb{font-size:.67rem;color:var(--tm);text-transform:uppercase;letter-spacing:.9px}
+.mc .mv{font-family:'Courier New',monospace;font-size:1rem;font-weight:700;margin-top:.1rem;transition:color 200ms}
+.mc .mu{font-size:.65rem;color:var(--tm)}
+.info{color:var(--blue)}.info2{color:var(--pur)}
+
+.chart-panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem;margin-bottom:1rem}
+.chart-panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.8rem}
+.chart-wrap{position:relative;min-height:270px}
+
+.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.82rem;color:var(--tm);line-height:1.7}
+.annotation strong{color:var(--t1)}
+.annotation b{color:var(--blue)}
+
+.ovl-row{display:flex;gap:.5rem;margin-bottom:.8rem;flex-wrap:wrap}
+.ovl-btn{padding:.25rem .65rem;border-radius:12px;border:1px solid var(--bdr);background:var(--deep);color:var(--tm);font-size:.77rem;cursor:pointer;transition:.15s}
+.ovl-btn.on{border-color:var(--org);color:var(--org);background:rgba(240,136,62,.1)}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
-  <button class="tbtn" onclick="takeScreenshot()">📷 Screenshot</button>
+  <button class="tbtn" onclick="takeScreenshot('Path Loss Comparison')">📷 Screenshot</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
   <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
 </div>
 
 <nav>
-  <a href="index.html">← RF Toolbox</a>
-  <span>/</span>
-  <span>08 FSPL Multi-Band Sweep</span>
+  <a href="index.html">RF Toolbox</a>
+  <span class="sep">›</span>
+  <span>Path Loss Comparison</span>
 </nav>
 
 <header>
-  <div class="tag">Tool 08</div>
-  <h1>FSPL Multi-Band Sweep</h1>
-  <p>Free-space path loss vs distance — up to 4 frequency bands overlaid</p>
+  <div class="tag">Tool 08 · Propagation</div>
+  <h1>Free-Space Path Loss + Atmospheric Effects</h1>
+  <p>FSPL vs distance for 6 frequency bands simultaneously. Rain attenuation and atmospheric absorption overlays. Band selection guidance.</p>
 </header>
 
-<div class="eq-bar">
+<div class="eq-box">
   <div class="eq-card">
-    <div>
-      <div class="eq-primary">FSPL (dB) = 20·log₁₀(4π·d·f / c)</div>
-      <div class="eq-note">d in metres, f in Hz, c = 3×10⁸ m/s</div>
+    <div class="eq-col">
+      <div class="eq-label">Free-Space Path Loss (Friis)</div>
+      <div class="eq-primary">FSPL = 20 log₁₀(4πdf/c)</div>
+      <div class="eq-secondary">= 20log(d_km) + 20log(f_MHz) + 32.44 dB</div>
+      <div class="eq-secondary">= 20log(d_km) + 20log(f_GHz) + 92.44 dB</div>
+      <div class="eq-note">Valid in far field, LOS, no multipath. Each octave in f = 6 dB more loss.</div>
     </div>
-    <div>
-      <div class="eq-secondary">= 20·log₁₀(d) + 20·log₁₀(f) − 147.55</div>
-      <div class="eq-note">+6 dB per octave in distance or frequency</div>
+    <div class="eq-col">
+      <div class="eq-label">Rain Attenuation (ITU-R P.838)</div>
+      <div class="eq-primary">A_rain = k · R^α · d  [dB]</div>
+      <div class="eq-secondary">k, α are frequency-dependent ITU coefficients</div>
+      <div class="eq-secondary">R = rain rate [mm/hr], d = path length [km]</div>
+      <div class="eq-note">Significant above 10 GHz. R = 25 mm/hr = moderate rain. 50 = heavy.</div>
+    </div>
+    <div class="eq-col">
+      <div class="eq-label">Atmospheric Absorption (ITU-R P.676)</div>
+      <div class="eq-primary">A_atm = (γ_O₂ + γ_H₂O) · d  [dB]</div>
+      <div class="eq-secondary">O₂ resonance at 60 GHz: ~10 dB/km</div>
+      <div class="eq-secondary">H₂O resonance at 22.3 GHz: ~0.2 dB/km</div>
+      <div class="eq-note">Severe at 60 GHz — limits range to &lt;500 m for most links.</div>
     </div>
   </div>
 </div>
 
 <div class="layout">
-  <div class="panel">
-    <h3>Frequency Bands (select up to 4)</h3>
-    <div class="band-list" id="bandList"></div>
-
-    <hr class="divider">
-    <h3>Distance Axis</h3>
-    <div class="sl-row">
-      <label>Max Distance <span id="lDmax">100 km</span></label>
-      <input type="range" id="sDmax" min="1" max="6" value="5" step="0.05" oninput="update()">
-      <div class="hints"><span>10 m</span><span>1000 km</span></div>
+  <div>
+    <div class="panel" style="margin-bottom:1rem">
+      <h3>Range Control</h3>
+      <div class="sr">
+        <label>Max distance <span id="vDmax">10.0 km</span></label>
+        <input type="range" id="sDmax" min="0.1" max="3" step="0.02" value="1">
+        <div class="hints"><span>100 m</span><span>1000 km</span></div>
+      </div>
+      <div class="sr">
+        <label>Operating distance d <span id="vD">1.0 km</span></label>
+        <input type="range" id="sD" min="0" max="1" step="0.005" value="0.5">
+        <div class="hints"><span>10 m</span><span>d_max</span></div>
+      </div>
+      <div class="panel-sep"></div>
+      <h3 style="margin-bottom:.7rem">Overlays</h3>
+      <div class="ovl-row">
+        <button class="ovl-btn" id="btnRain" onclick="toggleOvl('rain',this)">Rain atten.</button>
+        <button class="ovl-btn" id="btnAtm" onclick="toggleOvl('atm',this)">Atm. absorp.</button>
+      </div>
+      <div class="sr" id="rainCtrl" style="display:none">
+        <label>Rain rate R <span id="vRain">25 mm/hr</span></label>
+        <input type="range" id="sRain" min="1" max="100" step="1" value="25">
+        <div class="hints"><span>1 mm/hr</span><span>100 mm/hr</span></div>
+      </div>
     </div>
-    <div class="sl-row">
-      <label>Min Distance <span id="lDmin">10 m</span></label>
-      <input type="range" id="sDmin" min="-2" max="2" value="1" step="0.05" oninput="update()">
-      <div class="hints"><span>1 cm</span><span>100 m</span></div>
+
+    <div class="panel" style="margin-bottom:1rem">
+      <h3>Band FSPL at d = <span id="bandDLabel">—</span></h3>
+      <div class="band-grid" id="bandGrid"></div>
     </div>
 
-    <hr class="divider">
-    <h3>Reference Marker</h3>
-    <div class="ref-row">
-      <input type="number" id="refDist" value="1000" min="1" oninput="update()">
-      <span>metres — marked on chart</span>
+    <div class="panel">
+      <h3>Breakeven Summary</h3>
+      <div style="font-size:.8rem;color:var(--tm);line-height:1.8" id="breakevenSummary">—</div>
     </div>
-
-    <div class="results" id="resultsGrid"></div>
   </div>
 
-  <div class="chart-panel">
-    <h3>Path Loss vs Distance (log-x scale)</h3>
-    <div class="chart-wrap"><canvas id="chart"></canvas></div>
-    <div class="annotation" id="annotation">Updating…</div>
+  <div>
+    <div class="chart-panel">
+      <h3>Total Path Loss vs Distance — FSPL + rain + atmosphere</h3>
+      <div class="chart-wrap"><canvas id="chartFSPL"></canvas></div>
+    </div>
+    <div class="chart-panel">
+      <h3>Additional Losses (rain + atmosphere) vs Frequency @ operating distance</h3>
+      <div class="chart-wrap"><canvas id="chartAtm"></canvas></div>
+    </div>
+    <div class="annotation" id="annotation">Computing...</div>
   </div>
 </div>
 
 <script>
-const ALL_BANDS = [
-  { name:'433 MHz (ISM)',    f_MHz:433,    color:'#00e5a0' },
-  { name:'868 MHz (EU ISM)',f_MHz:868,    color:'#58d9a0' },
-  { name:'915 MHz (ISM)',   f_MHz:915,    color:'#00c8ff' },
-  { name:'1.57 GHz (GPS)',  f_MHz:1575,   color:'#7b61ff' },
-  { name:'2.4 GHz (WLAN)', f_MHz:2400,   color:'#ffaa00' },
-  { name:'3.5 GHz (5G sub-6)',f_MHz:3500, color:'#ff8b50' },
-  { name:'5 GHz (WLAN)',    f_MHz:5000,   color:'#ff4d6d' },
-  { name:'10 GHz (X-band)',f_MHz:10000,  color:'#bc8cff' },
-  { name:'24 GHz (K-band)',f_MHz:24000,  color:'#ff6bd4' },
-  { name:'60 GHz (mmW)',   f_MHz:60000,  color:'#ffd700' },
-  { name:'77 GHz (Auto)',  f_MHz:77000,  color:'#a0e080' },
+const C=3e8;
+const BANDS=[
+  {name:'900 MHz',f_MHz:900,  col:'#3fb950'},
+  {name:'2.4 GHz',f_MHz:2400, col:'#58a6ff'},
+  {name:'5 GHz',  f_MHz:5000, col:'#e6c547'},
+  {name:'28 GHz', f_MHz:28000,col:'#f0883e'},
+  {name:'60 GHz', f_MHz:60000,col:'#f85149'},
+  {name:'77 GHz', f_MHz:77000,col:'#bc8cff'},
 ];
 
-// Each slot selects from ALL_BANDS
-let slots = [
-  { active:true,  idx:2 },   // 915 MHz
-  { active:true,  idx:4 },   // 2.4 GHz
-  { active:true,  idx:6 },   // 5 GHz
-  { active:false, idx:7 },   // 10 GHz
-];
-
-function buildBandList() {
-  const el = document.getElementById('bandList');
-  const opts = ALL_BANDS.map((b,i) => `<option value="${i}">${b.name}</option>`).join('');
-  el.innerHTML = slots.map((s, si) => `
-    <div class="band-row">
-      <input type="checkbox" ${s.active?'checked':''} onchange="slots[${si}].active=this.checked;update()">
-      <div class="band-swatch" id="swatch${si}" style="background:${ALL_BANDS[s.idx].color}"></div>
-      <select onchange="slots[${si}].idx=+this.value;document.getElementById('swatch${si}').style.background=ALL_BANDS[+this.value].color;update()">
-        ${ALL_BANDS.map((b,i)=>`<option value="${i}"${i===s.idx?' selected':''}>${b.name}</option>`).join('')}
-      </select>
-    </div>`).join('');
+let ovlRain=false, ovlAtm=false;
+function toggleOvl(which,btn){
+  if(which==='rain'){ovlRain=!ovlRain;btn.classList.toggle('on',ovlRain);document.getElementById('rainCtrl').style.display=ovlRain?'':'none';}
+  if(which==='atm'){ovlAtm=!ovlAtm;btn.classList.toggle('on',ovlAtm);}
+  update();
 }
 
-function fspl(d_m, f_MHz) {
-  return 20 * Math.log10(4 * Math.PI * d_m * f_MHz * 1e6 / 3e8);
+function fspl_dB(d_m, f_MHz){
+  if(d_m<=0) return 0;
+  const f_Hz=f_MHz*1e6;
+  return 20*Math.log10(4*Math.PI*d_m*f_Hz/C);
 }
 
-function dLabel(d) {
-  return d >= 1e6 ? (d/1e6).toFixed(1)+' Mm' : d >= 1e3 ? (d/1e3).toFixed(1)+' km' : d >= 1 ? d.toFixed(0)+' m' : (d*100).toFixed(1)+' cm';
+// ITU-R P.838 rain attenuation coefficients (simplified, horizontal polarization)
+// k and alpha as function of frequency (GHz)
+function rainAtten(d_km, R_mmhr, f_GHz){
+  if(R_mmhr<=0||!ovlRain) return 0;
+  // Approximate ITU-R P.838 coefficients
+  let k,alpha;
+  if(f_GHz<1){k=0.0000387;alpha=0.912;}
+  else if(f_GHz<2.9){k=0.000101*Math.pow(f_GHz,1.66);alpha=0.962;}
+  else if(f_GHz<6){k=0.000187*Math.pow(f_GHz,1.55);alpha=1.06;}
+  else if(f_GHz<12){k=0.00454*Math.pow(f_GHz,0.69);alpha=1.09;}
+  else if(f_GHz<20){k=0.0188*Math.pow(f_GHz,0.44);alpha=1.02;}
+  else if(f_GHz<40){k=0.0367*Math.pow(f_GHz,0.27);alpha=0.98;}
+  else if(f_GHz<80){k=0.124*Math.pow(f_GHz,0.059);alpha=0.89;}
+  else{k=0.187;alpha=0.84;}
+  return k*Math.pow(R_mmhr,alpha)*d_km;
 }
 
-const ctx = document.getElementById('chart').getContext('2d');
-const chart = new Chart(ctx, {
-  type: 'line',
-  data: { labels: [], datasets: [] },
-  options: {
-    animation: { duration: 0 }, responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { labels: { color: '#888899', font: { size: 11 }, filter: item => !item.text.startsWith('_') } },
-      tooltip: {
-        mode: 'index', intersect: false,
-        callbacks: {
-          label: c => c.dataset.label.startsWith('_') ? null : ` ${c.dataset.label}: ${c.raw.toFixed(1)} dB`,
-          title: tts => { const d = Math.pow(10, parseFloat(tts[0].label)); return dLabel(d); }
-        }
-      }
-    },
-    scales: {
-      x: {
-        type: 'category',
-        ticks: { color: '#888899', font: { size: 10 }, maxTicksLimit: 9,
-          callback: (v, i, tks) => {
-            if (i % Math.ceil(tks.length/8) !== 0) return '';
-            const d = Math.pow(10, parseFloat(tks[i]?.label ?? '0'));
-            return dLabel(d);
-          }
-        },
-        grid: { color: '#2a2a35' },
-        title: { display: true, text: 'Distance (log scale)', color: '#888899', font: { size: 11 } }
-      },
-      y: {
-        ticks: { color: '#888899', font: { size: 10 } },
-        grid: { color: '#2a2a35' },
-        title: { display: true, text: 'Free-Space Path Loss (dB)', color: '#888899', font: { size: 11 } }
-      }
+// Simplified ITU-R P.676 atmospheric absorption (dB/km) at sea level
+function atmAbsorption_dBkm(f_GHz){
+  if(!ovlAtm) return 0;
+  // O2 absorption (approximate)
+  let o2=0;
+  if(f_GHz<10) o2=0.007;
+  else if(f_GHz<20) o2=0.008+0.0015*(f_GHz-10);
+  else if(f_GHz<40) o2=0.023+0.01*(f_GHz-20);
+  else if(f_GHz<55) o2=0.223+0.9*(f_GHz-40)/15;
+  else if(f_GHz<65) o2=10*Math.exp(-((f_GHz-60)*(f_GHz-60))/50); // 60 GHz O2 window
+  else o2=0.6;
+  // H2O absorption (~7.5g/m3 humidity)
+  let h2o=0;
+  if(f_GHz>=20&&f_GHz<=26) h2o=0.05+0.15*Math.exp(-((f_GHz-22.3)*(f_GHz-22.3))/4);
+  else if(f_GHz>26&&f_GHz<180) h2o=0.02+0.003*f_GHz;
+  return o2+h2o;
+}
+
+const ctxFSPL=document.getElementById('chartFSPL').getContext('2d');
+const ctxAtm=document.getElementById('chartAtm').getContext('2d');
+
+const chartFSPL=new Chart(ctxFSPL,{
+  type:'line',
+  data:{datasets:[]},
+  options:{
+    animation:{duration:0},responsive:true,
+    plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+    scales:{
+      x:{type:'logarithmic',grid:{color:'#252830'},ticks:{color:'#8b949e',maxTicksLimit:8},title:{display:true,color:'#8b949e',text:'Distance (km)'}},
+      y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Total Path Loss (dB)'}}
     }
   }
 });
 
-function update() {
-  const dmax_log = +document.getElementById('sDmax').value;
-  const dmin_log = +document.getElementById('sDmin').value;
-  const d_max = Math.pow(10, dmax_log);
-  const d_min = Math.pow(10, dmin_log);
-  const refDist = Math.max(1, +document.getElementById('refDist').value || 1000);
-
-  document.getElementById('lDmax').textContent = dLabel(d_max);
-  document.getElementById('lDmin').textContent = dLabel(d_min);
-
-  const N = 100;
-  const labels = [];
-  for (let i = 0; i <= N; i++) {
-    const log_d = dmin_log + (dmax_log - dmin_log) * i / N;
-    labels.push(log_d.toFixed(4));
+const chartAtm=new Chart(ctxAtm,{
+  type:'bar',
+  data:{labels:[],datasets:[
+    {label:'Rain atten.',data:[],backgroundColor:'rgba(88,166,255,.7)',stack:'a'},
+    {label:'Atm. absorb.',data:[],backgroundColor:'rgba(248,81,73,.7)',stack:'a'}
+  ]},
+  options:{
+    animation:{duration:0},responsive:true,
+    plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+    scales:{
+      x:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Frequency band'}},
+      y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Additional Loss at d (dB)'},stacked:true}
+    }
   }
+});
 
-  const datasets = [];
-  const refResults = [];
-  const refLogD = Math.log10(Math.max(d_min, Math.min(d_max, refDist)));
+function logspace(lo,hi,n){return Array.from({length:n},(_,i)=>lo*Math.pow(hi/lo,i/(n-1)));}
 
-  slots.forEach(s => {
-    if (!s.active) return;
-    const b = ALL_BANDS[s.idx];
-    const data = labels.map(ll => +fspl(Math.pow(10, parseFloat(ll)), b.f_MHz).toFixed(2));
-    datasets.push({
-      label: b.name, data,
-      borderColor: b.color, backgroundColor: 'transparent',
-      borderWidth: 2, pointRadius: 0, fill: false, tension: 0
+function update(){
+  const dmax_km=Math.pow(10,+document.getElementById('sDmax').value);
+  const d_frac=+document.getElementById('sD').value;
+  const d_km=0.01*Math.pow(dmax_km/0.01,d_frac); // log-interpolate from 10m to dmax
+  const R_mmhr=+document.getElementById('sRain').value;
+
+  document.getElementById('vDmax').textContent=dmax_km>=1?dmax_km.toFixed(0)+' km':(dmax_km*1000).toFixed(0)+' m';
+  document.getElementById('vD').textContent=d_km>=1?d_km.toFixed(2)+' km':(d_km*1000).toFixed(0)+' m';
+  document.getElementById('vRain').textContent=R_mmhr+' mm/hr';
+  document.getElementById('bandDLabel').textContent=d_km>=1?d_km.toFixed(2)+' km':(d_km*1000).toFixed(0)+' m';
+
+  const dArr=logspace(0.01,dmax_km,300);
+
+  // Update main chart
+  const datasets=BANDS.map(b=>{
+    const data=dArr.map(d=>{
+      const loss=fspl_dB(d*1e3,b.f_MHz)
+        +rainAtten(d,R_mmhr,b.f_MHz/1000)
+        +atmAbsorption_dBkm(b.f_MHz/1000)*d;
+      return{x:d,y:loss};
     });
-    // Reference marker
-    const refFSPL = fspl(refDist, b.f_MHz);
-    // Find closest label index
-    const bestIdx = labels.reduce((best, ll, i) => Math.abs(parseFloat(ll)-refLogD) < Math.abs(parseFloat(labels[best])-refLogD) ? i : best, 0);
-    const markerData = new Array(labels.length).fill(null);
-    markerData[bestIdx] = +refFSPL.toFixed(2);
-    datasets.push({
-      label: '_ref_' + b.name, data: markerData,
-      borderColor: b.color, backgroundColor: b.color,
-      borderWidth: 0, pointRadius: 7, pointStyle: 'circle',
-      showLine: false, fill: false
-    });
-    refResults.push({ name: b.name.split('(')[0].trim(), color: b.color, fspl: refFSPL });
+    return{label:b.name,data,borderColor:b.col,borderWidth:2,pointRadius:0,fill:false};
   });
+  // Add operating point dots
+  BANDS.forEach(b=>{
+    const loss=fspl_dB(d_km*1e3,b.f_MHz)
+      +rainAtten(d_km,R_mmhr,b.f_MHz/1000)
+      +atmAbsorption_dBkm(b.f_MHz/1000)*d_km;
+    datasets.push({label:'',data:[{x:d_km,y:loss}],borderColor:b.col,backgroundColor:b.col,pointRadius:4,showLine:false,fill:false});
+  });
+  chartFSPL.data.datasets=datasets;
+  chartFSPL.options.scales.x.min=0.01;
+  chartFSPL.options.scales.x.max=dmax_km;
+  chartFSPL.update();
 
-  chart.data.labels = labels;
-  chart.data.datasets = datasets;
-  chart.update('none');
+  // Band grid update
+  const bandGrid=document.getElementById('bandGrid');
+  bandGrid.innerHTML=BANDS.map(b=>{
+    const loss=fspl_dB(d_km*1e3,b.f_MHz)
+      +rainAtten(d_km,R_mmhr,b.f_MHz/1000)
+      +atmAbsorption_dBkm(b.f_MHz/1000)*d_km;
+    const col=loss<60?'var(--grn)':loss<90?'var(--org)':'var(--red)';
+    return`<div class="band-row">
+      <div class="band-dot" style="background:${b.col}"></div>
+      <span class="band-name">${b.name}</span>
+      <span class="band-freq">${b.f_MHz>=1000?(b.f_MHz/1000).toFixed(1)+'GHz':b.f_MHz+'MHz'}</span>
+      <span class="band-fspl" style="color:${col}">${loss.toFixed(1)} dB</span>
+    </div>`;
+  }).join('');
 
-  // Results cards
-  document.getElementById('resultsGrid').innerHTML = refResults.map(r =>
-    `<div class="result-card">
-      <div class="rl">${r.name}</div>
-      <div class="rv" style="color:${r.color}">${r.fspl.toFixed(1)}</div>
-      <div class="ru">dB @ ${dLabel(refDist)}</div>
-    </div>`).join('');
+  // Atmospheric chart
+  const rainArr=BANDS.map(b=>rainAtten(d_km,R_mmhr,b.f_MHz/1000));
+  const atmArr=BANDS.map(b=>atmAbsorption_dBkm(b.f_MHz/1000)*d_km);
+  chartAtm.data.labels=BANDS.map(b=>b.name);
+  chartAtm.data.datasets[0].data=rainArr;
+  chartAtm.data.datasets[1].data=atmArr;
+  chartAtm.update();
 
-  // Annotation
-  if (!refResults.length) { document.getElementById('annotation').innerHTML = 'Enable at least one band.'; return; }
-  const first = refResults[0], last = refResults[refResults.length-1];
-  const spread = last.fspl - first.fspl;
-  document.getElementById('annotation').innerHTML =
-    `<strong>At ${dLabel(refDist)}:</strong> ` +
-    refResults.map(r => `${r.name} = <strong style="color:${r.color}">${r.fspl.toFixed(1)} dB</strong>`).join(', ') + '. ' +
-    (refResults.length > 1 ? `Frequency spread = <strong>${spread.toFixed(1)} dB</strong>. ` : '') +
-    'FSPL scales as 20 dB/decade in both distance and frequency — doubling distance adds 6 dB.';
+  // Breakeven: find where 900MHz = each other band
+  // Actually show which band has lowest loss at operating distance
+  const losses=BANDS.map(b=>fspl_dB(d_km*1e3,b.f_MHz)+rainAtten(d_km,R_mmhr,b.f_MHz/1000)+atmAbsorption_dBkm(b.f_MHz/1000)*d_km);
+  const minLoss=Math.min(...losses);
+  const bestBand=BANDS[losses.indexOf(minLoss)];
+  const fspl_900=losses[0],fspl_60=losses[4];
+  const atmNote60=ovlAtm?`At 60 GHz, O₂ absorption ≈ ${atmAbsorption_dBkm(60).toFixed(1)} dB/km — limits useful range to ~${(10/atmAbsorption_dBkm(60)).toFixed(0)} m for 10 dB budget.`:'';
+  const rainNote=ovlRain?`Rain (${R_mmhr} mm/hr): ${BANDS.map((b,i)=>b.name+' +'+rainArr[i].toFixed(1)+'dB').join(', ')}.`:'';
+
+  document.getElementById('breakevenSummary').innerHTML=
+    `<b>Best band at ${d_km>=1?d_km.toFixed(2)+' km':(d_km*1000).toFixed(0)+' m'}:</b> ${bestBand.name} (${minLoss.toFixed(1)} dB)<br>
+    900 MHz vs 60 GHz: Δ = ${(fspl_60-fspl_900).toFixed(1)} dB advantage at 900 MHz.`;
+
+  document.getElementById('annotation').innerHTML=
+    `<strong>At d = ${d_km>=1?d_km.toFixed(2)+' km':(d_km*1000).toFixed(0)+' m'}:</strong>
+    FSPL increases 6 dB per octave in frequency and 20 dB/decade in distance.
+    900 MHz = <b>${losses[0].toFixed(1)} dB</b>, 2.4 GHz = <b>${losses[1].toFixed(1)} dB</b>,
+    28 GHz = <b>${losses[3].toFixed(1)} dB</b>, 60 GHz = <b>${losses[4].toFixed(1)} dB</b>.<br>
+    <strong>Band selection guidance:</strong>
+    ${d_km>10?'900 MHz: best long-range (IoT, cellular macrocells, LPWAN — lowest path loss).':
+    d_km>1?'2.4/5 GHz: good for WiFi/BLE ranges (1–100m). 28 GHz viable for mmWave fixed links.':
+    '5 GHz and above: excellent for short links (<1km) where antenna size matters.'}
+    ${ovlAtm?atmNote60:''} ${ovlRain?rainNote:''}<br>
+    <strong>Rule of thumb:</strong> Each 10× increase in frequency adds ~20 dB FSPL.
+    Each 10× increase in distance adds another 20 dB.
+    mmWave links (28/60/77 GHz) compensate with high-gain antennas (λ is small → large aperture gain).`;
 }
 
-buildBandList();
+[document.getElementById('sDmax'),document.getElementById('sD'),document.getElementById('sRain')
+].forEach(s=>s.addEventListener('input',update));
+
+function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#8b949e';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`path_loss_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
+function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+function copyLink(){navigator.clipboard.writeText(window.location.href).then(()=>{const b=document.getElementById('copyBtn');const o=b.textContent;b.textContent='✓ Copied!';b.style.color='#3fb950';b.style.borderColor='#3fb950';setTimeout(()=>{b.textContent=o;b.style.color='';b.style.borderColor='';},2000);});}
+
 update();
-
-function takeScreenshot() {
-  const cv = document.getElementById('chart');
-  const p = 16, tH = 40;
-  const out = document.createElement('canvas'); out.width = cv.width+p*2; out.height = cv.height+tH+p*2;
-  const c = out.getContext('2d');
-  c.fillStyle='#0d0d0f'; c.fillRect(0,0,out.width,out.height);
-  c.fillStyle='#e2e2e8'; c.font='bold 14px Segoe UI,sans-serif';
-  c.fillText('FSPL Multi-Band Sweep  ·  RF Toolbox', p, tH/2+5);
-  c.fillStyle='#888899'; c.font='11px monospace';
-  c.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC', p, tH-4);
-  c.drawImage(cv, p, tH+p);
-  const a=document.createElement('a');
-  a.download='fspl_'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.png';
-  a.href=out.toDataURL('image/png'); a.click();
-}
-function toggleFullscreen() {
-  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-  else document.exitFullscreen();
-}
-function copyLink() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    const btn=document.getElementById('copyBtn'), orig=btn.textContent;
-    btn.textContent='✓ Copied!'; btn.style.color='#00e5a0'; btn.style.borderColor='#00e5a0';
-    setTimeout(()=>{ btn.textContent=orig; btn.style.color=''; btn.style.borderColor=''; },2000);
-  });
-}
 </script>
 </body>
 </html>
