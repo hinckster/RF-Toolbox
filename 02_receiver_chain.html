@@ -8,9 +8,9 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#16181d;--card:#1e2128;--deep:#0d1117;
-  --bdr:#30363d;--t1:#e6edf3;--t2:#c9d1d9;--tm:#8b949e;
-  --blue:#58a6ff;--grn:#3fb950;--org:#f0883e;--red:#f85149;--yel:#e6c547;--pur:#bc8cff;
+  --bg:#ffffff;--card:#f4f5f7;--deep:#eaecef;
+  --bdr:#d0d4da;--t1:#1a1d23;--t2:#4a5568;--tm:#718096;
+  --blue:#2563eb;--grn:#16a34a;--org:#d97706;--red:#dc2626;--yel:#e6c547;--pur:#7c3aed;
 }
 body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
 
@@ -270,16 +270,16 @@ const chartDR = new Chart(ctxDR,{
   data:{datasets:[
     {label:'Fundamental',data:[],borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,.08)',borderWidth:2.5,pointRadius:0,showLine:true,fill:false},
     {label:'IM3 product',data:[],borderColor:'#f85149',backgroundColor:'rgba(248,81,73,.08)',borderWidth:2.5,pointRadius:0,showLine:true,fill:{target:2,above:'rgba(88,166,255,.12)'}},
-    {label:'Noise Floor',data:[],borderColor:'#8b949e',borderDash:[6,4],borderWidth:2.5,pointRadius:0,showLine:true,fill:false},
+    {label:'Noise Floor',data:[],borderColor:'#718096',borderDash:[6,4],borderWidth:2.5,pointRadius:0,showLine:true,fill:false},
     {label:'P1dB',data:[],borderColor:'#f0883e',borderDash:[3,3],borderWidth:2.5,pointRadius:0,showLine:true,fill:false},
     {label:'Operating Point',data:[],borderColor:'#3fb950',backgroundColor:'#3fb950',pointRadius:5,showLine:false}
   ]},
   options:{
     animation:{duration:0},responsive:true,
-    plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+    plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:12}}},
     scales:{
-      x:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Input Power (dBm)'}},
-      y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Output Power (dBm)'}}
+      x:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Input Power (dBm)'}},
+      y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Output Power (dBm)'}}
     }
   }
 });
@@ -289,16 +289,16 @@ const chartCasc = new Chart(ctxCasc,{
   data:{
     labels:[],
     datasets:[
-      {label:'Cascaded NF (dB)',data:[],backgroundColor:'rgba(88,166,255,.65)',yAxisID:'yNF',order:1},
+      {label:'Cascaded NF (dB)',data:[],backgroundColor:'rgba(37,99,235,.65)',yAxisID:'yNF',order:1},
       {label:'Cascaded OIP3 (dBm)',data:[],backgroundColor:'rgba(188,140,255,.65)',yAxisID:'yOIP3',order:2}
     ]
   },
   options:{
     animation:{duration:0},responsive:true,
-    plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+    plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:12}}},
     scales:{
-      x:{grid:{color:'#252830'},ticks:{color:'#8b949e'}},
-      yNF:{position:'left',grid:{color:'#252830'},ticks:{color:'#58a6ff'},title:{display:true,color:'#58a6ff',text:'NF (dB)'}},
+      x:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'}},
+      yNF:{position:'left',grid:{color:'#e2e5ea'},ticks:{color:'#2563eb'},title:{display:true,color:'#2563eb',text:'NF (dB)'}},
       yOIP3:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#bc8cff'},title:{display:true,color:'#bc8cff',text:'OIP3 (dBm)'}}
     }
   }
@@ -396,7 +396,7 @@ function takeScreenshot(toolName){
   ctx2.fillStyle='#16181d';ctx2.fillRect(0,0,out.width,out.height);
   ctx2.fillStyle='#e6edf3';ctx2.font='bold 14px Segoe UI,system-ui,sans-serif';
   ctx2.fillText(toolName+' · RF Toolbox · hinckster.github.io/RF-Toolbox',padding,titleHeight/2+5);
-  ctx2.fillStyle='#8b949e';ctx2.font='11px monospace';
+  ctx2.fillStyle='#718096';ctx2.font='11px monospace';
   ctx2.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',padding,titleHeight-4);
   let x=padding;
   canvases.forEach(c=>{ctx2.drawImage(c,x,titleHeight+padding);x+=c.width+padding;});
