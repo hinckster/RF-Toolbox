@@ -61,6 +61,7 @@
   .smith-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; display: flex; flex-direction: column; gap: 1rem; }
   .smith-panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
   .canvas-wrap { display: flex; justify-content: center; }
+  #smith { max-width: 100%; height: auto; }
 
   .z0-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; font-size: 0.86rem; }
   .z0-row input[type=number] { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 0.3rem 0.5rem; width: 80px; font-size: 0.86rem; }
@@ -203,7 +204,7 @@
   <div class="smith-panel">
     <h3>Smith Chart</h3>
     <div class="canvas-wrap">
-      <canvas id="smith" width="520" height="520"></canvas>
+      <canvas id="smith" width="640" height="640"></canvas>
     </div>
     <div class="annotation" id="annotation">Updating…</div>
   </div>
@@ -375,6 +376,18 @@ function setPreset(R, X) {
 document.getElementById('sR').addEventListener('input', update);
 document.getElementById('sX').addEventListener('input', update);
 document.getElementById('iZ0').addEventListener('input', update);
+
+// Resize canvas to fill panel width
+function resizeCanvas() {
+  const wrap = document.querySelector('.canvas-wrap');
+  const size = Math.min(Math.floor(wrap.clientWidth) - 4, 720);
+  if (size > 100 && (canvas.width !== size)) {
+    canvas.width = size; canvas.height = size;
+    update();
+  }
+}
+new ResizeObserver(resizeCanvas).observe(document.querySelector('.smith-panel'));
+
 update();
 
 // ── Toolbar ──
