@@ -105,11 +105,20 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 .preset-select{width:100%;background:var(--deep);border:1px solid var(--bdr);color:var(--t2);border-radius:6px;padding:6px 8px;font-size:.78rem;font-family:'Segoe UI',system-ui,sans-serif;cursor:pointer}
 .preset-select:focus{outline:none;border-color:#b5895a}
 .preset-select option{background:var(--deep)}
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.help-overlay.open{display:flex}
+.help-box{background:#fff;border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;max-height:80vh;overflow-y:auto}
+.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+.help-try li::marker{color:#b5895a}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
   <button class="tbtn" onclick="takeScreenshot('Superheterodyne Receiver')">📷 Screenshot</button>
   <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
@@ -549,6 +558,59 @@ update();
   if (p.has('bw'))  document.getElementById('sBW').value = p.get('bw');
   if ([...p.keys()].length > 0) update();
 })();
+
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 </script>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Superheterodyne Receiver — Help</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Models the frequency plan of a single- or double-conversion superheterodyne receiver. It computes f_LO = f_RF ± f_IF, locates the image frequency f_image = f_RF ± 2·f_IF, and calculates the ideal image rejection ratio IRR = 20·log₁₀(2·f_IF / BW_RF) in dB. In double-conversion mode a second LO and second IF stage are added, giving a second mixing product and additional image at the second conversion.</div>
+
+    <div class="help-section">Sliders &amp; inputs</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>RF freq f_RF</strong> — Desired receive frequency, 10 MHz–6 GHz. Click the unit label to toggle between MHz and GHz. This is the signal you want to down-convert.</li>
+        <li><strong>1st IF f_IF</strong> — First intermediate frequency, 1–1000 MHz. Higher IF pushes the image further from the RF passband, improving image rejection. Lower IF makes the channel filter easier to build.</li>
+        <li><strong>RF filter BW</strong> — Bandwidth of the RF preselector (band-pass filter before the mixer), 0.1–200 MHz. Narrower bandwidth rejects the image signal more strongly; this is the denominator of the IRR formula.</li>
+        <li><strong>Conversion mode</strong> — Toggle between Single and Double conversion. In double-conversion mode a second IF slider appears (f_IF2, 0.1–100 MHz), enabling a second down-conversion stage for additional selectivity.</li>
+        <li><strong>2nd IF f_IF2</strong> (double-conversion only) — Second intermediate frequency, typically 10.7 MHz or 455 kHz. This stage provides the narrow channel filter while the first IF provides image rejection.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">How to read the charts</div>
+    <div class="help-body">
+      <strong>Top chart — Frequency Spectrum:</strong> A bar chart showing the key frequency components as vertical bars. Blue = RF signal; yellow = LO frequency; purple = IF output; red = image frequency. Bar height represents relative amplitude (normalized). The separation between the RF bar and the image bar is 2·f_IF — narrower separation means harder image rejection.<br><br>
+      <strong>Bottom chart — Image Rejection vs IF Frequency:</strong> X-axis is IF frequency (MHz, log scale); Y-axis is IRR (dB). The curve shows how IRR improves as IF increases relative to the RF filter bandwidth. A vertical marker indicates the currently selected IF. The horizontal dashed line at 40 dB marks a common minimum design target.
+    </div>
+
+    <div class="help-section">Key results</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>LO freq</strong> — Local oscillator frequency (f_RF + f_IF for high-side injection, f_RF − f_IF for low-side). The tool uses high-side injection by default.</li>
+        <li><strong>Image freq</strong> — The unwanted input frequency that also mixes to f_IF. Any signal at this frequency passes through the mixer and corrupts the desired channel.</li>
+        <li><strong>Image sep.</strong> — Frequency distance between the RF signal and the image: 2·f_IF. Must be wider than the RF preselect filter to achieve useful rejection.</li>
+        <li><strong>IRR (ideal)</strong> — Ideal image rejection ratio in dB assuming a single-pole RF filter with the specified bandwidth. Real filters achieve this only near band-center.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Things to try</div>
+    <div class="help-body">
+      <ul class="help-try">
+        <li>Load the <em>AM radio</em> preset (1 MHz RF, 455 kHz IF) — notice the image lands at 1.910 MHz, only 910 kHz away from the desired signal. Now increase f_IF to 10.7 MHz (FM standard) and watch image separation and IRR improve dramatically.</li>
+        <li>Switch to <em>Double conversion</em> and set f_IF2 to 455 kHz while leaving f_IF at 10.7 MHz — this replicates the classic FM receiver architecture: high first IF for image rejection, low second IF for a sharp channel filter.</li>
+        <li>With the <em>GSM 900</em> preset, tighten RF filter BW from 20 MHz to 1 MHz and observe how IRR jumps by ~26 dB — demonstrating why tight preselection is critical at microwave frequencies where IF choices are constrained.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">Razavi, B. (2012). <em>RF Microelectronics</em> (2nd ed.), Section 2.4 — Superheterodyne Receivers. Prentice Hall. Also: Pozar, D. M. (2012). <em>Microwave Engineering</em> (4th ed.), Chapter 9 — Microwave Receivers.</div>
+  </div>
+</div>
 </body>
 </html>
