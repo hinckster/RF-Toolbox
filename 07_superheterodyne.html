@@ -47,6 +47,15 @@ header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 .sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
 input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 .hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
+.sr-row{display:flex;align-items:center;gap:6px}
+.sr-row input[type=range]{flex:1;width:auto;min-width:0}
+.si{width:72px;background:#0d1117;border:1px solid var(--bdr);border-radius:4px;color:var(--blue);font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;text-align:right;transition:border-color .15s;-moz-appearance:textfield;appearance:textfield}
+.si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.si:focus{outline:none;border-color:var(--blue)}
+.si.err{border-color:var(--red);color:var(--red)}
+.si-unit{font-size:.75rem;color:var(--tm);white-space:nowrap}
+.si-unit.tog{cursor:pointer;user-select:none}
+.si-unit.tog:hover{color:var(--blue);text-decoration:underline}
 
 /* Block diagram */
 .block-diag{display:flex;align-items:center;flex-wrap:wrap;gap:0;margin-bottom:1rem;padding:.7rem;background:var(--deep);border-radius:8px;border:1px solid var(--bdr);overflow-x:auto}
@@ -187,18 +196,30 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
         </select>
       </div>
       <div class="sr">
-        <label>RF freq f<sub>RF</sub> <span id="vRF">900 MHz</span></label>
-        <input type="range" id="sRF" min="10" max="6000" step="10" value="900">
+        <label>RF freq f<sub>RF</sub> <span id="vRF" style="display:none">900 MHz</span></label>
+        <div class="sr-row">
+          <input type="range" id="sRF" min="10" max="6000" step="10" value="900">
+          <input type="number" class="si" id="iRF" value="900">
+          <span class="si-unit tog" id="uRF" onclick="toggleRFUnit()">MHz</span>
+        </div>
         <div class="hints"><span>10 MHz</span><span>6 GHz</span></div>
       </div>
       <div class="sr">
-        <label>1st IF f<sub>IF</sub> <span id="vIF">70 MHz</span></label>
-        <input type="range" id="sIF" min="1" max="1000" step="1" value="70">
+        <label>1st IF f<sub>IF</sub> <span id="vIF" style="display:none">70 MHz</span></label>
+        <div class="sr-row">
+          <input type="range" id="sIF" min="1" max="1000" step="1" value="70">
+          <input type="number" class="si" id="iIF" value="70">
+          <span class="si-unit">MHz</span>
+        </div>
         <div class="hints"><span>1 MHz</span><span>1 GHz</span></div>
       </div>
       <div class="sr">
-        <label>RF filter BW <span id="vBW">20 MHz</span></label>
-        <input type="range" id="sBW" min="0.1" max="200" step="0.5" value="20">
+        <label>RF filter BW <span id="vBW" style="display:none">20 MHz</span></label>
+        <div class="sr-row">
+          <input type="range" id="sBW" min="0.1" max="200" step="0.5" value="20">
+          <input type="number" class="si" id="iBW" value="20.0">
+          <span class="si-unit">MHz</span>
+        </div>
         <div class="hints"><span>0.1 MHz</span><span>200 MHz</span></div>
       </div>
       <div class="panel-sep"></div>
@@ -209,8 +230,12 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
       </div>
       <div id="dbl2Ctrl" style="display:none">
         <div class="sr">
-          <label>2nd IF f<sub>IF2</sub> <span id="vIF2">10.7 MHz</span></label>
-          <input type="range" id="sIF2" min="0.1" max="100" step="0.1" value="10.7">
+          <label>2nd IF f<sub>IF2</sub> <span id="vIF2" style="display:none">10.7 MHz</span></label>
+          <div class="sr-row">
+            <input type="range" id="sIF2" min="0.1" max="100" step="0.1" value="10.7">
+            <input type="number" class="si" id="iIF2" value="10.7">
+            <span class="si-unit">MHz</span>
+          </div>
           <div class="hints"><span>0.1 MHz</span><span>100 MHz</span></div>
         </div>
       </div>
@@ -387,8 +412,59 @@ function update(){
     <strong>Design tradeoff:</strong> Higher IF improves image rejection but makes the IF channel filter harder (must be narrow relative to f_IF). Lower IF eases channel filter but image falls close to RF signal. This is the fundamental superheterodyne design tension.`;
 }
 
-[document.getElementById('sRF'),document.getElementById('sIF'),document.getElementById('sBW'),
- document.getElementById('sIF2')].forEach(s=>s&&s.addEventListener('input',update));
+// ── Slider ↔ text-input wiring ──
+function linkSliderInput(sliderId, inputId, decimals, onUpdate, min, max) {
+  const slider = document.getElementById(sliderId);
+  const inp = document.getElementById(inputId);
+  if (!slider || !inp) return;
+  function sync() { inp.value = (+slider.value).toFixed(decimals); inp.classList.remove('err'); }
+  slider.addEventListener('input', () => { sync(); onUpdate(); });
+  inp.addEventListener('input', () => {
+    const v = parseFloat(inp.value);
+    if (isNaN(v) || v < min || v > max) { inp.classList.add('err'); return; }
+    inp.classList.remove('err'); slider.value = v; onUpdate();
+  });
+  inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) { const c = Math.max(min, Math.min(max, v)); inp.value = c.toFixed(decimals); inp.classList.remove('err'); slider.value = c; onUpdate(); }
+  });
+  sync();
+}
+
+// RF freq unit toggle (slider native = MHz)
+let rfUnit = 'MHz';
+function syncRFInput() {
+  const v = +document.getElementById('sRF').value;
+  const inp = document.getElementById('iRF');
+  inp.value = rfUnit === 'MHz' ? v.toFixed(0) : (v / 1000).toFixed(3);
+  inp.classList.remove('err');
+}
+function toggleRFUnit() {
+  rfUnit = rfUnit === 'MHz' ? 'GHz' : 'MHz';
+  document.getElementById('uRF').textContent = rfUnit;
+  syncRFInput();
+}
+document.getElementById('sRF').addEventListener('input', () => { syncRFInput(); update(); });
+document.getElementById('iRF').addEventListener('input', () => {
+  const raw = parseFloat(document.getElementById('iRF').value);
+  const inp = document.getElementById('iRF');
+  if (isNaN(raw)) { inp.classList.add('err'); return; }
+  const mhz = rfUnit === 'MHz' ? raw : raw * 1000;
+  if (mhz < 10 || mhz > 6000) { inp.classList.add('err'); return; }
+  inp.classList.remove('err'); document.getElementById('sRF').value = mhz; update();
+});
+document.getElementById('iRF').addEventListener('change', () => {
+  const raw = parseFloat(document.getElementById('iRF').value);
+  if (!isNaN(raw)) {
+    const mhz = Math.max(10, Math.min(6000, rfUnit === 'MHz' ? raw : raw * 1000));
+    document.getElementById('sRF').value = mhz; syncRFInput(); update();
+  }
+});
+
+linkSliderInput('sIF',  'iIF',  0, update, 1, 1000);
+linkSliderInput('sBW',  'iBW',  1, update, 0.1, 200);
+linkSliderInput('sIF2', 'iIF2', 1, update, 0.1, 100);
+syncRFInput();
 
 function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#8b949e';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`superhet_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
 function exportCSV() {
