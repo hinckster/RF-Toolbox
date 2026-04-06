@@ -8,9 +8,9 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#16181d;--card:#1e2128;--deep:#0d1117;
-  --bdr:#30363d;--t1:#e6edf3;--t2:#c9d1d9;--tm:#8b949e;
-  --blue:#58a6ff;--grn:#3fb950;--org:#f0883e;--red:#f85149;--yel:#e6c547;--pur:#bc8cff;
+  --bg:#ffffff;--card:#f4f5f7;--deep:#eaecef;
+  --bdr:#d0d4da;--t1:#1a1d23;--t2:#4a5568;--tm:#718096;
+  --blue:#2563eb;--grn:#16a34a;--org:#d97706;--red:#dc2626;--yel:#e6c547;--pur:#7c3aed;
 }
 body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
 a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
@@ -54,8 +54,8 @@ header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 /* Sliders */
 .sr{margin-bottom:.9rem}
 .sr label{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem}
-.sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
-input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
+.sr label span{color:#b5895a;font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
+input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 .hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
 
 /* Metrics */
@@ -87,7 +87,7 @@ table.budget tr.total td:first-child{color:var(--t1);font-family:'Segoe UI',syst
 .pill{display:inline-block;padding:.1rem .45rem;border-radius:10px;font-size:.7rem;font-weight:600;font-family:'Segoe UI',system-ui,sans-serif}
 .pill.pos{background:rgba(63,185,80,.15);color:var(--grn)}
 .pill.neg{background:rgba(248,81,73,.15);color:var(--red)}
-.pill.neu{background:rgba(88,166,255,.12);color:var(--blue)}
+.pill.neu{background:rgba(181,137,90,.12);color:#b5895a}
 
 /* Charts */
 .chart-panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem;margin-bottom:1rem}
@@ -278,10 +278,10 @@ const sPt=document.getElementById('sPt'),
 // Chart.js defaults
 const CHART_DEFAULTS = {
   animation:{duration:0},responsive:true,maintainAspectRatio:true,
-  plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:14}}},
+  plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:14}}},
   scales:{
-    x:{type:'logarithmic',grid:{color:'#252830'},ticks:{color:'#8b949e',maxTicksLimit:8},title:{display:true,color:'#8b949e',text:'Distance (m)'}},
-    y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Link Margin (dB)'}}
+    x:{type:'logarithmic',grid:{color:'#e2e5ea'},ticks:{color:'#718096',maxTicksLimit:8},title:{display:true,color:'#718096',text:'Distance (m)'}},
+    y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Link Margin (dB)'}}
   }
 };
 
@@ -291,7 +291,7 @@ const chart = new Chart(ctx, {
   type:'line',
   data:{
     datasets:[
-      {label:'Link Margin',data:[],borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,.08)',borderWidth:3,pointRadius:0,fill:{value:0,above:'rgba(63,185,80,.08)',below:'rgba(248,81,73,.08)'}},
+      {label:'Link Margin',data:[],borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.08)',borderWidth:3,pointRadius:0,fill:{value:0,above:'rgba(22,163,74,.08)',below:'rgba(220,38,38,.08)'}},
       {label:'Friis (no extra losses)',data:[],borderColor:'#bc8cff',backgroundColor:'transparent',borderWidth:2,borderDash:[5,4],pointRadius:0},
       {label:'Operating Point',data:[],borderColor:'#3fb950',backgroundColor:'#3fb950',pointRadius:6,pointHoverRadius:8,showLine:false}
     ]
@@ -415,7 +415,7 @@ function update() {
     const signLabel = r.sign>0?`<span class="pill pos">+${r.val.toFixed(1)} dB gain</span>`:
                       r.sign<0?`<span class="pill neg">${r.val.toFixed(1)} dB loss</span>`:
                       `<span class="pill neu">base</span>`;
-    const cumulColor = r.sign>=0?'#58a6ff':'#f85149';
+    const cumulColor = r.sign>=0?'#2563eb':'#dc2626';
     tr.innerHTML = `
       <td>${r.name}</td>
       <td style="color:${r.sign>=0?'#3fb950':'#f85149'}">${r.val.toFixed(1)} dB${r.sign===0?' dBm':''}</td>
@@ -513,7 +513,7 @@ function takeScreenshot(toolName) {
   ctx2.fillStyle='#16181d'; ctx2.fillRect(0,0,out.width,out.height);
   ctx2.fillStyle='#e6edf3'; ctx2.font='bold 14px Segoe UI,system-ui,sans-serif';
   ctx2.fillText(toolName+' · RF Toolbox · hinckster.github.io/RF-Toolbox',padding,titleHeight/2+5);
-  ctx2.fillStyle='#8b949e'; ctx2.font='11px monospace';
+  ctx2.fillStyle='#718096'; ctx2.font='11px monospace';
   ctx2.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',padding,titleHeight-4);
   let x=padding;
   canvases.forEach(c=>{ctx2.drawImage(c,x,titleHeight+padding);x+=c.width+padding;});
