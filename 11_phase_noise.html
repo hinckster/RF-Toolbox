@@ -49,6 +49,13 @@ header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 .sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600}
 input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 .hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
+.sr-row{display:flex;align-items:center;gap:6px}
+.sr-row input[type=range]{flex:1;width:auto;min-width:0}
+.si{width:80px;background:#0d1117;border:1px solid var(--bdr);border-radius:4px;color:var(--blue);font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;text-align:right;transition:border-color .15s;-moz-appearance:textfield;appearance:textfield}
+.si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.si:focus{outline:none;border-color:var(--blue)}
+.si.err{border-color:var(--red);color:var(--red)}
+.si-unit{font-size:.75rem;color:var(--tm);white-space:nowrap}
 
 .preset-row{margin-bottom:.9rem}
 .preset-row label{font-size:.76rem;color:var(--tm);display:block;margin-bottom:.3rem}
@@ -136,32 +143,52 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
       </div>
 
       <div class="sr">
-        <label>Carrier frequency f₀ <span id="vF0">10 MHz</span></label>
-        <input type="range" id="sF0" min="6" max="40" step="0.01" value="7">
+        <label>Carrier frequency f₀ <span id="vF0" style="display:none">10 MHz</span></label>
+        <div class="sr-row">
+          <input type="range" id="sF0" min="6" max="10" step="0.01" value="7">
+          <input type="number" class="si" id="iF0" value="1.00e+7" step="any">
+          <span class="si-unit">Hz</span>
+        </div>
         <div class="hints"><span>1 MHz</span><span>10 GHz</span></div>
       </div>
 
       <div class="sr">
-        <label>Loaded Q <span id="vQL">10 000</span></label>
-        <input type="range" id="sQL" min="1" max="6" step="0.01" value="4">
+        <label>Loaded Q <span id="vQL" style="display:none">10 000</span></label>
+        <div class="sr-row">
+          <input type="range" id="sQL" min="1" max="6" step="0.01" value="4">
+          <input type="number" class="si" id="iQL" value="1.00e+4" step="any">
+          <span class="si-unit">(Q)</span>
+        </div>
         <div class="hints"><span>10</span><span>1 M</span></div>
       </div>
 
       <div class="sr">
-        <label>Carrier power Ps <span id="vPs">0 dBm</span></label>
-        <input type="range" id="sPs" min="-20" max="20" step="0.5" value="0">
+        <label>Carrier power Ps <span id="vPs" style="display:none">0 dBm</span></label>
+        <div class="sr-row">
+          <input type="range" id="sPs" min="-20" max="20" step="0.5" value="0">
+          <input type="number" class="si" id="iPs" value="0.0">
+          <span class="si-unit">dBm</span>
+        </div>
         <div class="hints"><span>−20 dBm</span><span>+20 dBm</span></div>
       </div>
 
       <div class="sr">
-        <label>Noise figure F <span id="vF">3.0 dB</span></label>
-        <input type="range" id="sF" min="0" max="20" step="0.25" value="3">
+        <label>Noise figure F <span id="vF" style="display:none">3.0 dB</span></label>
+        <div class="sr-row">
+          <input type="range" id="sF" min="0" max="20" step="0.25" value="3">
+          <input type="number" class="si" id="iF11" value="3.00">
+          <span class="si-unit">dB</span>
+        </div>
         <div class="hints"><span>0 dB</span><span>20 dB</span></div>
       </div>
 
       <div class="sr">
-        <label>Flicker corner fc <span id="vFc">10 kHz</span></label>
-        <input type="range" id="sFc" min="1" max="7" step="0.05" value="4">
+        <label>Flicker corner fc <span id="vFc" style="display:none">10 kHz</span></label>
+        <div class="sr-row">
+          <input type="range" id="sFc" min="1" max="7" step="0.05" value="4">
+          <input type="number" class="si" id="iFc" value="1.00e+4" step="any">
+          <span class="si-unit">Hz</span>
+        </div>
         <div class="hints"><span>10 Hz</span><span>10 MHz</span></div>
       </div>
     </div>
@@ -169,13 +196,21 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
     <div class="panel" style="margin-bottom:1rem">
       <h3>Integration Band</h3>
       <div class="sr">
-        <label>From Δf <span id="vFint1">1 kHz</span></label>
-        <input type="range" id="sFint1" min="1" max="7" step="0.1" value="3">
+        <label>From Δf <span id="vFint1" style="display:none">1 kHz</span></label>
+        <div class="sr-row">
+          <input type="range" id="sFint1" min="1" max="7" step="0.1" value="3">
+          <input type="number" class="si" id="iFint1" value="1.00e+3" step="any">
+          <span class="si-unit">Hz</span>
+        </div>
         <div class="hints"><span>10 Hz</span><span>10 MHz</span></div>
       </div>
       <div class="sr">
-        <label>To Δf <span id="vFint2">1 MHz</span></label>
-        <input type="range" id="sFint2" min="1" max="7" step="0.1" value="6">
+        <label>To Δf <span id="vFint2" style="display:none">1 MHz</span></label>
+        <div class="sr-row">
+          <input type="range" id="sFint2" min="1" max="7" step="0.1" value="6">
+          <input type="number" class="si" id="iFint2" value="1.00e+6" step="any">
+          <span class="si-unit">Hz</span>
+        </div>
         <div class="hints"><span>10 Hz</span><span>10 MHz</span></div>
       </div>
     </div>
@@ -384,6 +419,7 @@ function loadPreset(key) {
   const p = PRESETS[key];
   Object.entries(p).forEach(([id, v]) => { document.getElementById(id).value = v; });
   update();
+  syncAll11();
 }
 
 // Toolbar
@@ -440,10 +476,63 @@ function copyLink() {
 }
 function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
 
-// Wire up sliders
-['sF0','sQL','sPs','sF','sFc','sFint1','sFint2'].forEach(id =>
-  document.getElementById(id).addEventListener('input', update)
-);
+// ── Slider ↔ text-input wiring ──
+function linkSliderInput(sliderId, inputId, decimals, onUpdate, min, max) {
+  const slider = document.getElementById(sliderId);
+  const inp = document.getElementById(inputId);
+  function sync() { inp.value = (+slider.value).toFixed(decimals); inp.classList.remove('err'); }
+  slider.addEventListener('input', () => { sync(); onUpdate(); });
+  inp.addEventListener('input', () => {
+    const v = parseFloat(inp.value);
+    if (isNaN(v) || v < min || v > max) { inp.classList.add('err'); return; }
+    inp.classList.remove('err'); slider.value = v; onUpdate();
+  });
+  inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) { const c = Math.max(min, Math.min(max, v)); inp.value = c.toFixed(decimals); inp.classList.remove('err'); slider.value = c; onUpdate(); }
+  });
+  sync();
+}
+
+// Log-scale slider ↔ input (input shows the actual value, not log10)
+function linkSliderInputLog(sliderId, inputId, onUpdate, minLog, maxLog) {
+  const slider = document.getElementById(sliderId);
+  const inp = document.getElementById(inputId);
+  function sync() { inp.value = Math.pow(10, +slider.value).toExponential(2); inp.classList.remove('err'); }
+  slider.addEventListener('input', () => { sync(); onUpdate(); });
+  inp.addEventListener('input', () => {
+    const v = parseFloat(inp.value);
+    if (isNaN(v) || v <= 0) { inp.classList.add('err'); return; }
+    const log = Math.log10(v);
+    if (log < minLog || log > maxLog) { inp.classList.add('err'); return; }
+    inp.classList.remove('err'); slider.value = log; onUpdate();
+  });
+  inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v) && v > 0) {
+      const log = Math.max(minLog, Math.min(maxLog, Math.log10(v)));
+      slider.value = log; sync(); onUpdate();
+    }
+  });
+  sync();
+}
+
+function syncAll11() {
+  ['sF0','sQL','sFc','sFint1','sFint2'].forEach(id => {
+    const inp = document.getElementById('i' + id.slice(1));
+    if (inp) inp.value = Math.pow(10, +document.getElementById(id).value).toExponential(2);
+  });
+  document.getElementById('iPs').value  = (+document.getElementById('sPs').value).toFixed(1);
+  document.getElementById('iF11').value = (+document.getElementById('sF').value).toFixed(2);
+}
+
+linkSliderInputLog('sF0',   'iF0',   update, 6, 10);
+linkSliderInputLog('sQL',   'iQL',   update, 1, 6);
+linkSliderInputLog('sFc',   'iFc',   update, 1, 7);
+linkSliderInputLog('sFint1','iFint1',update, 1, 7);
+linkSliderInputLog('sFint2','iFint2',update, 1, 7);
+linkSliderInput('sPs', 'iPs',  1, update, -20, 20);
+linkSliderInput('sF',  'iF11', 2, update, 0, 20);
 
 initChart();
 update();
@@ -458,7 +547,7 @@ update();
   if(p.has('fc'))  document.getElementById('sFc').value=p.get('fc');
   if(p.has('fi1')) document.getElementById('sFint1').value=p.get('fi1');
   if(p.has('fi2')) document.getElementById('sFint2').value=p.get('fi2');
-  if([...p.keys()].length>0) update();
+  if([...p.keys()].length>0) { update(); syncAll11(); }
 })();
 </script>
 </body>
