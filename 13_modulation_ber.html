@@ -49,6 +49,13 @@ header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 .sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600}
 input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 .hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
+.sr-row{display:flex;align-items:center;gap:6px}
+.sr-row input[type=range]{flex:1;width:auto;min-width:0}
+.si{width:72px;background:#0d1117;border:1px solid var(--bdr);border-radius:4px;color:var(--blue);font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;text-align:right;transition:border-color .15s;-moz-appearance:textfield;appearance:textfield}
+.si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.si:focus{outline:none;border-color:var(--blue)}
+.si.err{border-color:var(--red);color:var(--red)}
+.si-unit{font-size:.75rem;color:var(--tm);white-space:nowrap}
 
 .mod-checks{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.9rem}
 .mod-check{display:flex;align-items:center;gap:.5rem;font-size:.83rem;cursor:pointer}
@@ -129,8 +136,12 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
       <div class="panel-sep"></div>
       <h3 style="margin-bottom:.6rem">Operating Point</h3>
       <div class="sr">
-        <label>Eb/N0 (operating) <span id="vEbN0">10.0 dB</span></label>
-        <input type="range" id="sEbN0" min="-5" max="35" step="0.5" value="10">
+        <label>Eb/N0 (operating) <span id="vEbN0" style="display:none">10.0 dB</span></label>
+        <div class="sr-row">
+          <input type="range" id="sEbN0" min="-5" max="35" step="0.5" value="10">
+          <input type="number" class="si" id="iEbN0" value="10.0">
+          <span class="si-unit">dB</span>
+        </div>
         <div class="hints"><span>−5 dB</span><span>35 dB</span></div>
       </div>
 
@@ -394,7 +405,26 @@ function update() {
 
 buildCheckboxes();
 initCharts();
-['sEbN0','selBERtarget'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+// ── Slider ↔ text-input wiring ──
+function linkSliderInput(sliderId, inputId, decimals, onUpdate, min, max) {
+  const slider = document.getElementById(sliderId);
+  const inp = document.getElementById(inputId);
+  function sync() { inp.value = (+slider.value).toFixed(decimals); inp.classList.remove('err'); }
+  slider.addEventListener('input', () => { sync(); onUpdate(); });
+  inp.addEventListener('input', () => {
+    const v = parseFloat(inp.value);
+    if (isNaN(v) || v < min || v > max) { inp.classList.add('err'); return; }
+    inp.classList.remove('err'); slider.value = v; onUpdate();
+  });
+  inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) { const c = Math.max(min, Math.min(max, v)); inp.value = c.toFixed(decimals); inp.classList.remove('err'); slider.value = c; onUpdate(); }
+  });
+  sync();
+}
+
+linkSliderInput('sEbN0', 'iEbN0', 1, update, -5, 35);
+document.getElementById('selBERtarget').addEventListener('input', update);
 update();
 
 // Toolbar
