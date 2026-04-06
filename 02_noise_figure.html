@@ -121,11 +121,21 @@ table.whatif tr:last-child td { border-bottom: none; }
 .swap-row span { font-size: .73rem; color: var(--muted); margin-right: .25rem; }
 .swap-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: .28rem .65rem; font-size: .78rem; cursor: pointer; transition: .15s; }
 .swap-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.help-overlay.open{display:flex}
+.help-box{background:#fff;border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;max-height:80vh;overflow-y:auto}
+.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+.help-try li::marker{color:#b5895a}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
   <button class="tbtn" onclick="takeScreenshot()">📷 Screenshot</button>
   <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
@@ -906,6 +916,60 @@ function copyLink() {
   });
   if (any) refresh();
 })();
+
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 </script>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Noise Figure Cascade — Help</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Applies the <strong>Friis noise-figure cascade formula</strong>: F_sys = F₁ + (F₂−1)/G₁ + (F₃−1)/(G₁G₂) + … to compute system noise figure, noise temperature, and noise floor for an arbitrary chain of stages. It also cascades IIP3 using 1/IIP3_sys ≈ Σ G_preceding/IIP3_n, then derives SFDR, OIP3, estimated P1dB, and minimum detectable signal (MDS) from the configured bandwidth and SNR_min.</div>
+
+    <div class="help-section">Sliders &amp; inputs</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Per-stage Gain (dB):</strong> small-signal power gain. Negative gain = insertion loss (use this for filters, cables, attenuators, switches).</li>
+        <li><strong>Per-stage NF (dB):</strong> noise figure of active stages. For passive types (filter, cable, switch, attenuator, coupler, diplexer) the NF is automatically set equal to insertion loss — the field is grayed out.</li>
+        <li><strong>Per-stage IIP3 (dBm):</strong> input-referred third-order intercept of each stage. Later high-gain stages dominate system IIP3.</li>
+        <li><strong>BW (MHz):</strong> receiver noise bandwidth used to compute the thermal noise floor: N_floor = −174 + NF_sys + 10·log₁₀(BW). Range: fractions of MHz to hundreds of MHz.</li>
+        <li><strong>T₀ (K):</strong> reference noise temperature (default 290 K per IEEE standard). Change to 135 K for a cryogenic or space receiver.</li>
+        <li><strong>SNR_min (dB):</strong> minimum SNR required for the demodulator. Used to compute MDS = N_floor + SNR_min.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">How to read the charts</div>
+    <div class="help-body">The left chart (<strong>Noise Floor at input</strong>) shows the input-referred noise floor in dBm at each stage boundary, with a horizontal MDS threshold line. The right chart (<strong>Per-stage NF contribution</strong>) is a bar chart — each bar is that stage's marginal addition to system NF in dB; the tallest bar is the bottleneck. The What-If table below shows how much system NF would improve if any individual stage's NF or gain were improved by 1 dB.</div>
+
+    <div class="help-section">Key results</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>System NF:</strong> overall cascaded noise figure in dB — the headline figure of merit for the receiver front-end.</li>
+        <li><strong>Total Gain:</strong> sum of all enabled stage gains.</li>
+        <li><strong>Noise Floor:</strong> kT₀·B·F_sys expressed in dBm, for the configured BW.</li>
+        <li><strong>Cascaded IIP3 / OIP3:</strong> system-level intercept points. OIP3 = IIP3 + Total Gain.</li>
+        <li><strong>SFDR:</strong> spurious-free dynamic range = ⅔(OIP3 − N_floor), in dB.</li>
+        <li><strong>MDS:</strong> minimum detectable signal — the weakest signal the chain can process at the required SNR_min.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Things to try</div>
+    <div class="help-body">
+      <ul class="help-try">
+        <li>Load the <strong>BLE / Bluetooth RX</strong> preset, then use the <strong>1↔2</strong> quick-swap button to move the LNA before the preselector BPF — watch how system NF collapses when the high-NF switch now precedes the LNA.</li>
+        <li>Load the <strong>GPS L1</strong> preset and raise the LNA gain from 20 dB to 35 dB — notice cascaded IIP3 degrades sharply as the high-gain LNA amplifies signals into the mixer's nonlinear region.</li>
+        <li>Toggle the NF display between <strong>NF (dB)</strong> and <strong>Teq (K)</strong> modes and observe that small NF differences near 1 dB represent large temperature differences at low noise figures — a key consideration for satellite and radio astronomy receivers.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">Friis, H. T. (1944). "Noise figures of radio receivers." <em>Proceedings of the IRE</em>, 32(7), 419–422. — also see Pozar, <em>Microwave Engineering</em>, 4th ed., §10.3; Razavi, <em>RF Microelectronics</em>, 2nd ed., §2.4.</div>
+  </div>
+</div>
+
 </body>
 </html>
