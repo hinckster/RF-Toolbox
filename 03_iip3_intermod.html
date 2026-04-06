@@ -47,6 +47,15 @@ header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 .sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
 input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 .hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
+.sr-row{display:flex;align-items:center;gap:6px}
+.sr-row input[type=range]{flex:1;width:auto;min-width:0}
+.si{width:72px;background:#0d1117;border:1px solid var(--bdr);border-radius:4px;color:var(--blue);font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;text-align:right;transition:border-color .15s;-moz-appearance:textfield;appearance:textfield}
+.si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.si:focus{outline:none;border-color:var(--blue)}
+.si.err{border-color:var(--red);color:var(--red)}
+.si-unit{font-size:.75rem;color:var(--tm);white-space:nowrap}
+.si-unit.tog{cursor:pointer;user-select:none}
+.si-unit.tog:hover{color:var(--blue);text-decoration:underline}
 
 .metrics{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:1rem}
 .mc{background:var(--deep);border:1px solid var(--bdr);border-radius:6px;padding:.6rem .8rem}
@@ -134,35 +143,59 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
       </div>
       <a href="#" onclick="sendToReceiverChain(); return false;" style="display:block;text-align:right;color:#58a6ff;font-size:.75rem;text-decoration:none;margin-top:.2rem;margin-bottom:.6rem">→ Open in Receiver Chain</a>
       <div class="sr">
-        <label>a₁ — linear gain <span id="vA1">5.0</span></label>
-        <input type="range" id="sA1" min="0.1" max="20" step="0.1" value="5">
+        <label>a₁ — linear gain <span id="vA1" style="display:none">5.0</span></label>
+        <div class="sr-row">
+          <input type="range" id="sA1" min="0.1" max="20" step="0.1" value="5">
+          <input type="number" class="si" id="iA1" value="5.0">
+          <span class="si-unit">V/V</span>
+        </div>
         <div class="hints"><span>0.1</span><span>20 V/V</span></div>
       </div>
       <div class="sr">
-        <label>a₂ — 2nd-order coeff <span id="vA2">1.0</span></label>
-        <input type="range" id="sA2" min="0" max="10" step="0.1" value="1">
+        <label>a₂ — 2nd-order coeff <span id="vA2" style="display:none">1.0</span></label>
+        <div class="sr-row">
+          <input type="range" id="sA2" min="0" max="10" step="0.1" value="1">
+          <input type="number" class="si" id="iA2" value="1.0">
+          <span class="si-unit">V/V²</span>
+        </div>
         <div class="hints"><span>0</span><span>10 V/V²</span></div>
       </div>
       <div class="sr">
-        <label>a₃ — 3rd-order coeff <span id="vA3">-0.50</span></label>
-        <input type="range" id="sA3" min="-5" max="-0.01" step="0.01" value="-0.5">
+        <label>a₃ — 3rd-order coeff <span id="vA3" style="display:none">-0.50</span></label>
+        <div class="sr-row">
+          <input type="range" id="sA3" min="-5" max="-0.01" step="0.01" value="-0.5">
+          <input type="number" class="si" id="iA3" value="-0.50">
+          <span class="si-unit">V/V³</span>
+        </div>
         <div class="hints"><span>−5</span><span>−0.01 V/V³</span></div>
       </div>
       <div class="panel-sep"></div>
       <h3 style="margin-bottom:.7rem">Two-Tone Test Signal</h3>
       <div class="sr">
-        <label>Input Power P<sub>in</sub> <span id="vPin">−20.0 dBm</span></label>
-        <input type="range" id="sPin" min="-60" max="20" step="0.5" value="-20">
+        <label>Input Power P<sub>in</sub> <span id="vPin" style="display:none">−20.0 dBm</span></label>
+        <div class="sr-row">
+          <input type="range" id="sPin" min="-60" max="20" step="0.5" value="-20">
+          <input type="number" class="si" id="iPin" value="-20.0">
+          <span class="si-unit">dBm</span>
+        </div>
         <div class="hints"><span>−60 dBm</span><span>+20 dBm</span></div>
       </div>
       <div class="sr">
-        <label>Center freq f₀ <span id="vF0">2400 MHz</span></label>
-        <input type="range" id="sF0" min="100" max="10000" step="100" value="2400">
+        <label>Center freq f₀ <span id="vF0" style="display:none">2400 MHz</span></label>
+        <div class="sr-row">
+          <input type="range" id="sF0" min="100" max="10000" step="100" value="2400">
+          <input type="number" class="si" id="iF0" value="2400">
+          <span class="si-unit tog" id="uF0" onclick="toggleF0Unit()">MHz</span>
+        </div>
         <div class="hints"><span>100 MHz</span><span>10 GHz</span></div>
       </div>
       <div class="sr">
-        <label>Tone spacing Δf <span id="vDf">1.0 MHz</span></label>
-        <input type="range" id="sDf" min="0.1" max="50" step="0.1" value="1">
+        <label>Tone spacing Δf <span id="vDf" style="display:none">1.0 MHz</span></label>
+        <div class="sr-row">
+          <input type="range" id="sDf" min="0.1" max="50" step="0.1" value="1">
+          <input type="number" class="si" id="iDf" value="1.0">
+          <span class="si-unit">MHz</span>
+        </div>
         <div class="hints"><span>0.1 MHz</span><span>50 MHz</span></div>
       </div>
     </div>
@@ -348,9 +381,60 @@ function update(){
     <strong>Shorthand check:</strong> IM3(dBm) ≈ 3·Pin − 2·IIP3 + Gain = ${(3*Pin_dBm-2*IIP3_dBm+Gain_dB).toFixed(1)} dBm.`;
 }
 
-[document.getElementById('sA1'),document.getElementById('sA2'),document.getElementById('sA3'),
- document.getElementById('sPin'),document.getElementById('sF0'),document.getElementById('sDf')
-].forEach(s=>s.addEventListener('input',update));
+// ── Slider ↔ text-input wiring ──
+function linkSliderInput(sliderId, inputId, decimals, onUpdate, min, max) {
+  const slider = document.getElementById(sliderId);
+  const inp = document.getElementById(inputId);
+  function sync() { inp.value = (+slider.value).toFixed(decimals); inp.classList.remove('err'); }
+  slider.addEventListener('input', () => { sync(); onUpdate(); });
+  inp.addEventListener('input', () => {
+    const v = parseFloat(inp.value);
+    if (isNaN(v) || v < min || v > max) { inp.classList.add('err'); return; }
+    inp.classList.remove('err'); slider.value = v; onUpdate();
+  });
+  inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) { const c = Math.max(min, Math.min(max, v)); inp.value = c.toFixed(decimals); inp.classList.remove('err'); slider.value = c; onUpdate(); }
+  });
+  sync();
+}
+
+// Center freq unit toggle (slider native unit = MHz)
+let f0Unit = 'MHz';
+function syncF0Input() {
+  const v = +document.getElementById('sF0').value;
+  const inp = document.getElementById('iF0');
+  inp.value = f0Unit === 'MHz' ? v.toFixed(0) : (v / 1000).toFixed(3);
+  inp.classList.remove('err');
+}
+function toggleF0Unit() {
+  f0Unit = f0Unit === 'MHz' ? 'GHz' : 'MHz';
+  document.getElementById('uF0').textContent = f0Unit;
+  syncF0Input();
+}
+document.getElementById('sF0').addEventListener('input', () => { syncF0Input(); update(); });
+document.getElementById('iF0').addEventListener('input', () => {
+  const raw = parseFloat(document.getElementById('iF0').value);
+  const inp = document.getElementById('iF0');
+  if (isNaN(raw)) { inp.classList.add('err'); return; }
+  const mhz = f0Unit === 'MHz' ? raw : raw * 1000;
+  if (mhz < 100 || mhz > 10000) { inp.classList.add('err'); return; }
+  inp.classList.remove('err'); document.getElementById('sF0').value = mhz; update();
+});
+document.getElementById('iF0').addEventListener('change', () => {
+  const raw = parseFloat(document.getElementById('iF0').value);
+  if (!isNaN(raw)) {
+    const mhz = Math.max(100, Math.min(10000, f0Unit === 'MHz' ? raw : raw * 1000));
+    document.getElementById('sF0').value = mhz; syncF0Input(); update();
+  }
+});
+
+linkSliderInput('sA1',  'iA1',  1, update, 0.1, 20);
+linkSliderInput('sA2',  'iA2',  1, update, 0, 10);
+linkSliderInput('sA3',  'iA3',  2, update, -5, -0.01);
+linkSliderInput('sPin', 'iPin', 1, update, -60, 20);
+linkSliderInput('sDf',  'iDf',  1, update, 0.1, 50);
+syncF0Input();
 
 function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#8b949e';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`iip3_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
 function exportCSV() {
@@ -445,7 +529,15 @@ function sendToReceiverChain() {
   if (p.has('pin')) document.getElementById('sPin').value = p.get('pin');
   if (p.has('f0'))  document.getElementById('sF0').value  = p.get('f0');
   if (p.has('df'))  document.getElementById('sDf').value  = p.get('df');
-  if ([...p.keys()].length > 0) update();
+  if ([...p.keys()].length > 0) {
+    update();
+    document.getElementById('iA1').value  = (+document.getElementById('sA1').value).toFixed(1);
+    document.getElementById('iA2').value  = (+document.getElementById('sA2').value).toFixed(1);
+    document.getElementById('iA3').value  = (+document.getElementById('sA3').value).toFixed(2);
+    document.getElementById('iPin').value = (+document.getElementById('sPin').value).toFixed(1);
+    document.getElementById('iDf').value  = (+document.getElementById('sDf').value).toFixed(1);
+    syncF0Input();
+  }
 })();
 </script>
 </body>
