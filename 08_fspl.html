@@ -16,21 +16,23 @@ body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-
 
 .toolbar{position:fixed;top:14px;right:16px;display:flex;gap:6px;z-index:100}
 .tbtn{background:var(--card);border:1px solid var(--bdr);color:var(--tm);border-radius:5px;padding:5px 10px;font-size:.75rem;cursor:pointer;transition:border-color .15s,color .15s}
-.tbtn:hover{border-color:var(--blue);color:var(--blue)}
+.tbtn:hover{border-color:#b5895a;color:#b5895a}
 
 nav{padding:.75rem 1.5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.75rem;background:var(--card)}
+nav a{color:#b5895a;text-decoration:none;font-size:.85rem}
+nav a:hover{text-decoration:underline}
 nav .sep{color:var(--bdr)}
 nav span{color:var(--tm);font-size:.85rem}
 
 header{padding:1.5rem 1.5rem 1rem;max-width:1180px;margin:0 auto}
-header .tag{font-size:.72rem;font-weight:600;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:.3rem}
+header .tag{font-size:.72rem;font-weight:600;color:#b5895a;letter-spacing:2px;text-transform:uppercase;margin-bottom:.3rem}
 header h1{font-size:1.7rem;font-weight:700;color:var(--t1)}
 header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 
 .eq-box{max-width:1180px;margin:0 auto .9rem;padding:0 1.5rem}
 .eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.1rem 1.75rem;display:flex;flex-wrap:wrap;gap:1.5rem}
 .eq-col{flex:1;min-width:310px}
-.eq-label{font-size:.7rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-label{font-size:.7rem;color:#b5895a;text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
 .eq-primary{font-family:'Courier New',monospace;font-size:1.05rem;color:var(--t1);line-height:2}
 .eq-secondary{font-family:'Courier New',monospace;font-size:.9rem;color:var(--pur);line-height:2}
 .eq-note{font-size:.74rem;color:var(--tm);margin-top:.25rem}
@@ -75,7 +77,7 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 .chart-panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.8rem}
 .chart-wrap{position:relative;min-height:270px}
 
-.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.88rem;color:var(--tm);line-height:1.75}
+.annotation{border-left:3px solid #b5895a;background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.88rem;color:var(--tm);line-height:1.75}
 .annotation strong{color:var(--t1)}
 .annotation b{color:var(--blue)}
 
@@ -99,6 +101,8 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 </div>
 
 <nav>
+  <a href="https://www.noahhinckley.com/home">noahhinckley.com</a>
+  <span class="sep">›</span>
   <a href="index.html">RF Toolbox</a>
   <span class="sep">›</span>
   <span>Path Loss Comparison</span>

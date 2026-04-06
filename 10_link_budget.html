@@ -31,7 +31,7 @@
     min-height: 100vh;
   }
 
-  a { color: var(--accent); text-decoration: none; }
+  a { color: #b5895a; text-decoration: none; }
   a:hover { text-decoration: underline; }
 
   /* ── NAV ─────────────────────────────────────────────── */
@@ -46,7 +46,7 @@
     top: 0;
     z-index: 100;
   }
-  nav .nav-back { color: var(--muted); font-size: 0.85rem; }
+  nav .nav-back { color: #b5895a; font-size: 0.85rem; }
   nav .nav-sep  { color: var(--border); }
   nav .nav-cur  { color: var(--text); font-size: 0.85rem; }
 
@@ -71,7 +71,7 @@
     transition: border-color 0.15s, background 0.15s;
   }
   .toolbar button:hover {
-    border-color: var(--accent);
+    border-color: #b5895a;
     background: var(--border);
   }
 
@@ -88,7 +88,7 @@
   .page-title {
     font-size: 1.55rem;
     font-weight: 700;
-    color: var(--accent);
+    color: #b5895a;
     letter-spacing: -0.02em;
   }
   .page-subtitle {
@@ -357,14 +357,14 @@
   .annotation-box {
     background: var(--card);
     border: 1px solid var(--border);
-    border-left: 4px solid var(--accent);
+    border-left: 4px solid #b5895a;
     border-radius: 0 10px 10px 0;
     padding: 16px 20px;
     font-size: 0.88rem;
     color: var(--text);
     line-height: 1.7;
   }
-  .annotation-box strong { color: var(--accent); font-family: 'Courier New', monospace; }
+  .annotation-box strong { color: #b5895a; font-family: 'Courier New', monospace; }
 
   /* ── CHART ───────────────────────────────────────────── */
   .chart-card {
@@ -413,9 +413,11 @@
 
 <!-- NAV -->
 <nav>
-  <a href="index.html" class="nav-back">← RF Toolbox</a>
-  <span class="nav-sep">/</span>
-  <span class="nav-cur">10&nbsp; Link Budget</span>
+  <a href="https://www.noahhinckley.com/home" class="nav-back">noahhinckley.com</a>
+  <span class="nav-sep">›</span>
+  <a href="index.html" class="nav-back">RF Toolbox</a>
+  <span class="nav-sep">›</span>
+  <span class="nav-cur">Link Budget</span>
 </nav>
 
 <!-- TOOLBAR -->
