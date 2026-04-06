@@ -164,66 +164,60 @@ footer a{color:#b5895a}
     <a class="card" href="10_link_budget.html">
       <div class="card-top"><div class="card-icon">⚖️</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num">Tool 10 <span class="live-badge">Live</span></div>
+        <div class="card-num"><span class="live-badge">Live</span></div>
         <h2>System Link Budget</h2>
       </div>
       <div class="card-desc">Full cascaded link budget — editable rows: Pt, FSPL, antenna gains, cable losses, NF, SNR. Running margin at every stage. Waterfall bar chart shows which term consumes the most margin.</div>
-      <div class="card-expert">Expert: shows which term consumes the most margin at every stage</div>
       <div class="card-eq">Margin = Pt − L_tx + Gt − FSPL − L_atm + Gr − L_rx − S_min</div>
     </a>
 
     <a class="card" href="01_friis_transmission.html">
       <div class="card-top"><div class="card-icon">📡</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num">Tool 01 <span class="live-badge">Live</span></div>
+        <div class="card-num"><span class="live-badge">Live</span></div>
         <h2>Friis Transmission Equation</h2>
       </div>
       <div class="card-desc">Free-space received power as a function of distance and frequency. Pr vs frequency and Pr vs distance sweeps. Link margin above sensitivity threshold annotated on chart.</div>
-      <div class="card-expert">Expert: sensitivity threshold line shows link margin directly on chart</div>
       <div class="card-eq">Pr = Pt·Gt·Gr·(λ/4πd)² · LF = (c/f·4πd)²</div>
     </a>
 
     <a class="card" href="02_noise_figure.html">
       <div class="card-top"><div class="card-icon">🔬</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num">Tool 02 <span class="live-badge">Live</span></div>
+        <div class="card-num"><span class="live-badge">Live</span></div>
         <h2>Noise Figure Cascade</h2>
       </div>
       <div class="card-desc">Arbitrary N-stage receiver chain. Cascaded NF (Friis), cascaded IIP3, noise floor, MDS threshold. Per-stage NF contribution bar chart. Sensitivity what-if analysis. Stage swap + Teq mode.</div>
-      <div class="card-expert">Expert: identifies NF and IIP3 bottleneck stage automatically</div>
       <div class="card-eq">F_sys = F₁ + (F₂−1)/G₁ + (F₃−1)/G₁G₂ + ···</div>
     </a>
 
     <a class="card" href="06_radar_range.html">
       <div class="card-top"><div class="card-icon">🛰️</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num">Tool 06 <span class="live-badge">Live</span></div>
+        <div class="card-num"><span class="live-badge">Live</span></div>
         <h2>Radar Range Equation</h2>
       </div>
       <div class="card-desc">Maximum range vs RCS sweep (the key radar design curve). Received power vs range with S_min threshold. Clutter RCS context (birds, cars, aircraft). Pulse compression gain. Open in Link Budget.</div>
-      <div class="card-expert">Expert: clutter context + pulse compression range extension</div>
       <div class="card-eq">R⁴ = Pt·Gt·Gr·λ²·σ / [(4π)³·L·S_min]</div>
     </a>
 
     <a class="card" href="07_superheterodyne.html">
       <div class="card-top"><div class="card-icon">📻</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num">Tool 07 <span class="live-badge">Live</span></div>
+        <div class="card-num"><span class="live-badge">Live</span></div>
         <h2>Superheterodyne Receiver</h2>
       </div>
       <div class="card-desc">Interactive block diagram: RF filter → LNA → mixer → IF. Frequency plan spectrum shows RF, LO, IF, image — all labeled. IRR vs IF frequency tradeoff. Double-conversion option.</div>
-      <div class="card-expert">Expert: LO harmonic spurious responses labeled in spectrum</div>
       <div class="card-eq">f_image = f_RF + 2·f_IF · IRR = 20 log(2·f_IF / BW_RF)</div>
     </a>
 
     <a class="card" href="08_fspl.html">
       <div class="card-top"><div class="card-icon">📶</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num">Tool 08 <span class="live-badge">Live</span></div>
+        <div class="card-num"><span class="live-badge">Live</span></div>
         <h2>Path Loss Comparison</h2>
       </div>
       <div class="card-desc">FSPL vs distance for 6 bands: 900 MHz → 77 GHz. Rain attenuation (ITU-R P.838) and atmospheric absorption (ITU-R P.676) overlays. Band selection guidance for each link scenario.</div>
-      <div class="card-expert">Expert: 60 GHz O₂ absorption window + band selection guidance</div>
       <div class="card-eq">FSPL = 20log(d_km) + 20log(f_MHz) + 32.44 dB</div>
     </a>
   </div>
@@ -242,44 +236,40 @@ footer a{color:#b5895a}
     <a class="card" href="03_iip3_intermod.html">
       <div class="card-top"><div class="card-icon">📈</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num">Tool 03 <span class="live-badge">Live</span></div>
+        <div class="card-num"><span class="live-badge">Live</span></div>
         <h2>IIP3 / Intermodulation</h2>
       </div>
       <div class="card-desc">Polynomial device model (a₁, a₂, a₃) → exact IIP3, IIP2, OIP3, P1dB. Spectrum shows IM2, IM3, 2nd/3rd harmonics. Intercept diagram with gain compression curve.</div>
-      <div class="card-expert">Expert: derive IIP3 from polynomial coefficients, not just measure it</div>
       <div class="card-eq">IIP3 = √(4|a₁|/3|a₃|) · y = a₁x + a₂x² + a₃x³</div>
     </a>
 
     <a class="card" href="04_antenna_array.html">
       <div class="card-top"><div class="card-icon">🔭</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num">Tool 04 <span class="live-badge">Live</span></div>
+        <div class="card-num"><span class="live-badge">Live</span></div>
         <h2>ULA Array Factor</h2>
       </div>
       <div class="card-desc">Element pattern × amplitude taper → total pattern. Tapers: Uniform, Hamming, Hann, Chebyshev, Taylor. Compare two configurations side-by-side. Grating lobe markers. Cartesian and polar views.</div>
-      <div class="card-expert">Expert: Chebyshev equiripple vs Taylor near-equiripple tradeoff</div>
       <div class="card-eq">E_total(θ) = E_elem(θ) · AF(θ) = E_elem · Σ aₙe^(jnψ)</div>
     </a>
 
     <a class="card" href="05_smith_chart.html">
       <div class="card-top"><div class="card-icon">🎯</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num">Tool 05 <span class="live-badge">Live</span></div>
+        <div class="card-num"><span class="live-badge">Live</span></div>
         <h2>Smith Chart</h2>
       </div>
       <div class="card-desc">Interactive impedance plot on the complex Γ plane. Reflection coefficient, VSWR, return loss, admittance. L-match synthesis steps computed automatically. Fills full panel width.</div>
-      <div class="card-expert">Expert: L-match synthesis solved analytically — series then shunt steps</div>
       <div class="card-eq">Γ = (Z_L − Z₀)/(Z_L + Z₀) · VSWR = (1+|Γ|)/(1−|Γ|)</div>
     </a>
 
     <a class="card" href="09_transmission_line.html">
       <div class="card-top"><div class="card-icon">〰️</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num">Tool 09 <span class="live-badge">Live</span></div>
+        <div class="card-num"><span class="live-badge">Live</span></div>
         <h2>Transmission Line</h2>
       </div>
       <div class="card-desc">Reflection coefficient, VSWR, return loss for arbitrary load on a lossless TL. Standing wave pattern |V(z)| and Smith chart position vs line length. Input impedance Zin computation.</div>
-      <div class="card-expert">Expert: Vmax/Vmin position, Zin rotation on Smith chart</div>
       <div class="card-eq">Γ(l) = Γ_L · e^(−j4πl/λ) · Zin = Z₀·(ZL + jZ₀tanβl)/(Z₀ + jZL tanβl)</div>
     </a>
   </div>
@@ -298,33 +288,30 @@ footer a{color:#b5895a}
     <a class="card" href="11_phase_noise.html">
       <div class="card-top"><div class="card-icon">〽️</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num">Tool 11 <span class="new-badge">New</span></div>
+        <div class="card-num"><span class="new-badge">New</span></div>
         <h2>Phase Noise / Leeson's Equation</h2>
       </div>
       <div class="card-desc">Oscillator phase noise L(Δf) vs offset frequency. Leeson's model: carrier power, loaded Q, flicker corner, noise figure. Integrated phase noise (rms), timing jitter, EVM impact.</div>
-      <div class="card-expert">Expert: shows 1/f³, 1/f², flat noise floor regions with corner frequencies</div>
       <div class="card-eq">L(Δf) = 10·log[(2FkT/Ps)·(1+(f₀/2QL·Δf)²)·(1+fc/|Δf|)]</div>
     </a>
 
     <a class="card" href="12_pa_efficiency.html">
       <div class="card-top"><div class="card-icon">🔋</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num">Tool 12 <span class="new-badge">New</span></div>
+        <div class="card-num"><span class="new-badge">New</span></div>
         <h2>Power Amplifier / Efficiency</h2>
       </div>
       <div class="card-desc">PA classes A, B, AB, C: efficiency vs output power back-off. Gain compression (P1dB), AM-AM distortion. OIP3 from P1dB rule-of-thumb. PAE vs drain efficiency. PAPR impact on average efficiency.</div>
-      <div class="card-expert">Expert: class-B theoretical 78.5% max efficiency vs back-off curve</div>
       <div class="card-eq">η_A = Pout/(2·Psat) · η_B = (π/4)·√(Pout/Psat) · OIP3 ≈ P1dB + 10 dB</div>
     </a>
 
     <a class="card" href="13_modulation_ber.html">
       <div class="card-top"><div class="card-icon">📊</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num">Tool 13 <span class="new-badge">New</span></div>
+        <div class="card-num"><span class="new-badge">New</span></div>
         <h2>Modulation &amp; BER</h2>
       </div>
       <div class="card-desc">BER vs Eb/N0 curves for BPSK, QPSK, 8PSK, 16QAM, 64QAM, 256QAM. Shannon capacity limit overlay. Required SNR for target BER. Spectral efficiency vs required SNR tradeoff chart.</div>
-      <div class="card-expert">Expert: Shannon bound vs practical modulation penalty visualized</div>
       <div class="card-eq">BER_BPSK = Q(√(2Eb/N0)) · C = B·log₂(1+SNR) bits/s/Hz</div>
     </a>
   </div>
