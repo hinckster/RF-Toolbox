@@ -97,6 +97,23 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 .help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
 .help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
 .help-try li::marker{color:#b5895a}
+/* Link budget context panel */
+.lbc-panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;margin-top:.9rem;overflow:hidden}
+.lbc-header{display:flex;align-items:center;justify-content:space-between;padding:.65rem 1rem;cursor:pointer;user-select:none;border-bottom:1px solid transparent;transition:.15s}
+.lbc-header:hover{background:var(--deep)}
+.lbc-header.open{border-bottom-color:var(--bdr)}
+.lbc-title{font-size:.78rem;font-weight:600;color:#b5895a;letter-spacing:.5px;text-transform:uppercase}
+.lbc-arrow{font-size:.75rem;color:var(--tm);transition:transform .2s}
+.lbc-header.open .lbc-arrow{transform:rotate(180deg)}
+.lbc-body{display:none;padding:.9rem 1rem}
+.lbc-body.open{display:block}
+.lbc-sr{margin-bottom:.7rem}
+.lbc-sr label{display:flex;justify-content:space-between;font-size:.82rem;color:var(--t2);margin-bottom:.2rem}
+.lbc-sr label span{color:#b5895a;font-family:'Courier New',monospace;font-size:.8rem}
+.lbc-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.45rem;margin-top:.7rem}
+.lbc-mc{background:var(--deep);border:1px solid var(--bdr);border-radius:5px;padding:.45rem .65rem}
+.lbc-mc .lbl{font-size:.65rem;color:var(--tm);text-transform:uppercase;letter-spacing:.7px}
+.lbc-mc .val{font-family:'Courier New',monospace;font-size:.95rem;font-weight:700;margin-top:.1rem}
 </style>
 </head>
 <body>
@@ -218,6 +235,32 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
       <div class="chart-wrap"><canvas id="chartAtm"></canvas></div>
     </div>
     <div class="annotation" id="annotation">Computing...</div>
+
+    <!-- Link Budget Context Panel -->
+    <div class="lbc-panel">
+      <div class="lbc-header" id="lbcHeader" onclick="toggleLBC()">
+        <span class="lbc-title">&#9654; Link Budget Context — max range per band</span>
+        <span class="lbc-arrow" id="lbcArrow">&#9660;</span>
+      </div>
+      <div class="lbc-body" id="lbcBody">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.7rem;margin-bottom:.7rem">
+          <div class="lbc-sr">
+            <label>Tx Power <span id="lbcvPt">20 dBm</span></label>
+            <input type="range" id="lbcPt" min="0" max="40" step="1" value="20" oninput="updateLBC()">
+          </div>
+          <div class="lbc-sr">
+            <label>Ant. Gain (each) <span id="lbcvG">6 dBi</span></label>
+            <input type="range" id="lbcG" min="0" max="40" step="1" value="6" oninput="updateLBC()">
+          </div>
+          <div class="lbc-sr">
+            <label>Sensitivity <span id="lbcvSens">-100 dBm</span></label>
+            <input type="range" id="lbcSens" min="-130" max="-60" step="1" value="-100" oninput="updateLBC()">
+          </div>
+        </div>
+        <div class="lbc-results" id="lbcResults"></div>
+        <div style="font-size:.73rem;color:var(--tm);margin-top:.5rem">Max range = distance where received power = sensitivity. Assumes Friis (FSPL + rain/atm at current settings). Margin = 0 dB at crossover.</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -364,12 +407,16 @@ function update(){
     </div>`;
   }).join('');
 
-  // Atmospheric chart
+  // Atmospheric chart — compute raw values regardless of overlay toggles
+  const savedRain=ovlRain, savedAtm=ovlAtm;
+  ovlRain=true; ovlAtm=true;
   const rainArr=BANDS.map(b=>rainAtten(d_km,R_mmhr,b.f_MHz/1000));
   const atmArr=BANDS.map(b=>atmAbsorption_dBkm(b.f_MHz/1000)*d_km);
+  ovlRain=savedRain; ovlAtm=savedAtm;
   chartAtm.data.labels=BANDS.map(b=>b.name);
   chartAtm.data.datasets[0].data=rainArr;
   chartAtm.data.datasets[1].data=atmArr;
+  chartAtm.options.scales.y.min=0;
   chartAtm.update();
 
   // Breakeven: find where 900MHz = each other band
@@ -571,6 +618,50 @@ update();
 function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
 function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
+
+// Link Budget Context Panel
+function toggleLBC(){
+  const hdr=document.getElementById('lbcHeader');
+  const body=document.getElementById('lbcBody');
+  hdr.classList.toggle('open');
+  body.classList.toggle('open');
+  if(body.classList.contains('open')) updateLBC();
+}
+function updateLBC(){
+  const Pt_dBm=+document.getElementById('lbcPt').value;
+  const G_dBi=+document.getElementById('lbcG').value;
+  const sens_dBm=+document.getElementById('lbcSens').value;
+  document.getElementById('lbcvPt').textContent=Pt_dBm+' dBm';
+  document.getElementById('lbcvG').textContent=G_dBi+' dBi';
+  document.getElementById('lbcvSens').textContent=sens_dBm+' dBm';
+  const R_mmhr_val=+document.getElementById('sRain').value;
+  // Max range: EIRP (dBm) + 2*G - FSPL - rain - atm = sens
+  // FSPL = Pt + 2G - sens → solve for d
+  // FSPL(dB) = Pt + 2G - sens  →  d = (c/(4πf)) * 10^(FSPL/20)
+  const budget=Pt_dBm+2*G_dBi-sens_dBm; // total link budget dB (FSPL + losses must be ≤ this)
+  const savedR=ovlRain,savedA=ovlAtm;
+  ovlRain=true;ovlAtm=true;
+  const results=BANDS.map(b=>{
+    // Binary search for max distance where total loss ≤ budget
+    let lo=0.001,hi=10000; // km
+    for(let i=0;i<50;i++){
+      const mid=(lo+hi)/2;
+      const fspl=fspl_dB(mid*1e3,b.f_MHz);
+      const rain=rainAtten(mid,R_mmhr_val,b.f_MHz/1000);
+      const atm=atmAbsorption_dBkm(b.f_MHz/1000)*mid;
+      if(fspl+rain+atm<=budget) lo=mid; else hi=mid;
+    }
+    const d=(lo+hi)/2;
+    return{name:b.name,col:b.col,d};
+  });
+  ovlRain=savedR;ovlAtm=savedA;
+  const el=document.getElementById('lbcResults');
+  el.innerHTML=results.map(r=>{
+    const dStr=r.d>=1?r.d.toFixed(1)+' km':(r.d*1000).toFixed(0)+' m';
+    const cls=r.d>10?'good':r.d>1?'warn':'bad';
+    return`<div class="lbc-mc"><div class="lbl">${r.name}</div><div class="val ${cls}">${dStr}</div></div>`;
+  }).join('');
+}
 </script>
 
 <div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
