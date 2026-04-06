@@ -282,12 +282,10 @@ function drawSmith(gL, gAtLine, stubs){
     if(x===0) return;
     const center_re=1, center_im=1/x;
     const radius=Math.abs(1/x);
-    // These circles have center at (1, 1/x) in Γ-space... use approximate arc
-    // Actually for Smith chart: center in Γ plane = (1, 1/x), radius = 1/|x|
     const p=toXY({re:center_re, im:center_im});
     ctx.beginPath();
     ctx.arc(p.x, p.y, radius*R, 0, 2*PI);
-    ctx.strokeStyle='rgba(255,255,255,.07)';
+    ctx.strokeStyle='rgba(120,130,150,.18)';
     ctx.lineWidth=0.7;
     ctx.stroke();
   });
@@ -299,20 +297,26 @@ function drawSmith(gL, gAtLine, stubs){
   ctx.lineWidth=1.5;
   ctx.stroke();
 
-  // Axes
+  // Axes (real axis)
   ctx.beginPath();ctx.moveTo(cx-R,cy);ctx.lineTo(cx+R,cy);
-  ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=0.8;ctx.stroke();
+  ctx.strokeStyle='rgba(100,116,139,.25)';ctx.lineWidth=0.8;ctx.stroke();
 
-  // Constant |Γ| circle through load
+  // Constant |Γ| arc — top-right quadrant only (angle -PI/2 to 0)
   const magL=C.mag(gL);
   if(magL>0.01){
     ctx.beginPath();
-    ctx.arc(cx,cy,magL*R,0,2*PI);
-    ctx.strokeStyle='rgba(240,136,62,.6)';
+    // top-right quadrant: angle from -PI/2 (top) to 0 (right) in canvas coords
+    // canvas: angle 0=right, -PI/2=top → draw from -PI/2 to 0
+    ctx.arc(cx,cy,magL*R,-Math.PI/2,0);
+    ctx.strokeStyle='#b5895a';
     ctx.lineWidth=1.5;
-    ctx.setLineDash([4,3]);
+    ctx.setLineDash([5,4]);
     ctx.stroke();
     ctx.setLineDash([]);
+    // |Γ| label at end of arc (right edge)
+    ctx.fillStyle='#b5895a';ctx.font='10px monospace';
+    ctx.textAlign='left';ctx.textBaseline='middle';
+    ctx.fillText('|Γ|='+magL.toFixed(3),cx+magL*R+4,cy);
   }
 
   // Stub overlay paths
@@ -332,28 +336,50 @@ function drawSmith(gL, gAtLine, stubs){
     ctx.fillStyle=col;ctx.fill();
   });
 
-  // Current position on TL (rotated point)
+  // Current position on TL (rotated point) — Z_in
   const pg=toXY(gAtLine);
-  ctx.beginPath();ctx.arc(pg.x,pg.y,7,0,2*PI);
+  ctx.beginPath();ctx.arc(pg.x,pg.y,6,0,2*PI);
+  ctx.fillStyle='#2563eb';ctx.fill();
+  ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+
+  // Load point ZL — red 8px dot
+  const pl=toXY(gL);
+  // Copper Γ vector with arrowhead from center to load
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(pl.x,pl.y);
+  ctx.strokeStyle='#b5895a';ctx.lineWidth=2;ctx.stroke();
+  // Arrowhead at load point
+  const ang=Math.atan2(pl.y-cy,pl.x-cx);
+  const arrowLen=10;
+  ctx.beginPath();
+  ctx.moveTo(pl.x,pl.y);
+  ctx.lineTo(pl.x-arrowLen*Math.cos(ang-0.38),pl.y-arrowLen*Math.sin(ang-0.38));
+  ctx.moveTo(pl.x,pl.y);
+  ctx.lineTo(pl.x-arrowLen*Math.cos(ang+0.38),pl.y-arrowLen*Math.sin(ang+0.38));
+  ctx.strokeStyle='#b5895a';ctx.lineWidth=1.5;ctx.stroke();
+  // Load dot
+  ctx.beginPath();ctx.arc(pl.x,pl.y,8,0,2*PI);
   ctx.fillStyle='#dc2626';ctx.fill();
   ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
 
-  // Load point (original)
-  const pl=toXY(gL);
-  // Γ vector from center to load
-  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(pl.x,pl.y);
-  ctx.strokeStyle='rgba(181,137,90,.9)';ctx.lineWidth=1.5;ctx.stroke();
-  ctx.beginPath();ctx.arc(pl.x,pl.y,7,0,2*PI);
-  ctx.fillStyle='#f85149';ctx.fill();
-
-  // Labels
+  // Axis labels
   ctx.fillStyle='#718096';ctx.font='10px monospace';
+  ctx.textAlign='left';ctx.textBaseline='middle';
   ctx.fillText('0',cx+R+4,cy+4);
-  ctx.fillText('∞',cx-R-18,cy+4);
-  ctx.fillStyle='#f85149';ctx.font='bold 11px sans-serif';
-  ctx.fillText('ZL',pl.x+8,pl.y-8);
-  ctx.fillStyle='#b5895a';
-  ctx.fillText('Z_in',pg.x+8,pg.y-8);
+  ctx.textAlign='right';
+  ctx.fillText('∞',cx-R-4,cy+4);
+
+  // Floating label for ZL (normalized impedance)
+  const ZL_norm_r=(gL.re!==0||gL.im!==0)?gammaToZ(gL,1):{re:0,im:0}; // normalized (Z0=1)
+  const zlStr='Z_L='+ZL_norm_r.re.toFixed(2)+(ZL_norm_r.im>=0?'+j':'-j')+(Math.abs(ZL_norm_r.im).toFixed(2))+'·Z₀';
+  ctx.fillStyle='#dc2626';ctx.font='bold 10px sans-serif';ctx.textAlign='left';
+  const lx=pl.x+(pl.x>cx?8:-8);
+  ctx.textAlign=pl.x>cx?'left':'right';
+  ctx.fillText(zlStr,pl.x+(pl.x>cx?10:-10),pl.y-12);
+
+  // Z_in label
+  ctx.fillStyle='#2563eb';ctx.font='bold 10px sans-serif';ctx.textAlign='left';
+  ctx.textAlign=pg.x>cx?'left':'right';
+  ctx.fillText('Z_in',pg.x+(pg.x>cx?8:-8),pg.y-10);
 }
 
 // TL standing wave chart
