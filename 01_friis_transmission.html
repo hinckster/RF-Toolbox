@@ -100,11 +100,21 @@
   }
   .preset-select:focus { outline: none; border-color: #58a6ff; }
   .preset-select option { background: var(--surface); }
+
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.help-overlay.open{display:flex}
+.help-box{background:#fff;border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;max-height:80vh;overflow-y:auto}
+.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+.help-try li::marker{color:#b5895a}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
   <button class="tbtn" onclick="takeScreenshot('Friis Transmission')">📷 Screenshot</button>
   <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
@@ -234,6 +244,52 @@
       <canvas id="chart"></canvas>
     </div>
     <div class="annotation" id="annotation">Updating…</div>
+  </div>
+</div>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Friis Transmission Equation — Help</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Computes received power Pr using the Friis free-space transmission equation: <strong>Pr = Pt + Gt + Gr + 20·log₁₀(λ/4πd)</strong>, where all quantities are in dBm/dB. Free-space path loss (FSPL) is derived from the frequency and distance as <strong>FSPL = 20·log₁₀(d) + 20·log₁₀(f) − 147.55 dB</strong>. Link margin is computed against a fixed −90 dBm receiver sensitivity threshold.</div>
+
+    <div class="help-section">Sliders &amp; inputs</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Tx Power (Pt):</strong> transmitter output power, −10 to +50 dBm. Typical Wi-Fi AP is +20 dBm; Bluetooth LE is 0 dBm.</li>
+        <li><strong>Tx Antenna Gain (Gt):</strong> transmit antenna gain in dBi, 0–40 dBi. An isotropic radiator is 0 dBi; a patch antenna is ~6–8 dBi; a dish is 30–40 dBi.</li>
+        <li><strong>Rx Antenna Gain (Gr):</strong> receive antenna gain in dBi, 0–40 dBi. Same scale as Gt; directly adds dB-for-dB to link margin.</li>
+        <li><strong>Frequency:</strong> carrier frequency, 100 MHz to 100 GHz. The unit label toggles between GHz and MHz. Higher frequencies produce more path loss.</li>
+        <li><strong>Distance:</strong> link distance, 1 m to 100 km. The unit label toggles between m and km. FSPL increases 20 dB per decade of distance.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">How to read the chart</div>
+    <div class="help-body">The sweep plot shows either <strong>Pr vs Distance</strong> (log-scale x-axis, 1 m to 100 km) or <strong>Pr vs Frequency</strong> (100 MHz to 100 GHz). The cyan line is received power; the red dashed line is the −90 dBm sensitivity floor. Where the cyan line drops below the red dashed line, the link fails. The x-axis uses a logarithmic scale for distance so that the 20 dB/decade slope appears as a straight line.</div>
+
+    <div class="help-section">Key results</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Received Power:</strong> Pr in dBm — the actual power delivered to the receiver.</li>
+        <li><strong>Path Loss:</strong> FSPL in dB — the free-space attenuation between isotropic antennas.</li>
+        <li><strong>Wavelength:</strong> λ in mm — useful for antenna sizing and near-field boundary estimates (r = λ/2π).</li>
+        <li><strong>Link Margin:</strong> Pr minus −90 dBm. Green (&gt;20 dB) = robust link; orange (6–20 dB) = marginal; red (&lt;6 dB) = at-risk or broken.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Things to try</div>
+    <div class="help-body">
+      <ul class="help-try">
+        <li>Load the <strong>LEO Satellite</strong> preset and note how 550 km at 12 GHz demands a 40 dBi dish just to close the link — then reduce Gr to see when margin goes negative.</li>
+        <li>Fix distance at 1 km and sweep frequency from 1 GHz to 100 GHz to see the 40 dB of additional path loss at mmWave — then add 20 dBi of beam-forming gain to recover it.</li>
+        <li>Compare the <strong>Bluetooth</strong> preset (0 dBm, 10 m) with the <strong>Wi-Fi 6</strong> preset (20 dBm, 50 m) to see why link margin — not raw power — determines reliability.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">Friis, H. T. (1946). "A note on a simple transmission formula." <em>Proceedings of the IRE</em>, 34(5), 254–256. — also see Pozar, <em>Microwave Engineering</em>, 4th ed., §4.4.</div>
   </div>
 </div>
 
@@ -557,6 +613,10 @@ function loadPreset(key) {
     if (ann) ann.innerHTML += '<br><span style="color:#58a6ff;font-size:.82rem">Loaded: ' + p.note + '</span>';
   }, 220);
 }
+
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 
 function sendToRadar() {
   var v = getVals();
