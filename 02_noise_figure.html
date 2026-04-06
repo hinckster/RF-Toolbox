@@ -54,6 +54,11 @@ label.ctrl-label input[type=number] { background: var(--surface); border: 1px so
 .metric-card .mlabel { font-size: .67rem; color: var(--muted); text-transform: uppercase; letter-spacing: .9px; }
 .metric-card .mval { font-family: 'Courier New', monospace; font-size: 1.15rem; font-weight: 700; margin-top: .15rem; transition: color 200ms ease; }
 .metric-card .munit { font-size: .67rem; color: var(--muted); }
+.metric-card.hero { border-color: var(--accent); background: linear-gradient(135deg, var(--card), rgba(0,200,255,.06)); grid-column: span 2; display: flex; align-items: center; gap: 1.2rem; padding: .75rem 1.1rem; }
+.metric-card.hero .mlabel { font-size: .72rem; margin-bottom: .1rem; }
+.metric-card.hero .mval { font-size: 2rem; margin-top: 0; }
+.metric-card.hero .munit { font-size: .78rem; }
+@media (max-width: 600px) { .metric-card.hero { grid-column: span 1; } }
 .good { color: var(--green); } .warn { color: var(--orange); } .bad { color: var(--red); } .info { color: var(--accent); } .info2 { color: var(--accent2); }
 
 /* ── Stage table ── */
@@ -187,7 +192,7 @@ table.whatif tr:last-child td { border-bottom: none; }
 <!-- System metrics -->
 <div class="metrics-bar">
   <div class="metrics-grid">
-    <div class="metric-card"><div class="mlabel">System NF</div><div class="mval info" id="mNFsys">—</div><div class="munit">dB</div></div>
+    <div class="metric-card hero"><div><div class="mlabel">System NF</div><div class="mval info" id="mNFsys">—</div><div class="munit">dB — Friis cascade result</div></div></div>
     <div class="metric-card"><div class="mlabel">Total Gain</div><div class="mval info" id="mGtot">—</div><div class="munit">dB</div></div>
     <div class="metric-card"><div class="mlabel">Noise Temp</div><div class="mval info2" id="mTeq">—</div><div class="munit">K (T₀=<span id="mT0lbl">290</span>)</div></div>
     <div class="metric-card"><div class="mlabel">Noise Floor</div><div class="mval info2" id="mNfloor">—</div><div class="munit">dBm (<span id="mBWlbl">10</span> MHz)</div></div>
