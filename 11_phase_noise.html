@@ -80,11 +80,21 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 .region-labels{display:flex;gap:1rem;flex-wrap:wrap;font-size:.75rem;margin-top:.3rem}
 .rl{display:flex;align-items:center;gap:.35rem}
 .rl-dot{width:10px;height:10px;border-radius:50%}
+
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.help-overlay.open{display:flex}
+.help-box{background:#fff;border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;max-height:80vh;overflow-y:auto}
+.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+.help-try li::marker{color:#b5895a}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
   <button class="tbtn" onclick="takeScreenshot()">&#128247; Screenshot</button>
   <button class="tbtn" onclick="exportCSV()">&#11015; Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
@@ -245,6 +255,54 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
       <div class="rl"><div class="rl-dot" style="background:rgba(188,140,255,.6)"></div><span style="color:var(--tm)">Integration band</span></div>
     </div>
     <div class="annotation" id="annotation">Computing…</div>
+  </div>
+</div>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Phase Noise / Leeson's Equation — Help</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Models oscillator single-sideband phase noise L(Δf) in dBc/Hz using Leeson's equation: L(Δf) = 10·log[(2FkT/P<sub>s</sub>)·(1 + (f₀/2Q<sub>L</sub>Δf)²)·(1 + f<sub>c</sub>/|Δf|)]. The spectrum is plotted from 10 Hz to 100 MHz offset. Integrated phase noise φ<sub>rms</sub> = √(2·∫L(Δf)dΔf) is numerically integrated over the user-defined band, and timing jitter t<sub>jitter</sub> = φ<sub>rms</sub> / (2π·f₀) is derived.</div>
+
+    <div class="help-section">Sliders &amp; inputs</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Carrier frequency f₀ (1 MHz–10 GHz, log scale):</strong> Oscillator output frequency. Higher f₀ raises the Leeson half-bandwidth f₀/2Q<sub>L</sub>, compressing the 1/f² region.</li>
+        <li><strong>Loaded Q (10–1 M, log scale):</strong> Resonator quality factor under operating load. Doubling Q improves close-in phase noise by 6 dB. Crystal oscillators: Q ~ 10k–100k; LC VCOs: Q ~ 10–200.</li>
+        <li><strong>Carrier power P<sub>s</sub> (−20 to +20 dBm):</strong> Signal power in the resonator. Every 3 dB increase in P<sub>s</sub> lowers the thermal floor and 1/f² noise by 3 dB.</li>
+        <li><strong>Noise figure F (0–20 dB):</strong> Active device noise figure. Increases the thermal noise floor by F linearly. Typical BJT amplifiers: 1–5 dB; FET oscillators: 3–10 dB.</li>
+        <li><strong>Flicker corner f<sub>c</sub> (10 Hz–10 MHz, log scale):</strong> 1/f noise corner frequency of the active device. Below f<sub>c</sub> the slope steepens to −30 dB/decade; above it the Leeson 1/f² region dominates.</li>
+        <li><strong>Integration band (From Δf / To Δf):</strong> Frequency range over which φ<sub>rms</sub> and jitter are integrated. Typical system choices: 1 kHz–10 MHz for PLLs; 10 Hz–1 MHz for ADC clock jitter.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">How to read the chart</div>
+    <div class="help-body">The main chart plots L(Δf) in dBc/Hz on a log-frequency x-axis (10 Hz to 100 MHz). Three slope regions are visible: a steep −30 dB/decade section at small offsets (1/f³, flicker-dominated), a −20 dB/decade Leeson region (1/f², thermally noise-upconverted), and a flat thermal noise floor far from the carrier. The purple shaded area marks the user-selected integration band. Region labels beneath the chart color-code the three slopes.</div>
+
+    <div class="help-section">Key results</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>L @ 1 kHz / 10 kHz / 100 kHz / 1 MHz:</strong> Spot phase noise values at standard offset frequencies, in dBc/Hz.</li>
+        <li><strong>Noise floor:</strong> Far-from-carrier thermal limit = 10·log(2FkT/P<sub>s</sub>) dBc/Hz.</li>
+        <li><strong>Leeson BW:</strong> Half-bandwidth f₀/(2Q<sub>L</sub>) — offsets inside this see the 1/f² rise.</li>
+        <li><strong>Integrated phase noise (φ<sub>rms</sub>):</strong> RMS phase error in dBc and radians over the integration band.</li>
+        <li><strong>Timing jitter:</strong> Clock jitter in femtoseconds (or attoseconds), critical for ADC SNR and serial data eye diagrams.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Things to try</div>
+    <div class="help-body">
+      <ul class="help-try">
+        <li>Load the "Sapphire oscillator" preset (Q = 500k): observe the floor drops below −175 dBc/Hz and jitter falls to attosecond levels — the gold standard for metrology.</li>
+        <li>With any preset, increase the flicker corner f<sub>c</sub> above the Leeson half-bandwidth: the −30 dB/decade region fills the entire useful offset range, dramatically worsening close-in noise.</li>
+        <li>Set integration band from 1 kHz to 10 MHz and compare the TCXO vs VCO presets — the VCO has ~30 dB worse integrated noise, showing why PLLs reference-lock VCOs to clean XOs.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">Leeson, D. B. "A simple model of feedback oscillator noise spectrum." <em>Proceedings of the IEEE</em>, vol. 54, no. 2, pp. 329–330, Feb. 1966. doi: 10.1109/PROC.1966.4682</div>
   </div>
 </div>
 
@@ -552,6 +610,10 @@ update();
   if(p.has('fi2')) document.getElementById('sFint2').value=p.get('fi2');
   if([...p.keys()].length>0) { update(); syncAll11(); }
 })();
+
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 </script>
 </body>
 </html>
