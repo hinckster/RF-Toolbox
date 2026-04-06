@@ -47,6 +47,13 @@
   .slider-row label span { color: var(--orange); font-family: 'Courier New', monospace; font-weight: 600; transition: all 200ms ease; }
   input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
   .hints { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 0.15rem; }
+  .sr-row { display:flex; align-items:center; gap:6px; }
+  .sr-row input[type=range] { flex:1; width:auto; min-width:0; }
+  .si { width:72px; background:#0d1117; border:1px solid var(--border); border-radius:4px; color:var(--accent); font-family:'Courier New',monospace; font-size:.82rem; padding:3px 6px; text-align:right; transition:border-color .15s; -moz-appearance:textfield; appearance:textfield; }
+  .si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  .si:focus { outline:none; border-color:var(--accent); }
+  .si.err { border-color:var(--red); color:var(--red); }
+  .si-unit { font-size:.75rem; color:var(--muted); white-space:nowrap; }
 
   .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
 
@@ -140,14 +147,22 @@
     </div>
 
     <div class="slider-row">
-      <label>Resistance R <span id="lR">75 &#937;</span></label>
-      <input type="range" id="sR" min="0" max="300" value="75" step="1">
-      <div class="hints"><span>0</span><span>300 &#937;</span></div>
+      <label>Resistance R <span id="lR" style="display:none">75 Ω</span></label>
+      <div class="sr-row">
+        <input type="range" id="sR" min="0" max="300" value="75" step="1">
+        <input type="number" class="si" id="iR" value="75">
+        <span class="si-unit">Ω</span>
+      </div>
+      <div class="hints"><span>0</span><span>300 Ω</span></div>
     </div>
     <div class="slider-row">
-      <label>Reactance X <span id="lX">0 &#937;</span></label>
-      <input type="range" id="sX" min="-200" max="200" value="0" step="1">
-      <div class="hints"><span>&#8722;200 &#937;</span><span>+200 &#937;</span></div>
+      <label>Reactance X <span id="lX" style="display:none">0 Ω</span></label>
+      <div class="sr-row">
+        <input type="range" id="sX" min="-200" max="200" value="0" step="1">
+        <input type="number" class="si" id="iX" value="0">
+        <span class="si-unit">Ω</span>
+      </div>
+      <div class="hints"><span>−200 Ω</span><span>+200 Ω</span></div>
     </div>
 
     <div class="z0-row">
@@ -157,9 +172,13 @@
     </div>
 
     <div class="slider-row">
-      <label>Line length <span id="lLen">0.50&#955;</span></label>
-      <input type="range" id="sLen" min="0" max="200" value="50" step="1">
-      <div class="hints"><span>0</span><span>2&#955;</span></div>
+      <label>Line length <span id="lLen" style="display:none">0.50λ</span></label>
+      <div class="sr-row">
+        <input type="range" id="sLen" min="0" max="200" value="50" step="1">
+        <input type="number" class="si" id="iLen" value="180.0">
+        <span class="si-unit">°</span>
+      </div>
+      <div class="hints"><span>0°</span><span>720°</span></div>
     </div>
 
     <hr class="divider">
@@ -486,11 +505,54 @@ function update() {
     reactNote;
 }
 
+// ── Slider ↔ text-input wiring ──
+function linkSliderInput(sliderId, inputId, decimals, onUpdate, min, max) {
+  const slider = document.getElementById(sliderId);
+  const inp = document.getElementById(inputId);
+  function sync() { inp.value = (+slider.value).toFixed(decimals); inp.classList.remove('err'); }
+  slider.addEventListener('input', () => { sync(); onUpdate(); });
+  inp.addEventListener('input', () => {
+    const v = parseFloat(inp.value);
+    if (isNaN(v) || v < min || v > max) { inp.classList.add('err'); return; }
+    inp.classList.remove('err'); slider.value = v; onUpdate();
+  });
+  inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) { const c = Math.max(min, Math.min(max, v)); inp.value = c.toFixed(decimals); inp.classList.remove('err'); slider.value = c; onUpdate(); }
+  });
+  sync();
+}
+
+// Line length: slider 0-200 (units of 0.01λ), input in degrees (0-720°)
+function syncLenInput() {
+  const deg = (+document.getElementById('sLen').value) * 3.6;
+  const inp = document.getElementById('iLen');
+  inp.value = deg.toFixed(1);
+  inp.classList.remove('err');
+}
+document.getElementById('sLen').addEventListener('input', () => { syncLenInput(); update(); });
+document.getElementById('iLen').addEventListener('input', () => {
+  const deg = parseFloat(document.getElementById('iLen').value);
+  const inp = document.getElementById('iLen');
+  if (isNaN(deg) || deg < 0 || deg > 720) { inp.classList.add('err'); return; }
+  inp.classList.remove('err'); document.getElementById('sLen').value = deg / 3.6; update();
+});
+document.getElementById('iLen').addEventListener('change', () => {
+  const deg = parseFloat(document.getElementById('iLen').value);
+  if (!isNaN(deg)) {
+    const d = Math.max(0, Math.min(720, deg));
+    document.getElementById('iLen').value = d.toFixed(1);
+    document.getElementById('iLen').classList.remove('err');
+    document.getElementById('sLen').value = d / 3.6; update();
+  }
+});
+
+linkSliderInput('sR', 'iR', 0, update, 0, 300);
+linkSliderInput('sX', 'iX', 0, update, -200, 200);
+syncLenInput();
+
 // ── Init ──────────────────────────────────────────────────────────────────────
-document.getElementById('sR').addEventListener('input', update);
-document.getElementById('sX').addEventListener('input', update);
 document.getElementById('iZ0').addEventListener('input', update);
-document.getElementById('sLen').addEventListener('input', update);
 
 initChart();
 update();
@@ -618,7 +680,12 @@ function loadPreset(key) {
     z0El.dispatchEvent(new Event('input'));
   }
   if (p.has('linelen')) document.getElementById('sLen').value = p.get('linelen');
-  if ([...p.keys()].length > 0) update();
+  if ([...p.keys()].length > 0) {
+    update();
+    document.getElementById('iR').value = (+document.getElementById('sR').value).toFixed(0);
+    document.getElementById('iX').value = (+document.getElementById('sX').value).toFixed(0);
+    syncLenInput();
+  }
 })();
 </script>
 </body>
