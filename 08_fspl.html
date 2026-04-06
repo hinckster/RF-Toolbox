@@ -47,6 +47,15 @@ header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 .sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
 input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 .hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
+.sr-row{display:flex;align-items:center;gap:6px}
+.sr-row input[type=range]{flex:1;width:auto;min-width:0}
+.si{width:72px;background:#0d1117;border:1px solid var(--bdr);border-radius:4px;color:var(--blue);font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;text-align:right;transition:border-color .15s;-moz-appearance:textfield;appearance:textfield}
+.si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.si:focus{outline:none;border-color:var(--blue)}
+.si.err{border-color:var(--red);color:var(--red)}
+.si-unit{font-size:.75rem;color:var(--tm);white-space:nowrap}
+.si-unit.tog{cursor:pointer;user-select:none}
+.si-unit.tog:hover{color:var(--blue);text-decoration:underline}
 
 .band-grid{display:grid;grid-template-columns:1fr;gap:.4rem;margin-bottom:.9rem}
 .band-row{display:flex;align-items:center;gap:.5rem;padding:.3rem .5rem;border-radius:6px;background:var(--deep);border:1px solid var(--bdr)}
@@ -141,13 +150,21 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
         </select>
       </div>
       <div class="sr">
-        <label>Max distance <span id="vDmax">10.0 km</span></label>
-        <input type="range" id="sDmax" min="0.1" max="3" step="0.02" value="1">
+        <label>Max distance <span id="vDmax" style="display:none">10.0 km</span></label>
+        <div class="sr-row">
+          <input type="range" id="sDmax" min="0.1" max="3" step="0.02" value="1">
+          <input type="number" class="si" id="iDmax" value="10.00">
+          <span class="si-unit tog" id="uDmax" onclick="toggleDist8Unit()">km</span>
+        </div>
         <div class="hints"><span>100 m</span><span>1000 km</span></div>
       </div>
       <div class="sr">
-        <label>Operating distance d <span id="vD">1.0 km</span></label>
-        <input type="range" id="sD" min="0" max="1" step="0.005" value="0.5">
+        <label>Operating distance d <span id="vD" style="display:none">1.0 km</span></label>
+        <div class="sr-row">
+          <input type="range" id="sD" min="0" max="1" step="0.005" value="0.5">
+          <input type="number" class="si" id="iD" value="1.000">
+          <span class="si-unit tog" id="uD" onclick="toggleDist8Unit()">km</span>
+        </div>
         <div class="hints"><span>10 m</span><span>d_max</span></div>
       </div>
       <div class="panel-sep"></div>
@@ -157,8 +174,12 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
         <button class="ovl-btn" id="btnAtm" onclick="toggleOvl('atm',this)">Atm. absorp.</button>
       </div>
       <div class="sr" id="rainCtrl" style="display:none">
-        <label>Rain rate R <span id="vRain">25 mm/hr</span></label>
-        <input type="range" id="sRain" min="1" max="100" step="1" value="25">
+        <label>Rain rate R <span id="vRain" style="display:none">25 mm/hr</span></label>
+        <div class="sr-row">
+          <input type="range" id="sRain" min="1" max="100" step="1" value="25">
+          <input type="number" class="si" id="iRain" value="25">
+          <span class="si-unit">mm/hr</span>
+        </div>
         <div class="hints"><span>1 mm/hr</span><span>100 mm/hr</span></div>
       </div>
     </div>
@@ -366,8 +387,89 @@ function update(){
     mmWave links (28/60/77 GHz) compensate with high-gain antennas (λ is small → large aperture gain).`;
 }
 
-[document.getElementById('sDmax'),document.getElementById('sD'),document.getElementById('sRain')
-].forEach(s=>s.addEventListener('input',update));
+// ── Slider ↔ text-input wiring ──
+let dist8Unit = 'km';
+
+function syncDmaxInput() {
+  const km = Math.pow(10, +document.getElementById('sDmax').value);
+  const inp = document.getElementById('iDmax');
+  inp.value = dist8Unit === 'km' ? km.toFixed(2) : (km * 1000).toFixed(0);
+  inp.classList.remove('err');
+}
+function syncDInput() {
+  const dmax_km = Math.pow(10, +document.getElementById('sDmax').value);
+  const d_frac = +document.getElementById('sD').value;
+  const d_km = 0.01 * Math.pow(dmax_km / 0.01, d_frac);
+  const inp = document.getElementById('iD');
+  inp.value = dist8Unit === 'km' ? d_km.toFixed(3) : (d_km * 1000).toFixed(0);
+  inp.classList.remove('err');
+}
+function toggleDist8Unit() {
+  dist8Unit = dist8Unit === 'km' ? 'm' : 'km';
+  ['uDmax','uD'].forEach(id => document.getElementById(id).textContent = dist8Unit);
+  syncDmaxInput(); syncDInput();
+}
+
+document.getElementById('sDmax').addEventListener('input', () => { syncDmaxInput(); syncDInput(); update(); });
+document.getElementById('iDmax').addEventListener('input', () => {
+  const raw = parseFloat(document.getElementById('iDmax').value);
+  const inp = document.getElementById('iDmax');
+  if (isNaN(raw) || raw <= 0) { inp.classList.add('err'); return; }
+  const km = dist8Unit === 'km' ? raw : raw / 1000;
+  const log = Math.log10(km);
+  if (log < 0.1 || log > 3) { inp.classList.add('err'); return; }
+  inp.classList.remove('err'); document.getElementById('sDmax').value = log; syncDInput(); update();
+});
+document.getElementById('iDmax').addEventListener('change', () => {
+  const raw = parseFloat(document.getElementById('iDmax').value);
+  if (!isNaN(raw) && raw > 0) {
+    const km = Math.max(Math.pow(10, 0.1), Math.min(1000, dist8Unit === 'km' ? raw : raw / 1000));
+    document.getElementById('sDmax').value = Math.log10(km); syncDmaxInput(); syncDInput(); update();
+  }
+});
+
+document.getElementById('sD').addEventListener('input', () => { syncDInput(); update(); });
+document.getElementById('iD').addEventListener('input', () => {
+  const raw = parseFloat(document.getElementById('iD').value);
+  const inp = document.getElementById('iD');
+  if (isNaN(raw) || raw <= 0) { inp.classList.add('err'); return; }
+  const km = dist8Unit === 'km' ? raw : raw / 1000;
+  const dmax_km = Math.pow(10, +document.getElementById('sDmax').value);
+  if (km < 0.01 || km > dmax_km) { inp.classList.add('err'); return; }
+  const frac = Math.log(km / 0.01) / Math.log(dmax_km / 0.01);
+  inp.classList.remove('err'); document.getElementById('sD').value = Math.max(0, Math.min(1, frac)); update();
+});
+document.getElementById('iD').addEventListener('change', () => {
+  const raw = parseFloat(document.getElementById('iD').value);
+  if (!isNaN(raw) && raw > 0) {
+    const dmax_km = Math.pow(10, +document.getElementById('sDmax').value);
+    const km = Math.max(0.01, Math.min(dmax_km, dist8Unit === 'km' ? raw : raw / 1000));
+    const frac = Math.log(km / 0.01) / Math.log(dmax_km / 0.01);
+    document.getElementById('sD').value = Math.max(0, Math.min(1, frac)); syncDInput(); update();
+  }
+});
+
+// linkSliderInput for linear sliders
+function linkSliderInput(sliderId, inputId, decimals, onUpdate, min, max) {
+  const slider = document.getElementById(sliderId);
+  const inp = document.getElementById(inputId);
+  function sync() { inp.value = (+slider.value).toFixed(decimals); inp.classList.remove('err'); }
+  slider.addEventListener('input', () => { sync(); onUpdate(); });
+  inp.addEventListener('input', () => {
+    const v = parseFloat(inp.value);
+    if (isNaN(v) || v < min || v > max) { inp.classList.add('err'); return; }
+    inp.classList.remove('err'); slider.value = v; onUpdate();
+  });
+  inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) { const c = Math.max(min, Math.min(max, v)); inp.value = c.toFixed(decimals); inp.classList.remove('err'); slider.value = c; onUpdate(); }
+  });
+  sync();
+}
+
+linkSliderInput('sRain', 'iRain', 0, update, 1, 100);
+syncDmaxInput();
+syncDInput();
 
 function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#8b949e';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`path_loss_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
 function exportCSV() {
