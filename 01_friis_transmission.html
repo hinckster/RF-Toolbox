@@ -56,6 +56,15 @@
   .slider-row label span { color: var(--accent); font-family: 'Courier New', monospace; font-weight: 600; transition: all 200ms ease; }
   input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
   .slider-row .hints { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
+  .sr-row { display:flex; align-items:center; gap:6px; }
+  .sr-row input[type=range] { flex:1; width:auto; min-width:0; }
+  .si { width:72px; background:#0d1117; border:1px solid var(--border); border-radius:4px; color:var(--accent); font-family:'Courier New',monospace; font-size:.82rem; padding:3px 6px; text-align:right; transition:border-color .15s; -moz-appearance:textfield; }
+  .si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  .si:focus { outline:none; border-color:var(--accent); }
+  .si.err { border-color:var(--red); color:var(--red); }
+  .si-unit { font-size:.75rem; color:var(--muted); white-space:nowrap; }
+  .si-unit.tog { cursor:pointer; user-select:none; }
+  .si-unit.tog:hover { color:var(--accent); text-decoration:underline; }
 
   .results { margin-top: 1.4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
   .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; }
@@ -144,28 +153,48 @@
     <a href="#" onclick="sendToRadar(); return false;" style="display:block;text-align:right;color:#58a6ff;font-size:.75rem;text-decoration:none;margin-top:.2rem;margin-bottom:.6rem">→ Open in Radar Tool</a>
 
     <div class="slider-row">
-      <label>Tx Power (Pt) <span id="lPt">20 dBm</span></label>
-      <input type="range" id="sPt" min="-10" max="50" value="20" step="1">
+      <label>Tx Power (Pt) <span id="lPt" style="display:none">20 dBm</span></label>
+      <div class="sr-row">
+        <input type="range" id="sPt" min="-10" max="50" value="20" step="1">
+        <input type="number" class="si" id="iPt" value="20">
+        <span class="si-unit">dBm</span>
+      </div>
       <div class="hints"><span>−10</span><span>50 dBm</span></div>
     </div>
     <div class="slider-row">
-      <label>Tx Antenna Gain (Gt) <span id="lGt">6 dBi</span></label>
-      <input type="range" id="sGt" min="0" max="40" value="6" step="0.5">
+      <label>Tx Antenna Gain (Gt) <span id="lGt" style="display:none">6 dBi</span></label>
+      <div class="sr-row">
+        <input type="range" id="sGt" min="0" max="40" value="6" step="0.5">
+        <input type="number" class="si" id="iGt" value="6.0">
+        <span class="si-unit">dBi</span>
+      </div>
       <div class="hints"><span>0</span><span>40 dBi</span></div>
     </div>
     <div class="slider-row">
-      <label>Rx Antenna Gain (Gr) <span id="lGr">6 dBi</span></label>
-      <input type="range" id="sGr" min="0" max="40" value="6" step="0.5">
+      <label>Rx Antenna Gain (Gr) <span id="lGr" style="display:none">6 dBi</span></label>
+      <div class="sr-row">
+        <input type="range" id="sGr" min="0" max="40" value="6" step="0.5">
+        <input type="number" class="si" id="iGr" value="6.0">
+        <span class="si-unit">dBi</span>
+      </div>
       <div class="hints"><span>0</span><span>40 dBi</span></div>
     </div>
     <div class="slider-row">
-      <label>Frequency <span id="lFreq">2.4 GHz</span></label>
-      <input type="range" id="sFreq" min="0.1" max="100" value="2.4" step="0.1">
+      <label>Frequency <span id="lFreq" style="display:none">2.4 GHz</span></label>
+      <div class="sr-row">
+        <input type="range" id="sFreq" min="0.1" max="100" value="2.4" step="0.1">
+        <input type="number" class="si" id="iFreq" value="2.400">
+        <span class="si-unit tog" id="uFreq" onclick="toggleFreqUnit()">GHz</span>
+      </div>
       <div class="hints"><span>100 MHz</span><span>100 GHz</span></div>
     </div>
     <div class="slider-row">
-      <label>Distance <span id="lDist">1000 m</span></label>
-      <input type="range" id="sDist" min="1" max="100000" value="1000" step="1">
+      <label>Distance <span id="lDist" style="display:none">1000 m</span></label>
+      <div class="sr-row">
+        <input type="range" id="sDist" min="1" max="100000" value="1000" step="1">
+        <input type="number" class="si" id="iDist" value="1000">
+        <span class="si-unit tog" id="uDist" onclick="toggleDistUnit()">m</span>
+      </div>
       <div class="hints"><span>1 m</span><span>100 km</span></div>
     </div>
 
@@ -348,7 +377,90 @@ function setSweep(mode) {
 }
 
 function onInput() { updateLabels(); updateResults(); if (sweepMode === 'distance') buildDistanceSweep(); else buildFrequencySweep(); }
-Object.values(inputs).forEach(el => el.addEventListener('input', onInput));
+
+// ── Slider ↔ text-input wiring ──
+function linkSliderInput(sliderId, inputId, decimals, onUpdate, min, max) {
+  const slider = document.getElementById(sliderId);
+  const inp = document.getElementById(inputId);
+  function sync() { inp.value = (+slider.value).toFixed(decimals); inp.classList.remove('err'); }
+  slider.addEventListener('input', () => { sync(); onUpdate(); });
+  inp.addEventListener('input', () => {
+    const v = parseFloat(inp.value);
+    if (isNaN(v) || v < min || v > max) { inp.classList.add('err'); return; }
+    inp.classList.remove('err'); slider.value = v; onUpdate();
+  });
+  inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) { const c = Math.max(min, Math.min(max, v)); inp.value = c.toFixed(decimals); inp.classList.remove('err'); slider.value = c; onUpdate(); }
+  });
+  sync();
+}
+
+// Frequency unit toggle (slider native unit = GHz)
+let freqUnit = 'GHz';
+function syncFreqInput() {
+  const v = +document.getElementById('sFreq').value;
+  const inp = document.getElementById('iFreq');
+  inp.value = freqUnit === 'GHz' ? v.toFixed(3) : (v * 1000).toFixed(0);
+  inp.classList.remove('err');
+}
+function toggleFreqUnit() {
+  freqUnit = freqUnit === 'GHz' ? 'MHz' : 'GHz';
+  document.getElementById('uFreq').textContent = freqUnit;
+  syncFreqInput();
+}
+document.getElementById('sFreq').addEventListener('input', () => { syncFreqInput(); onInput(); });
+document.getElementById('iFreq').addEventListener('input', () => {
+  const raw = parseFloat(document.getElementById('iFreq').value);
+  const inp = document.getElementById('iFreq');
+  if (isNaN(raw)) { inp.classList.add('err'); return; }
+  const ghz = freqUnit === 'GHz' ? raw : raw / 1000;
+  if (ghz < 0.1 || ghz > 100) { inp.classList.add('err'); return; }
+  inp.classList.remove('err'); document.getElementById('sFreq').value = ghz; onInput();
+});
+document.getElementById('iFreq').addEventListener('change', () => {
+  const raw = parseFloat(document.getElementById('iFreq').value);
+  if (!isNaN(raw)) {
+    const ghz = Math.max(0.1, Math.min(100, freqUnit === 'GHz' ? raw : raw / 1000));
+    document.getElementById('sFreq').value = ghz; syncFreqInput(); onInput();
+  }
+});
+
+// Distance unit toggle (slider native unit = metres)
+let distUnit = 'm';
+function syncDistInput() {
+  const v = +document.getElementById('sDist').value;
+  const inp = document.getElementById('iDist');
+  inp.value = distUnit === 'm' ? v.toFixed(0) : (v / 1000).toFixed(3);
+  inp.classList.remove('err');
+}
+function toggleDistUnit() {
+  distUnit = distUnit === 'm' ? 'km' : 'm';
+  document.getElementById('uDist').textContent = distUnit;
+  syncDistInput();
+}
+document.getElementById('sDist').addEventListener('input', () => { syncDistInput(); onInput(); });
+document.getElementById('iDist').addEventListener('input', () => {
+  const raw = parseFloat(document.getElementById('iDist').value);
+  const inp = document.getElementById('iDist');
+  if (isNaN(raw)) { inp.classList.add('err'); return; }
+  const m = distUnit === 'm' ? raw : raw * 1000;
+  if (m < 1 || m > 100000) { inp.classList.add('err'); return; }
+  inp.classList.remove('err'); document.getElementById('sDist').value = m; onInput();
+});
+document.getElementById('iDist').addEventListener('change', () => {
+  const raw = parseFloat(document.getElementById('iDist').value);
+  if (!isNaN(raw)) {
+    const m = Math.max(1, Math.min(100000, distUnit === 'm' ? raw : raw * 1000));
+    document.getElementById('sDist').value = m; syncDistInput(); onInput();
+  }
+});
+
+linkSliderInput('sPt', 'iPt', 0, onInput, -10, 50);
+linkSliderInput('sGt', 'iGt', 1, onInput, 0, 40);
+linkSliderInput('sGr', 'iGr', 1, onInput, 0, 40);
+syncFreqInput();
+syncDistInput();
 onInput();
 
 // ── Toolbar functions ──
@@ -464,7 +576,13 @@ function sendToRadar() {
   }
   if (p.has('gt'))   document.getElementById('sGt').value = p.get('gt');
   if (p.has('gr'))   document.getElementById('sGr').value = p.get('gr');
-  if ([...p.keys()].length > 0) onInput();
+  if ([...p.keys()].length > 0) {
+    onInput();
+    document.getElementById('iPt').value = (+document.getElementById('sPt').value).toFixed(0);
+    document.getElementById('iGt').value = (+document.getElementById('sGt').value).toFixed(1);
+    document.getElementById('iGr').value = (+document.getElementById('sGr').value).toFixed(1);
+    syncFreqInput(); syncDistInput();
+  }
 })();
 </script>
 </body>
