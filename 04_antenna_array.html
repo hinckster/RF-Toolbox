@@ -47,6 +47,13 @@ header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 .sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
 input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 .hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
+.sr-row{display:flex;align-items:center;gap:6px}
+.sr-row input[type=range]{flex:1;width:auto;min-width:0}
+.si{width:72px;background:#0d1117;border:1px solid var(--bdr);border-radius:4px;color:var(--blue);font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;text-align:right;transition:border-color .15s;-moz-appearance:textfield;appearance:textfield}
+.si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.si:focus{outline:none;border-color:var(--blue)}
+.si.err{border-color:var(--red);color:var(--red)}
+.si-unit{font-size:.75rem;color:var(--tm);white-space:nowrap}
 
 select.sel{width:100%;background:var(--deep);border:1px solid var(--bdr);color:var(--t2);border-radius:5px;padding:.35rem .5rem;font-size:.84rem;margin-bottom:.9rem}
 
@@ -140,18 +147,30 @@ select.sel{width:100%;background:var(--deep);border:1px solid var(--bdr);color:v
         </select>
       </div>
       <div class="sr">
-        <label>Elements N <span id="vN">16</span></label>
-        <input type="range" id="sN" min="2" max="64" step="1" value="16">
+        <label>Elements N <span id="vN" style="display:none">16</span></label>
+        <div class="sr-row">
+          <input type="range" id="sN" min="2" max="64" step="1" value="16">
+          <input type="number" class="si" id="iN" value="16">
+          <span class="si-unit">el</span>
+        </div>
         <div class="hints"><span>2</span><span>64</span></div>
       </div>
       <div class="sr">
-        <label>Spacing d/λ <span id="vD">0.50</span></label>
-        <input type="range" id="sD" min="0.1" max="2" step="0.05" value="0.5">
+        <label>Spacing d/λ <span id="vD" style="display:none">0.50</span></label>
+        <div class="sr-row">
+          <input type="range" id="sD" min="0.1" max="2" step="0.05" value="0.5">
+          <input type="number" class="si" id="iD" value="0.50">
+          <span class="si-unit">×λ</span>
+        </div>
         <div class="hints"><span>0.1λ</span><span>2.0λ</span></div>
       </div>
       <div class="sr">
-        <label>Steer angle θ₀ <span id="vTheta">0°</span></label>
-        <input type="range" id="sTheta" min="-60" max="60" step="1" value="0">
+        <label>Steer angle θ₀ <span id="vTheta" style="display:none">0°</span></label>
+        <div class="sr-row">
+          <input type="range" id="sTheta" min="-60" max="60" step="1" value="0">
+          <input type="number" class="si" id="iTheta" value="0">
+          <span class="si-unit">deg</span>
+        </div>
         <div class="hints"><span>−60°</span><span>+60°</span></div>
       </div>
       <div class="eq-label" style="margin-bottom:.3rem">Element Pattern</div>
@@ -175,13 +194,21 @@ select.sel{width:100%;background:var(--deep);border:1px solid var(--bdr);color:v
         <h4>Array B (compare — purple)</h4>
         <p style="font-size:.74rem;color:var(--tm);margin-bottom:.7rem;line-height:1.5">Set a second array configuration here to overlay its pattern (dashed purple) against Array A. Useful for comparing different element counts, spacings, or tapers side-by-side on the same chart.</p>
         <div class="sr">
-          <label>Elements N_B <span id="vNB">8</span></label>
-          <input type="range" id="sNB" min="2" max="64" step="1" value="8">
+          <label>Elements N_B <span id="vNB" style="display:none">8</span></label>
+          <div class="sr-row">
+            <input type="range" id="sNB" min="2" max="64" step="1" value="8">
+            <input type="number" class="si" id="iNB" value="8">
+            <span class="si-unit">el</span>
+          </div>
           <div class="hints"><span>2</span><span>64</span></div>
         </div>
         <div class="sr">
-          <label>d/λ_B <span id="vDB">0.50</span></label>
-          <input type="range" id="sDB" min="0.1" max="2" step="0.05" value="0.5">
+          <label>d/λ_B <span id="vDB" style="display:none">0.50</span></label>
+          <div class="sr-row">
+            <input type="range" id="sDB" min="0.1" max="2" step="0.05" value="0.5">
+            <input type="number" class="si" id="iDB" value="0.50">
+            <span class="si-unit">×λ</span>
+          </div>
           <div class="hints"><span>0.1λ</span><span>2.0λ</span></div>
         </div>
         <div class="eq-label" style="margin-bottom:.3rem">Taper B</div>
@@ -461,13 +488,36 @@ function update(){
     Comparing B (${NB} el, ${taperNames[taperB]}): ${NB>N?'B has more elements → narrower beam':NB<N?'B has fewer elements → wider beam':'Same element count'}.`;
 }
 
-[document.getElementById('sN'),document.getElementById('sD'),document.getElementById('sTheta'),
- document.getElementById('sNB'),document.getElementById('sDB'),
- document.getElementById('selElem'),document.getElementById('selTaper'),document.getElementById('selTaperB')
-].forEach(el=>el.addEventListener('input',update));
-document.getElementById('selElem').addEventListener('change',update);
-document.getElementById('selTaper').addEventListener('change',update);
-document.getElementById('selTaperB').addEventListener('change',update);
+// ── Slider ↔ text-input wiring ──
+function linkSliderInput(sliderId, inputId, decimals, onUpdate, min, max) {
+  const slider = document.getElementById(sliderId);
+  const inp = document.getElementById(inputId);
+  function sync() { inp.value = (+slider.value).toFixed(decimals); inp.classList.remove('err'); }
+  slider.addEventListener('input', () => { sync(); onUpdate(); });
+  inp.addEventListener('input', () => {
+    const v = parseFloat(inp.value);
+    if (isNaN(v) || v < min || v > max) { inp.classList.add('err'); return; }
+    inp.classList.remove('err'); slider.value = v; onUpdate();
+  });
+  inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) { const c = Math.max(min, Math.min(max, v)); inp.value = c.toFixed(decimals); inp.classList.remove('err'); slider.value = c; onUpdate(); }
+  });
+  sync();
+}
+
+linkSliderInput('sN',     'iN',     0, update, 2, 64);
+linkSliderInput('sD',     'iD',     2, update, 0.1, 2);
+linkSliderInput('sTheta', 'iTheta', 0, update, -60, 60);
+linkSliderInput('sNB',    'iNB',    0, update, 2, 64);
+linkSliderInput('sDB',    'iDB',    2, update, 0.1, 2);
+
+document.getElementById('selElem').addEventListener('input', update);
+document.getElementById('selTaper').addEventListener('input', update);
+document.getElementById('selTaperB').addEventListener('input', update);
+document.getElementById('selElem').addEventListener('change', update);
+document.getElementById('selTaper').addEventListener('change', update);
+document.getElementById('selTaperB').addEventListener('change', update);
 
 function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#8b949e';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`array_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
 function exportCSV() {
@@ -552,7 +602,12 @@ update();
   if (p.has('steer')) document.getElementById('sTheta').value   = p.get('steer');
   if (p.has('taper')) document.getElementById('selTaper').value = p.get('taper');
   if (p.has('elem'))  document.getElementById('selElem').value  = p.get('elem');
-  if ([...p.keys()].length > 0) update();
+  if ([...p.keys()].length > 0) {
+    update();
+    document.getElementById('iN').value     = (+document.getElementById('sN').value).toFixed(0);
+    document.getElementById('iD').value     = (+document.getElementById('sD').value).toFixed(2);
+    document.getElementById('iTheta').value = (+document.getElementById('sTheta').value).toFixed(0);
+  }
 })();
 </script>
 </body>
