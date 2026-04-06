@@ -8,10 +8,10 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#16181d;--card:#1e2128;--deep:#0d1117;
-  --bdr:#30363d;--t1:#e6edf3;--t2:#c9d1d9;--tm:#8b949e;
-  --blue:#58a6ff;--grn:#3fb950;--org:#f0883e;--red:#f85149;--yel:#e6c547;--pur:#bc8cff;
-  --cyan:#00c8ff;
+  --bg:#ffffff;--card:#f4f5f7;--deep:#eaecef;
+  --bdr:#d0d4da;--t1:#1a1d23;--t2:#4a5568;--tm:#718096;
+  --blue:#2563eb;--grn:#16a34a;--org:#d97706;--red:#dc2626;--yel:#e6c547;--pur:#7c3aed;
+  --cyan:#0284c7;
 }
 body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
 
@@ -47,25 +47,25 @@ header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 
 .sr{margin-bottom:.9rem}
 .sr label{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem}
-.sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600}
-input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
+.sr label span{color:#b5895a;font-family:'Courier New',monospace;font-weight:600}
+input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 .hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
 .sr-row{display:flex;align-items:center;gap:6px}
 .sr-row input[type=range]{flex:1;width:auto;min-width:0}
-.si{width:72px;background:#0d1117;border:1px solid var(--bdr);border-radius:4px;color:var(--blue);font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;text-align:right;transition:border-color .15s;-moz-appearance:textfield;appearance:textfield}
+.si{width:72px;background:var(--deep);border:1px solid var(--bdr);border-radius:4px;color:#b5895a;font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;text-align:right;transition:border-color .15s;-moz-appearance:textfield;appearance:textfield}
 .si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.si:focus{outline:none;border-color:var(--blue)}
+.si:focus{outline:none;border-color:#b5895a}
 .si.err{border-color:var(--red);color:var(--red)}
 .si-unit{font-size:.75rem;color:var(--tm);white-space:nowrap}
 
 .preset-row{margin-bottom:.9rem}
 .preset-row label{font-size:.76rem;color:var(--tm);display:block;margin-bottom:.3rem}
 .preset-select{width:100%;background:var(--deep);border:1px solid var(--bdr);color:var(--t2);border-radius:6px;padding:6px 8px;font-size:.78rem;cursor:pointer}
-.preset-select:focus{outline:none;border-color:var(--blue)}
+.preset-select:focus{outline:none;border-color:#b5895a}
 
 .class-tabs{display:flex;gap:.35rem;margin-bottom:1rem;flex-wrap:wrap}
 .ctab{padding:.35rem .7rem;background:var(--deep);border:1px solid var(--bdr);border-radius:5px;font-size:.78rem;cursor:pointer;color:var(--tm);transition:.15s}
-.ctab.active{border-color:var(--blue);color:var(--blue);background:rgba(88,166,255,.08)}
+.ctab.active{border-color:#b5895a;color:#b5895a;background:rgba(181,137,90,.1)}
 
 .metrics{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.5rem}
 .mc{background:var(--deep);border:1px solid var(--bdr);border-radius:6px;padding:.5rem .7rem}
@@ -304,10 +304,10 @@ function initCharts() {
     ]},
     options: {
       animation:{duration:0},responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+      plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:12}}},
       scales:{
-        x:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Output Power (dBm)'}},
-        y:{grid:{color:'#252830'},ticks:{color:'#8b949e',callback:v=>v.toFixed(0)+'%'},title:{display:true,color:'#8b949e',text:'Drain Efficiency (%)'},min:0,max:100}
+        x:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Output Power (dBm)'}},
+        y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096',callback:v=>v.toFixed(0)+'%'},title:{display:true,color:'#718096',text:'Drain Efficiency (%)'},min:0,max:100}
       }
     }
   });
@@ -323,10 +323,10 @@ function initCharts() {
     ]},
     options: {
       animation:{duration:0},responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+      plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:12}}},
       scales:{
-        x:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Input Power Pin (dBm)'}},
-        y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Output Power Pout (dBm)'}}
+        x:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Input Power Pin (dBm)'}},
+        y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Output Power Pout (dBm)'}}
       }
     }
   });
