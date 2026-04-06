@@ -82,11 +82,21 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 .annotation{border-left:3px solid #b5895a;background:var(--deep);padding:10px 14px;border-radius:0 7px 7px 0;font-size:.83rem;color:var(--tm);line-height:1.65}
 .annotation strong{color:var(--t1)}
 .annotation b{color:var(--cyan)}
+
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.help-overlay.open{display:flex}
+.help-box{background:#fff;border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;max-height:80vh;overflow-y:auto}
+.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+.help-try li::marker{color:#b5895a}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
   <button class="tbtn" onclick="takeScreenshot()">&#128247; Screenshot</button>
   <button class="tbtn" onclick="exportCSV()">&#11015; Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
@@ -231,6 +241,56 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
       </div>
     </div>
     <div class="annotation" id="annotation">Computing…</div>
+  </div>
+</div>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Power Amplifier / P1dB / Efficiency — Help</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Models PA drain efficiency η vs output back-off for Classes A, AB, B, and C. Class A: η = P<sub>out</sub>/(2·P<sub>sat</sub>), peaking at 50%. Class B: η = (π/4)·√(P<sub>out</sub>/P<sub>sat</sub>), peaking at 78.5%. Gain compression is modeled via a Saleh AM-AM softlimiter referenced to P1dB. OIP3 is estimated as P1dB(out) + 9.6 dB. Average efficiency under a modulated waveform is computed using PAPR: the average power is P<sub>op</sub> − PAPR(dB), and η<sub>avg</sub> = η(P<sub>avg</sub>).</div>
+
+    <div class="help-section">Sliders &amp; inputs</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Small-signal gain G (5–40 dB):</strong> Linear (uncompressed) voltage gain of the PA. Determines the input power required to reach a given output level.</li>
+        <li><strong>Output P1dB (10–55 dBm):</strong> Output power at the 1 dB gain compression point. P<sub>sat</sub> is modeled as P1dB + 2 dB. Typical values: handset PA ~30 dBm, basestation ~47 dBm.</li>
+        <li><strong>Operating Pout (0–55 dBm):</strong> The actual output power at the intended operating point. Back-off = P1dB − P<sub>op</sub>; a larger back-off improves linearity but reduces efficiency.</li>
+        <li><strong>Vdd supply (1–50 V):</strong> DC supply voltage — shown for reference; used to contextualize DC power draw.</li>
+        <li><strong>PAPR (0–15 dB):</strong> Peak-to-average power ratio of the modulated signal. CW = 0 dB; OFDM typically 8–12 dB; 64QAM OFDM commonly requires ~10 dB.</li>
+        <li><strong>PA Class tabs (A / AB / B / C):</strong> Switches the conduction-angle model. Class A conducts 360°; B conducts 180°; C &lt;180° (high efficiency, nonlinear); AB is a practical compromise.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">How to read the chart</div>
+    <div class="help-body">The left chart (Efficiency vs Output Power) plots drain efficiency (%) against P<sub>out</sub> in dBm over a 20 dB dynamic range below P<sub>sat</sub>. The selected class is the solid blue line; Class A and B references are dashed for comparison. The orange dot marks the operating point. The right chart (Gain Compression / AM-AM) plots actual P<sub>out</sub> vs P<sub>in</sub>; the dashed grey line is the ideal linear response; the red dashed line is P1dB; the orange dot is the operating point. Deviation between actual and linear curves indicates how much gain compression is occurring.</div>
+
+    <div class="help-section">Key results</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Back-off from P1dB:</strong> dB margin between operating power and the compression point. &gt;6 dB is generally considered linear operation.</li>
+        <li><strong>Peak efficiency η:</strong> Maximum theoretical efficiency for the selected class (50% for A, 78.5% for B).</li>
+        <li><strong>η at operating Pout:</strong> Drain efficiency at the chosen P<sub>op</sub>.</li>
+        <li><strong>Avg η (with PAPR):</strong> Long-term average efficiency accounting for signal envelope statistics.</li>
+        <li><strong>DC power draw:</strong> Estimated P<sub>DC</sub> = P<sub>op</sub> / η<sub>op</sub>.</li>
+        <li><strong>OIP3 / IIP3:</strong> Third-order intercept points estimated from the P1dB + 9.6 dB rule of thumb.</li>
+        <li><strong>Gain at operating point:</strong> Compressed gain G<sub>op</sub> from the Saleh model — always ≤ small-signal gain G.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Things to try</div>
+    <div class="help-body">
+      <ul class="help-try">
+        <li>Switch between Class A and Class B with the same P<sub>op</sub> and P1dB: observe Class B delivers ~57% efficiency vs Class A's ~25% at 6 dB back-off — the tradeoff that drives Doherty amplifier designs.</li>
+        <li>Load the "WiFi PA" preset (PAPR = 8 dB, Class A): average η drops to ~6%. Switch to Class B — average η improves to ~22%, showing why modern 802.11ax uses envelope-tracking PAs.</li>
+        <li>Increase P<sub>op</sub> until back-off drops below 1 dB and observe the gain compression warning — this is the saturated PA regime used in constant-envelope modulations like GMSK.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">Cripps, S. C. <em>RF Power Amplifiers for Wireless Communications</em>, 2nd ed. Artech House, 2006. Chapters 2–4: PA Classes, Efficiency, and Linearity.</div>
   </div>
 </div>
 
@@ -545,6 +605,10 @@ update();
   if(p.has('cls'))  { paClass=p.get('cls'); setClass(paClass); }
   if([...p.keys()].length>0) { update(); syncAll12(); }
 })();
+
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 </script>
 </body>
 </html>
