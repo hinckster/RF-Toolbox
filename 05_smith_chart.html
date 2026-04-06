@@ -47,6 +47,13 @@
   .slider-row label span { color: var(--orange); font-family: 'Courier New', monospace; font-weight: 600; transition: all 200ms ease; }
   input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
   .hints { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 0.15rem; }
+  .sr-row { display:flex; align-items:center; gap:6px; }
+  .sr-row input[type=range] { flex:1; width:auto; min-width:0; }
+  .si { width:72px; background:#0d1117; border:1px solid var(--border); border-radius:4px; color:var(--accent); font-family:'Courier New',monospace; font-size:.82rem; padding:3px 6px; text-align:right; transition:border-color .15s; -moz-appearance:textfield; appearance:textfield; }
+  .si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  .si:focus { outline:none; border-color:var(--accent); }
+  .si.err { border-color:var(--red); color:var(--red); }
+  .si-unit { font-size:.75rem; color:var(--muted); white-space:nowrap; }
 
   .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
 
@@ -150,13 +157,21 @@
     </div>
 
     <div class="slider-row">
-      <label>Resistance R <span id="lR">75 Ω</span></label>
-      <input type="range" id="sR" min="0" max="500" value="75" step="1">
+      <label>Resistance R <span id="lR" style="display:none">75 Ω</span></label>
+      <div class="sr-row">
+        <input type="range" id="sR" min="0" max="500" value="75" step="1">
+        <input type="number" class="si" id="iR" value="75">
+        <span class="si-unit">Ω</span>
+      </div>
       <div class="hints"><span>0</span><span>500 Ω</span></div>
     </div>
     <div class="slider-row">
-      <label>Reactance X <span id="lX">+50 Ω</span></label>
-      <input type="range" id="sX" min="-300" max="300" value="50" step="1">
+      <label>Reactance X <span id="lX" style="display:none">+50 Ω</span></label>
+      <div class="sr-row">
+        <input type="range" id="sX" min="-300" max="300" value="50" step="1">
+        <input type="number" class="si" id="iX" value="50">
+        <span class="si-unit">Ω</span>
+      </div>
       <div class="hints"><span>−300 Ω</span><span>+300 Ω</span></div>
     </div>
 
@@ -373,8 +388,26 @@ function setPreset(R, X) {
   update();
 }
 
-document.getElementById('sR').addEventListener('input', update);
-document.getElementById('sX').addEventListener('input', update);
+// ── Slider ↔ text-input wiring ──
+function linkSliderInput(sliderId, inputId, decimals, onUpdate, min, max) {
+  const slider = document.getElementById(sliderId);
+  const inp = document.getElementById(inputId);
+  function sync() { inp.value = (+slider.value).toFixed(decimals); inp.classList.remove('err'); }
+  slider.addEventListener('input', () => { sync(); onUpdate(); });
+  inp.addEventListener('input', () => {
+    const v = parseFloat(inp.value);
+    if (isNaN(v) || v < min || v > max) { inp.classList.add('err'); return; }
+    inp.classList.remove('err'); slider.value = v; onUpdate();
+  });
+  inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) { const c = Math.max(min, Math.min(max, v)); inp.value = c.toFixed(decimals); inp.classList.remove('err'); slider.value = c; onUpdate(); }
+  });
+  sync();
+}
+
+linkSliderInput('sR', 'iR', 0, update, 0, 500);
+linkSliderInput('sX', 'iX', 0, update, -300, 300);
 document.getElementById('iZ0').addEventListener('input', update);
 
 // Resize canvas to fill panel width
@@ -504,7 +537,11 @@ function loadPreset(key) {
     el2.value = x;
   }
   if (p.has('z0')) document.getElementById('iZ0').value = p.get('z0');
-  if ([...p.keys()].length > 0) update();
+  if ([...p.keys()].length > 0) {
+    update();
+    document.getElementById('iR').value = (+document.getElementById('sR').value).toFixed(0);
+    document.getElementById('iX').value = (+document.getElementById('sX').value).toFixed(0);
+  }
 })();
 </script>
 </body>
