@@ -76,11 +76,20 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 
 .stub-info{background:rgba(63,185,80,.07);border:1px solid rgba(63,185,80,.25);border-radius:7px;padding:.65rem .9rem;margin-top:.8rem;font-size:.79rem;color:var(--tm);line-height:1.7}
 .stub-info strong{color:var(--grn)}
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.help-overlay.open{display:flex}
+.help-box{background:#fff;border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;max-height:80vh;overflow-y:auto}
+.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+.help-try li::marker{color:#b5895a}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
   <button class="tbtn" onclick="takeScreenshot('Smith Chart + Matching')">📷 Screenshot</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
   <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
@@ -503,6 +512,55 @@ function toggleFullscreen(){if(!document.fullscreenElement)document.documentElem
 function copyLink(){navigator.clipboard.writeText(window.location.href).then(()=>{const b=document.getElementById('copyBtn');const o=b.textContent;b.textContent='✓ Copied!';b.style.color='#3fb950';b.style.borderColor='#3fb950';setTimeout(()=>{b.textContent=o;b.style.color='';b.style.borderColor='';},2000);});}
 
 update();
+
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 </script>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Smith Chart — Transmission Line Matching — Help</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Models a load impedance Z_L = R + jX connected to a transmission line of characteristic impedance Z₀. The reflection coefficient at the load is Γ_L = (Z_L − Z₀)/(Z_L + Z₀) (Pozar Eq. 2.4). Adding a length l of lossless transmission line rotates Γ clockwise on the constant-|Γ| circle: Γ(l) = Γ_L · e^(−j4πl/λ). The tool also solves single-stub matching analytically — finding the two line lengths l₁ where Re(Y) = Y₀, then computing the required short- or open-circuit stub length to cancel the residual susceptance.</div>
+
+    <div class="help-section">Sliders &amp; inputs</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>R_L</strong> — load resistance in ohms (0–500 Ω). Set to 0 for a short circuit (Γ = −1), very large for open circuit (Γ = +1).</li>
+        <li><strong>jX_L</strong> — load reactance in ohms (−300 to +300 Ω). Positive = inductive; negative = capacitive. Moves the Smith Chart point off the real axis.</li>
+        <li><strong>Z₀</strong> — system reference impedance in ohms (1–300 Ω). Typically 50 Ω for RF or 75 Ω for cable TV systems.</li>
+        <li><strong>Line length l/λ</strong> — electrical length of the transmission line from 0 to 2λ. Each 0.5λ completes one full clockwise rotation on the Smith Chart. The red dot moves to show Z_in at that line length.</li>
+        <li><strong>Snap presets</strong> — buttons that instantly set common load values (50 Ω matched, 75 Ω, short, open, 50+j50, 50−j50) without typing.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">How to read the chart</div>
+    <div class="help-body">The Smith Chart plots the complex reflection coefficient Γ = Γ_re + jΓ_im. The outer unit circle boundary represents |Γ| = 1 (total reflection). Solid gray circles are constant-resistance (r) contours; the r = 1 circle is highlighted in blue and passes through the center (the matched point). The dashed orange circle is the constant-|Γ| locus — all points on it have the same VSWR as Z_L. The copper dot labeled Z_L is the load; the red dot labeled Z_in is the impedance seen at the generator end of the line. Green and orange filled dots mark the two single-stub matching points. The standing wave chart below shows |V(z)/V⁺| (blue, solid) and |I(z)·Z₀/V⁺| (purple, dashed) vs. distance from load; the red vertical dashed line marks the current line length.</div>
+
+    <div class="help-section">Key results</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>|Γ_L| / ∠Γ_L</strong> — magnitude and phase of the load reflection coefficient; fixed regardless of line length.</li>
+        <li><strong>VSWR</strong> — voltage standing wave ratio = (1+|Γ|)/(1−|Γ|). Values &lt;1.5 indicate excellent matching; &gt;3 indicates significant mismatch.</li>
+        <li><strong>Return Loss</strong> — power reflected back, in dB = −20·log|Γ|. Higher values mean less reflected power.</li>
+        <li><strong>Z_in (R, jX)</strong> — input impedance seen looking into the line at the current length l.</li>
+        <li><strong>Single-Stub solutions</strong> — two solutions showing l₁ (distance from load to stub junction) and stub length for both short-circuit and open-circuit stubs.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Things to try</div>
+    <ul class="help-try">
+      <li>Snap to 50+j50 Ω and slowly drag the line-length slider — watch the red Z_in dot trace the constant-|Γ| circle clockwise and reach the real axis at the single-stub solution points marked in green/orange.</li>
+      <li>Set R_L = 0 (short circuit) and confirm the Smith Chart dot sits at Γ = −1 (left edge); then sweep line length to watch impedance transform through all purely imaginary values — confirming a shorted stub is a pure reactance element.</li>
+      <li>Load the "50+j50" snap, then find the line length where Z_in ≈ 50+j0 Ω (real axis intersection at the r=1 circle) — this is where a single shunt stub would complete the match.</li>
+    </ul>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">D. M. Pozar, <em>Microwave Engineering</em>, 4th ed. Hoboken, NJ: Wiley, 2012, §2.4 (Reflection coefficient), §5.3 (Single-stub matching).</div>
+  </div>
+</div>
 </body>
 </html>
