@@ -89,11 +89,20 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 .preset-select{width:100%;background:var(--deep);border:1px solid var(--bdr);color:var(--t2);border-radius:6px;padding:6px 8px;font-size:.78rem;font-family:'Segoe UI',system-ui,sans-serif;cursor:pointer}
 .preset-select:focus{outline:none;border-color:#b5895a}
 .preset-select option{background:var(--deep)}
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.help-overlay.open{display:flex}
+.help-box{background:#fff;border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;max-height:80vh;overflow-y:auto}
+.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+.help-try li::marker{color:#b5895a}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
   <button class="tbtn" onclick="takeScreenshot('Path Loss Comparison')">📷 Screenshot</button>
   <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
@@ -558,6 +567,56 @@ update();
   if (p.has('rain')) document.getElementById('sRain').value = p.get('rain');
   if ([...p.keys()].length > 0) update();
 })();
+
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 </script>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Free-Space Path Loss + Atmospheric Effects — Help</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Computes free-space path loss (FSPL) for six frequency bands simultaneously using the Friis formula FSPL = 20·log₁₀(4πdf/c). On top of FSPL it can overlay rain attenuation using ITU-R P.838 coefficients (A_rain = k·R^α·d dB) and atmospheric absorption using ITU-R P.676 (A_atm = (γ_O₂ + γ_H₂O)·d dB), providing a total path loss budget across bands from 900 MHz to 77 GHz.</div>
+
+    <div class="help-section">Sliders &amp; inputs</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Max distance</strong> — Sets the right-hand limit of the distance axis on the FSPL chart, 100 m–1000 km on a log scale. Click the unit label to toggle between km and m.</li>
+        <li><strong>Operating distance d</strong> — Selects a specific range within the max-distance window for the Band FSPL table and the atmospheric-loss bar chart. Displayed as a vertical marker on the FSPL chart.</li>
+        <li><strong>Rain attenuation overlay</strong> — Enables ITU-R P.838 rain loss curves. Adds a Rain rate slider (1–100 mm/hr). 2.5 mm/hr = drizzle, 25 mm/hr = moderate rain, 50 mm/hr = heavy thunderstorm.</li>
+        <li><strong>Atm. absorption overlay</strong> — Enables ITU-R P.676 gas absorption (O₂ + H₂O). No extra slider needed — uses standard sea-level atmosphere (7.5 g/m³ water vapour). Critical above 10 GHz.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">How to read the charts</div>
+    <div class="help-body">
+      <strong>Top chart — Total Path Loss vs Distance:</strong> X-axis is distance (km, log scale); Y-axis is total path loss (dB). Each of the six coloured lines represents one frequency band: green = 900 MHz, blue = 2.4 GHz, yellow = 5 GHz, orange = 28 GHz, red = 60 GHz, purple = 77 GHz. Higher frequency = more loss. When overlays are enabled, the curves shift upward by the additional atmospheric loss. Slope is 20 dB/decade (6 dB per octave in distance).<br><br>
+      <strong>Bottom chart — Additional Losses vs Frequency at operating distance:</strong> A stacked bar chart showing rain attenuation (blue bars) and atmospheric absorption (red bars) for each band at the selected operating distance. This directly shows which frequency bands are most impacted by weather and gas absorption.
+    </div>
+
+    <div class="help-section">Key results</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Band FSPL table</strong> — Shows FSPL (dB) for each of the six bands at the selected operating distance. Color-coded to match the chart lines. The rightmost column shows total loss including overlays.</li>
+        <li><strong>Breakeven Summary</strong> — Text annotations describing the crossover distances where rain or atmospheric loss becomes comparable to FSPL, and which bands are viable for the configured range.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Things to try</div>
+    <div class="help-body">
+      <ul class="help-try">
+        <li>Load the <em>mmWave backhaul</em> preset, then enable both overlays and ramp Rain rate up to 100 mm/hr — see how 28 GHz accumulates ~8 dB of rain loss per km while 900 MHz is virtually unaffected, explaining why Sub-6 GHz is preferred for robust outdoor links.</li>
+        <li>Enable atmospheric absorption and set operating distance to 0.5 km — the 60 GHz bar towers over all other bands (~5 dB) due to the O₂ resonance at 60 GHz. This is intentionally exploited in 802.11ad WiGig for license-free short-range isolation.</li>
+        <li>Load the <em>Satellite to ground</em> preset (1000 km) and compare 900 MHz vs 28 GHz — the 30 dB FSPL difference shows why satellite links demand large antennas or high EIRP at Ka-band, yet Ka-band still enables smaller ground dishes than L-band.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">ITU-R P.838-3 (2005). <em>Specific attenuation model for rain for use in prediction methods.</em> Also: ITU-R P.676-12 (2019). <em>Attenuation by atmospheric gases and related effects.</em> Friis, H. T. (1946). A note on a simple transmission formula. <em>Proceedings of the IRE</em>, 34(5), 254–256.</div>
+  </div>
+</div>
 </body>
 </html>
