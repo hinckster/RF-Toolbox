@@ -81,11 +81,21 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 
 .freq-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem}
 .ftag{font-size:.68rem;padding:.15rem .5rem;border-radius:10px;font-family:'Courier New',monospace}
+
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.help-overlay.open{display:flex}
+.help-box{background:#fff;border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;max-height:80vh;overflow-y:auto}
+.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+.help-try li::marker{color:#b5895a}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
   <button class="tbtn" onclick="takeScreenshot('IIP3 Intermodulation')">📷 Screenshot</button>
   <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
@@ -518,6 +528,10 @@ function loadPreset(key) {
 
 update();
 
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
+
 function sendToReceiverChain() {
   var a1 = parseFloat(document.getElementById('sA1').value);
   var gainDB = (20 * Math.log10(a1)).toFixed(1);
@@ -544,5 +558,54 @@ function sendToReceiverChain() {
   }
 })();
 </script>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Two-Tone Intermodulation Test — Help</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Models a nonlinear device with the polynomial <strong>y(t) = a₁x + a₂x² + a₃x³</strong> driven by a two-tone input <strong>x(t) = A·cos(ω₁t) + A·cos(ω₂t)</strong>. From the coefficients it computes exact closed-form intercept points: <strong>IIP3 = √(4|a₁|/3|a₃|)</strong> V peak, <strong>IIP2 = |a₁/a₂|</strong> V peak, and input P1dB from the gain-compression condition 3|a₃|A²/4 = 0.109|a₁|. All output spectrum amplitudes (fundamentals, IM2, IM3, harmonics) are computed from the polynomial coefficients at the set input power.</div>
+
+    <div class="help-section">Sliders &amp; inputs</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>a₁ — linear gain (V/V):</strong> small-signal voltage gain, 0.1–20 V/V. Gain in dB = 20·log₁₀(a₁). Typical LNA: 5–10 V/V (14–20 dB).</li>
+        <li><strong>a₂ — 2nd-order coefficient (V/V²):</strong> drives even-order products (IM2 at f₁+f₂, 2nd harmonics). Zero for a perfectly balanced (differential) circuit. Range 0–10.</li>
+        <li><strong>a₃ — 3rd-order coefficient (V/V³):</strong> always negative (compressive nonlinearity). Drives IM3 products at 2f₁−f₂ and 2f₂−f₁ that fall in-band. Range −5 to −0.01; more negative = stronger nonlinearity.</li>
+        <li><strong>Input Power P_in (dBm):</strong> power per tone in dBm, −60 to +20 dBm. Converted to V peak via A = √(10^(Pin/10) · 2·50/1000).</li>
+        <li><strong>Center freq f₀ (MHz/GHz):</strong> center frequency, 100 MHz to 10 GHz. Affects only the spectrum x-axis labels — intercept calculations are frequency-independent in this model.</li>
+        <li><strong>Tone spacing Δf (MHz):</strong> frequency separation between the two tones, 0.1–50 MHz. IM3 products land at f₀ ± 3Δf/2, just outside each tone.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">How to read the charts</div>
+    <div class="help-body">The <strong>Output Spectrum</strong> (bar chart) shows output power in dBm for each spectral component sorted by frequency. Blue bars are fundamentals (f₁, f₂); red bars are IM3 (2f₁−f₂, 2f₂−f₁); orange bars are IM2 (f₁+f₂); purple bars are harmonics (2f₁, 2f₂, 3f₁). The <strong>Intercept Diagram</strong> shows output power vs input power: the blue solid line is the actual compressed fundamental; the red solid line is the actual IM3; the dashed lines are their small-signal asymptotes extrapolated to the IIP3/OIP3 crossover point (yellow diamond). The orange triangle marks P1dB; the green dot is the current operating point.</div>
+
+    <div class="help-section">Key results</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>IIP3 / OIP3:</strong> input- and output-referred third-order intercept. IIP3 is the most common figure of merit for mixer and LNA linearity.</li>
+        <li><strong>IIP2:</strong> second-order intercept — critical for direct-conversion receivers where even-order distortion creates DC offsets and baseband spurs.</li>
+        <li><strong>P1dB (in):</strong> input power at which gain compresses by 1 dB. Roughly IIP3 − 9.6 dB for a pure cubic nonlinearity.</li>
+        <li><strong>IM3 level / IM3 rel.:</strong> absolute IM3 power (dBm) and power relative to the fundamental (dBc). At 2 dB above P1dB, IM3 typically reaches −20 dBc.</li>
+        <li><strong>IM2 level:</strong> absolute IM2 power (dBm). Relevant in wideband or direct-conversion systems.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Things to try</div>
+    <div class="help-body">
+      <ul class="help-try">
+        <li>Load the <strong>Mixer near compression</strong> preset and slowly increase P_in from −5 dBm to +5 dBm — watch the IM3 bars on the spectrum chart grow 3× faster (in dB) than the fundamentals, and the operating point approach P1dB on the intercept diagram.</li>
+        <li>With the LNA preset loaded, set a₂ to 0 and observe that IM2 and all even harmonics disappear — this demonstrates why differential (balanced) amplifiers suppress even-order distortion by cancellation.</li>
+        <li>Make a₃ less negative (e.g., −0.05) while keeping a₁ constant — IIP3 increases dramatically, but P1dB also shifts, illustrating the trade-off between linearity and gain-compression headroom in device biasing.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">Razavi, B. (2012). <em>RF Microelectronics</em>, 2nd ed., §2.5–2.6. Prentice Hall. — also Pozar, <em>Microwave Engineering</em>, 4th ed., §10.5, eq. 10.34.</div>
+  </div>
+</div>
+
 </body>
 </html>
