@@ -82,11 +82,20 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 .clutter-row{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.7rem}
 .clutter-tag{font-size:.72rem;padding:.18rem .5rem;border-radius:10px;border:1px solid var(--bdr);background:var(--deep);color:var(--tm);display:flex;align-items:center;gap:.3rem}
 .clutter-dot{width:8px;height:8px;border-radius:50%}
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.help-overlay.open{display:flex}
+.help-box{background:#fff;border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;max-height:80vh;overflow-y:auto}
+.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+.help-try li::marker{color:#b5895a}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
   <button class="tbtn" onclick="takeScreenshot('Radar Range Equation')">📷 Screenshot</button>
   <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
@@ -624,6 +633,64 @@ update();
     document.getElementById('iBWpc').value = (+document.getElementById('sBWpc').value).toFixed(1);
   }
 })();
+
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 </script>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Radar Range Equation — Help</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Solves the Skolnik radar range equation R⁴ = P_t·G_t·G_r·λ²·σ / [(4π)³·L·S_min] to find the maximum detection range for a monostatic radar. It also computes received power Pr as a function of range (the R⁻⁴ fourth-power law) and shows how linear frequency-modulated (LFM) pulse compression increases effective range by the time-bandwidth product factor TBP^(1/4).</div>
+
+    <div class="help-section">Sliders &amp; inputs</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Tx Power P_t</strong> — Peak transmitted power in watts (1 W to 10 kW). Click the unit label to toggle between W and kW. Scales as R_max ∝ P_t^(1/4).</li>
+        <li><strong>Antenna Gain G_t = G_r</strong> — Monostatic assumption: transmit and receive antenna gain are equal, 0–50 dBi. A large dish at 40 dBi is typical for surveillance radar.</li>
+        <li><strong>Frequency f</strong> — Operating frequency 0.1–100 GHz. Affects wavelength λ = c/f, which enters the equation as λ². Toggle label between GHz and MHz.</li>
+        <li><strong>Target RCS σ</strong> — Radar cross section in dBsm, −30 to +40 dBsm. A human is roughly −10 dBsm; a large ship is +35 dBsm.</li>
+        <li><strong>System Loss L</strong> — Aggregate one-way RF losses (plumbing, radome, atmospheric), 0–20 dB. Typical operational systems carry 3–8 dB.</li>
+        <li><strong>S_min</strong> — Minimum detectable signal at the receiver, −130 to −60 dBm. Set by noise figure, bandwidth, and required SNR (S_min = kTB·NF·SNR_min).</li>
+        <li><strong>Pulse width τ</strong> — LFM chirp pulse duration, 10 ns–100 µs. Longer pulses carry more energy but degrade range resolution.</li>
+        <li><strong>Chirp BW</strong> — LFM swept bandwidth, 0.1 MHz–1 GHz. Pulse compression gain = BW × τ (time-bandwidth product).</li>
+      </ul>
+    </div>
+
+    <div class="help-section">How to read the charts</div>
+    <div class="help-body">
+      <strong>Top chart — Max Range vs Target RCS:</strong> X-axis is RCS (dBsm), Y-axis is detection range (km). The blue solid line is uncompressed range; the green dashed line is pulse-compressed range. The red dot marks the currently selected RCS. Clutter reference markers show where common targets fall.<br><br>
+      <strong>Bottom chart — Received Power vs Range:</strong> X-axis is range (km, log scale), Y-axis is received power (dBm). The curve falls at 40 dB/decade (R⁻⁴). The horizontal dashed orange line is S_min — where the curve crosses S_min is R_max. Vertical colored tick marks show reference clutter RCS levels at a fixed range for comparison.
+    </div>
+
+    <div class="help-section">Key results</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Max Range</strong> — Uncompressed R_max in km at the selected RCS and system parameters.</li>
+        <li><strong>λ</strong> — Wavelength in centimetres, computed from frequency. Determines aperture efficiency and RCS scaling.</li>
+        <li><strong>Pulse Comp. Gain</strong> — 10·log₁₀(BW·τ) in dB. The SNR improvement from pulse compression; also the range-sidelobe suppression requirement.</li>
+        <li><strong>R_max (compressed)</strong> — Effective detection range after pulse compression: R_uncompressed × TBP^(1/4).</li>
+        <li><strong>EIRP</strong> — Equivalent isotropically radiated power (P_t + G_t) in dBm. The transmit figure of merit.</li>
+        <li><strong>Pr @ 10 km</strong> — Received power from the selected RCS target at exactly 10 km, useful as a sanity-check reference level.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Things to try</div>
+    <div class="help-body">
+      <ul class="help-try">
+        <li>Load the <em>Automotive 77 GHz FMCW</em> preset, then increase chirp BW to 500 MHz — watch how pulse compression alone extends range without increasing transmit power.</li>
+        <li>Set RCS to −30 dBsm (insect-size target) and observe how range collapses compared to an airliner at +20 dBsm — a 50 dBsm difference yields only 10× range change because of the fourth-power law.</li>
+        <li>With the <em>Weather Radar</em> preset loaded, reduce S_min from −110 to −120 dBm to simulate a lower-noise receiver — note that every 6 dB improvement in S_min yields only ~1.6× range improvement (fourth-root law).</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">Skolnik, M. I. (2001). <em>Introduction to Radar Systems</em> (3rd ed.), Chapters 2–3. McGraw-Hill. Equation 2-1 (radar range equation) and Section 11.5 (pulse compression).</div>
+  </div>
+</div>
 </body>
 </html>
