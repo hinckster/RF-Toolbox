@@ -81,11 +81,20 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 .annotation{border-left:3px solid #b5895a;background:var(--deep);padding:10px 14px;border-radius:0 7px 7px 0;font-size:.83rem;color:var(--tm);line-height:1.65}
 .annotation strong{color:var(--t1)}
 .annotation b{color:var(--cyan)}
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.help-overlay.open{display:flex}
+.help-box{background:#fff;border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;max-height:80vh;overflow-y:auto}
+.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+.help-try li::marker{color:#b5895a}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
   <button class="tbtn" onclick="takeScreenshot()">&#128247; Screenshot</button>
   <button class="tbtn" onclick="exportCSV()">&#11015; Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
@@ -431,6 +440,9 @@ document.getElementById('selBERtarget').addEventListener('input', update);
 update();
 
 // Toolbar
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 function takeScreenshot(){}
 function exportCSV(){
   const EbN0_dB=+document.getElementById('sEbN0').value;
@@ -468,5 +480,43 @@ function toggleFullscreen(){if(!document.fullscreenElement)document.documentElem
   if([...p.keys()].length>0) update();
 })();
 </script>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Modulation &amp; BER — Help</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Plots theoretical Bit Error Rate (BER) vs Eb/N0 for six digital modulations (BPSK through 256-QAM) over an AWGN channel, alongside the Shannon capacity limit. Uses the exact Q-function approximation (Abramowitz &amp; Stegun, max error 1.5×10⁻⁷) for each modulation order M. Solves the inverse BER equation via bisection to find the Eb/N0 required to hit your target BER.</div>
+
+    <div class="help-section">Controls</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Eb/N0 (operating):</strong> The energy-per-bit to noise-density ratio at your receiver, −5 to 35 dB. Move this to read off which modulations are above or below your target BER.</li>
+        <li><strong>Target BER:</strong> The required BER threshold (10⁻³ to 10⁻¹²). Changes the required Eb/N0 column in the results table.</li>
+        <li><strong>Modulation checkboxes:</strong> Toggle individual curves on/off. Shannon limit is the theoretical maximum; no real system can cross it.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">How to read the charts</div>
+    <div class="help-body">
+      <strong>BER vs Eb/N0 (left):</strong> Log-scale BER on the y-axis; lower is better. Steeper curves reach target BER more quickly but require more Eb/N0. BPSK and QPSK share the same curve. Higher-order QAM curves shift right — they need more Eb/N0 to reach the same BER.<br><br>
+      <strong>Spectral Efficiency vs Eb/N0 (right):</strong> Each dot is a modulation. The purple Shannon bound is the theoretical ceiling. Good modulations cluster near the bound; practical schemes sit 2–5 dB to its right.
+    </div>
+
+    <div class="help-section">Key results</div>
+    <div class="help-body">The table shows, per modulation: <strong>Eb/N0 req</strong> — dBs needed to hit target BER; <strong>SE</strong> — spectral efficiency in bits/s/Hz; <strong>BER @ op</strong> — actual BER at your operating Eb/N0. Green/red highlight in the annotation indicates which schemes pass or fail the target at your operating point.</div>
+
+    <div class="help-section">Things to try</div>
+    <ul class="help-try">
+      <li>Set Target BER = 10⁻⁶ and slide Eb/N0 up from 0 dB — watch each modulation unlock in order from BPSK to 256-QAM.</li>
+      <li>Set Eb/N0 = 0 dB — only see how close to Shannon's absolute minimum (−1.59 dB) each scheme operates.</li>
+      <li>Compare 64-QAM vs 256-QAM: 33% more spectral efficiency for ~5 dB extra Eb/N0 — the 5G NR tradeoff in action.</li>
+    </ul>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">Proakis &amp; Salehi, <em>Digital Communications</em>, 5th ed., McGraw-Hill, 2008, Ch. 8.</div>
+  </div>
+</div>
 </body>
 </html>
