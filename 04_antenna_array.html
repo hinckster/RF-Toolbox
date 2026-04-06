@@ -103,7 +103,7 @@ select.sel{width:100%;background:var(--deep);border:1px solid var(--bdr);color:v
     <div class="eq-col">
       <div class="eq-label">Array Factor (Balanis 6-10)</div>
       <div class="eq-primary">AF(θ) = Σ aₙ · e^(jnψ)</div>
-      <div class="eq-secondary">ψ = kd·cosθ + β  [k = 2π/λ]</div>
+      <div class="eq-secondary">ψ = kd·sinθ + β  [k = 2π/λ, θ from broadside]</div>
       <div class="eq-secondary">Uniform: |AF| = sin(Nψ/2) / sin(ψ/2)</div>
       <div class="eq-note">aₙ = amplitude taper weights, β = progressive phase shift for beam steering</div>
     </div>
@@ -117,8 +117,8 @@ select.sel{width:100%;background:var(--deep);border:1px solid var(--bdr);color:v
     </div>
     <div class="eq-col">
       <div class="eq-label">Grating Lobes</div>
-      <div class="eq-primary">θ_GL = arccos(cosθ₀ ± m·λ/d)</div>
-      <div class="eq-secondary">Occur when d/λ > 1/(1+|cosθ_steer|)</div>
+      <div class="eq-primary">θ_GL = arcsin(sinθ₀ ± m·λ/d)</div>
+      <div class="eq-secondary">Occur when d/λ > 1/(1+|sinθ_steer|)</div>
       <div class="eq-secondary">HPBW ≈ 0.886·λ/(N·d·cosθ₀)  [rad]</div>
       <div class="eq-note">Grating lobes appear for d ≥ λ. Sidelobe level varies with taper window.</div>
     </div>
@@ -272,13 +272,13 @@ function elemPattern(theta_rad, type){
 
 function computeAF(N, d_lam, theta_deg_0, theta_arr, taperType, elemType){
   const w=weights(N, taperType);
-  const beta=-2*PI*d_lam*Math.cos(theta_deg_0*PI/180); // progressive phase for steering
+  const beta=-2*PI*d_lam*Math.sin(theta_deg_0*PI/180); // progressive phase for steering (sin convention: θ from broadside)
   const out=[];
   for(const th of theta_arr){
     const th_rad=th*PI/180;
     let re=0,im=0;
     for(let n=0;n<N;n++){
-      const psi=2*PI*d_lam*Math.cos(th_rad)+beta;
+      const psi=2*PI*d_lam*Math.sin(th_rad)+beta;
       const ang=n*psi;
       re+=w[n]*Math.cos(ang);
       im+=w[n]*Math.sin(ang);
@@ -325,12 +325,12 @@ function findSLL(thArr, patdB, theta0){
 }
 
 function gratingLobes(N,d_lam,theta0_deg){
-  const ct0=Math.cos(theta0_deg*PI/180);
+  const st0=Math.sin(theta0_deg*PI/180);
   const locs=[];
   for(let m=-3;m<=3;m++){
     if(m===0) continue;
-    const ct=ct0+m/d_lam;
-    if(Math.abs(ct)<=1) locs.push((Math.acos(ct)*180/PI).toFixed(1)+'°');
+    const st=st0+m/d_lam;
+    if(Math.abs(st)<=1) locs.push((Math.asin(st)*180/PI).toFixed(1)+'°');
   }
   return locs;
 }
@@ -410,7 +410,7 @@ function update(){
   const hpbw=findHPBW(thFull,patA);
   const sll=findSLL(thFull,patA_dB,theta0);
   const gl=gratingLobes(N,d_lam,theta0);
-  const dir_approx=10*Math.log10(2*N); // rough: ~N for ULA with d=λ/2
+  const dir_approx=10*Math.log10(2*N*d_lam); // broadside ULA: D ≈ 2Nd/λ (isotropic elements)
 
   document.getElementById('mDir').textContent=dir_approx.toFixed(1);
   document.getElementById('mHPBW').textContent=hpbw?hpbw.toFixed(1):'—';
@@ -424,8 +424,8 @@ function update(){
     mainChart.data.datasets[1].data=thFull.map((t,i)=>({x:t,y:patB_dB[i]}));
     // Add vertical grating lobe markers via dataset
     const glAngles=[];
-    const ct0=Math.cos(theta0*PI/180);
-    for(let m=-3;m<=3;m++){if(m===0)continue;const ct=ct0+m/d_lam;if(Math.abs(ct)<=1)glAngles.push(Math.acos(ct)*180/PI);}
+    const st0=Math.sin(theta0*PI/180);
+    for(let m=-3;m<=3;m++){if(m===0)continue;const st=st0+m/d_lam;if(Math.abs(st)<=1)glAngles.push(Math.asin(st)*180/PI);}
     if(mainChart.data.datasets.length>2) mainChart.data.datasets.splice(2);
     glAngles.forEach((g,i)=>{
       mainChart.data.datasets.push({
