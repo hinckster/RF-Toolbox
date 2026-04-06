@@ -381,6 +381,114 @@ const thArr=Array.from({length:721},(_,i)=>-180+i*0.5);
 // Charts
 let mainChart=null;
 
+// Map canvas polar angle (0=top, clockwise) to elevation angle θ
+function phiToTheta(phi){
+  // phi=0→θ=0 (broadside), phi=90→θ=90, phi=180→θ=0, phi=270→θ=-90
+  if(phi<=90)  return phi;
+  if(phi<=270) return 180-phi;
+  return phi-360;
+}
+
+function drawPolarCanvas(patA_dB, patB_dB, thFull){
+  const canvas=document.getElementById('chartMain');
+  const wrap=canvas.parentElement;
+  const size=Math.min(wrap.offsetWidth||440,440);
+  canvas.width=size; canvas.height=size;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  const cx=W/2, cy=H/2;
+  const R=Math.min(W,H)*0.40;
+  const dBMin=-30; // clamp: -30 dB maps to center
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#f4f5f7';
+  ctx.fillRect(0,0,W,H);
+
+  // Convert (dB value, canvas-phi degrees) → (x,y)
+  function polarXY(dBval,phi){
+    const norm=Math.max(0,(dBval-dBMin)/(0-dBMin)); // 0dB→1, dBMin→0
+    const r=R*norm;
+    const rad=(phi-90)*Math.PI/180;
+    return{x:cx+r*Math.cos(rad),y:cy+r*Math.sin(rad)};
+  }
+
+  // dB rings at 0, -10, -20, -30 dB
+  [-30,-20,-10,0].forEach(dv=>{
+    const norm=(dv-dBMin)/(0-dBMin);
+    const r=R*norm;
+    ctx.beginPath();
+    ctx.arc(cx,cy,r,0,2*Math.PI);
+    if(dv===0){ctx.strokeStyle='#a0aec0';ctx.lineWidth=1.2;ctx.setLineDash([]);}
+    else{ctx.strokeStyle='#d0d4da';ctx.lineWidth=0.7;ctx.setLineDash([3,3]);}
+    ctx.stroke();
+    ctx.setLineDash([]);
+    if(dv<0){
+      ctx.fillStyle='#718096';ctx.font='9px Segoe UI,system-ui,sans-serif';
+      ctx.textAlign='left';ctx.textBaseline='middle';
+      ctx.fillText(dv+' dB',cx+r+3,cy-4);
+    }
+  });
+
+  // Axis lines every 30° (12 spokes)
+  ctx.strokeStyle='#d0d4da';ctx.lineWidth=0.7;ctx.setLineDash([2,3]);
+  for(let a=0;a<12;a++){
+    const rad=(a*30-90)*Math.PI/180;
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+R*Math.cos(rad),cy+R*Math.sin(rad));
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  // Angle labels every 30° (elevation angle)
+  ctx.fillStyle='#718096';ctx.font='10px Segoe UI,system-ui,sans-serif';
+  for(let a=0;a<12;a++){
+    const phi=a*30;
+    const theta=phiToTheta(phi);
+    const rad=(phi-90)*Math.PI/180;
+    const lx=cx+(R+16)*Math.cos(rad);
+    const ly=cy+(R+16)*Math.sin(rad);
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(theta+'°',lx,ly);
+  }
+
+  // Clip to outer circle
+  ctx.save();
+  ctx.beginPath();ctx.arc(cx,cy,R,0,2*Math.PI);ctx.clip();
+
+  // Draw pattern
+  function drawPat(patdB,color,dashed){
+    ctx.beginPath();
+    const steps=720;
+    for(let i=0;i<=steps;i++){
+      const phi=(i/steps)*360;
+      const theta=phiToTheta(phi);
+      const idx=Math.round((theta+90)/0.5);
+      const dBval=patdB[Math.max(0,Math.min(patdB.length-1,idx))];
+      const p=polarXY(dBval,phi);
+      if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle=color;ctx.lineWidth=2;
+    if(dashed)ctx.setLineDash([4,3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  drawPat(patA_dB,'#2563eb',false);
+  drawPat(patB_dB,'#7c3aed',true);
+
+  ctx.restore();
+
+  // Legend
+  ctx.fillStyle='#2563eb';ctx.fillRect(cx-50,H-18,20,3);
+  ctx.fillStyle='#718096';ctx.font='10px Segoe UI,system-ui,sans-serif';
+  ctx.textAlign='left';ctx.fillText('Array A',cx-26,H-16);
+  ctx.strokeStyle='#7c3aed';ctx.setLineDash([4,3]);
+  ctx.beginPath();ctx.moveTo(cx+28,H-16);ctx.lineTo(cx+48,H-16);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillText('Array B',cx+52,H-16);
+}
+
 function initChart(){
   if(mainChart) mainChart.destroy();
   const ctx=document.getElementById('chartMain').getContext('2d');
@@ -401,19 +509,8 @@ function initChart(){
       }
     });
   } else {
-    mainChart=new Chart(ctx,{
-      type:'radar',
-      data:{datasets:[
-        {label:'Array A',data:[],borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,.07)',borderWidth:2,pointRadius:0},
-        {label:'Array B',data:[],borderColor:'#bc8cff',backgroundColor:'rgba(188,140,255,.05)',borderDash:[4,3],borderWidth:1.5,pointRadius:0}
-      ]},
-      options:{
-        animation:{duration:0},responsive:true,
-        plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:12}}},
-        scales:{r:{grid:{color:'#e2e5ea'},ticks:{color:'#718096',stepSize:20},min:-60,max:0,
-          pointLabels:{color:'#718096',font:{size:10}}}}
-      }
-    });
+    // Polar mode: custom canvas — no Chart.js instance
+    mainChart = null;
   }
 }
 
@@ -459,8 +556,8 @@ function update(){
   document.getElementById('mGL').textContent=gl.length?gl.join(', '):'None';
   document.getElementById('mGL').style.color=gl.length?'var(--red)':'var(--grn)';
 
-  if(!mainChart) initChart();
   if(viewMode==='cartesian'){
+    if(!mainChart) initChart();
     mainChart.data.datasets[0].data=thFull.map((t,i)=>({x:t,y:patA_dB[i]}));
     mainChart.data.datasets[1].data=thFull.map((t,i)=>({x:t,y:patB_dB[i]}));
     // Add vertical grating lobe markers via dataset
@@ -474,14 +571,12 @@ function update(){
         borderColor:'rgba(248,81,73,.85)',borderDash:[4,4],borderWidth:2,pointRadius:0,showLine:true,fill:false
       });
     });
+    mainChart.update();
   } else {
-    // Polar: use angles 0-360 (convert elevation to azimuth-like display)
-    const polarLabels=thFull.map(t=>t+'°');
-    mainChart.data.labels=polarLabels;
-    mainChart.data.datasets[0].data=patA_dB.map(v=>v+60); // shift so -60dB=0
-    mainChart.data.datasets[1].data=patB_dB.map(v=>v+60);
+    // Polar: custom canvas renderer
+    if(mainChart){mainChart.destroy();mainChart=null;}
+    drawPolarCanvas(patA_dB, patB_dB, thFull);
   }
-  mainChart.update();
 
   const taperNames={uniform:'Uniform (−13 dB SLL)',hamming:'Hamming (−43 dB SLL)',hann:'Hann (−31 dB SLL)',cheby:'Chebyshev (−40 dB SLL)',taylor:'Taylor −35 dB'};
   const elemNames={iso:'isotropic',cos:'cosine',cos2:'patch (cos²θ)'};
