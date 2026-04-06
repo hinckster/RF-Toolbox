@@ -324,7 +324,7 @@ const chartIRR=new Chart(irrCtx,{
     animation:{duration:0},responsive:true,
     plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:12}}},
     scales:{
-      x:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'IF Frequency (MHz)'}},
+      x:{type:'logarithmic',min:1,max:1000,grid:{color:'#e2e5ea'},ticks:{color:'#718096',callback:v=>[1,2,5,10,20,50,100,200,500,1000].includes(+v)?v+'':null},title:{display:true,color:'#718096',text:'IF Frequency (MHz)'}},
       y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Image Rejection (dB)'}}
     }
   }
