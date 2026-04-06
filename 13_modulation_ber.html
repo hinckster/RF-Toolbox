@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modulation &amp; BER | RF Toolbox</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#16181d;--card:#1e2128;--deep:#0d1117;
+  --bdr:#30363d;--t1:#e6edf3;--t2:#c9d1d9;--tm:#8b949e;
+  --blue:#58a6ff;--grn:#3fb950;--org:#f0883e;--red:#f85149;--yel:#e6c547;--pur:#bc8cff;
+  --cyan:#00c8ff;
+}
+body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+
+.toolbar{position:fixed;top:14px;right:16px;display:flex;gap:6px;z-index:100}
+.tbtn{background:var(--card);border:1px solid var(--bdr);color:var(--tm);border-radius:5px;padding:5px 10px;font-size:.75rem;cursor:pointer;transition:border-color .15s,color .15s}
+.tbtn:hover{border-color:var(--blue);color:var(--blue)}
+
+nav{padding:.75rem 1.5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.75rem;background:var(--card)}
+nav a{color:var(--blue);text-decoration:none;font-size:.88rem}
+nav .sep{color:var(--bdr)}
+nav span{color:var(--tm);font-size:.85rem}
+
+header{padding:1.5rem 1.5rem 1rem;max-width:1180px;margin:0 auto}
+header .tag{font-size:.72rem;font-weight:600;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:.3rem}
+header h1{font-size:1.7rem;font-weight:700;color:var(--t1)}
+header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
+
+.eq-box{max-width:1180px;margin:0 auto .9rem;padding:0 1.5rem}
+.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.1rem 1.75rem;display:flex;flex-wrap:wrap;gap:1.5rem}
+.eq-col{flex:1;min-width:240px}
+.eq-label{font-size:.7rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-primary{font-family:'Courier New',monospace;font-size:.92rem;color:var(--t1);line-height:2}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.8rem;color:var(--pur);line-height:1.9}
+.eq-note{font-size:.74rem;color:var(--tm);margin-top:.25rem}
+
+.layout{display:grid;grid-template-columns:300px 1fr;gap:1.2rem;max-width:1180px;margin:0 auto;padding:0 1.5rem 2rem}
+@media(max-width:768px){.layout{grid-template-columns:1fr}}
+
+.panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem}
+.panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
+.panel-sep{border-top:1px solid var(--bdr);margin:.85rem 0}
+
+.sr{margin-bottom:.9rem}
+.sr label{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem}
+.sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
+.hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
+
+.mod-checks{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.9rem}
+.mod-check{display:flex;align-items:center;gap:.5rem;font-size:.83rem;cursor:pointer}
+.mod-check input{accent-color:var(--blue);width:14px;height:14px}
+.mod-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+.ber-target-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.9rem;font-size:.85rem}
+.ber-target-row input{background:var(--deep);border:1px solid var(--bdr);color:var(--blue);border-radius:5px;padding:.28rem .45rem;font-size:.82rem;font-family:'Courier New',monospace;width:80px}
+
+.results-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:.5rem}
+.results-table th{font-size:.67rem;color:var(--tm);text-transform:uppercase;letter-spacing:.7px;padding:.3rem .4rem;border-bottom:1px solid var(--bdr);text-align:left}
+.results-table td{padding:.28rem .4rem;border-bottom:1px solid rgba(255,255,255,.03);font-family:'Courier New',monospace}
+.results-table tr:last-child td{border-bottom:none}
+
+.chart-panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem;display:flex;flex-direction:column;gap:.8rem}
+.chart-panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase}
+.charts-grid{display:grid;grid-template-columns:3fr 2fr;gap:.8rem}
+@media(max-width:900px){.charts-grid{grid-template-columns:1fr}}
+.chart-wrap{position:relative;height:340px}
+.chart-wrap-sm{position:relative;height:340px}
+
+.annotation{border-left:3px solid var(--blue);background:var(--deep);padding:10px 14px;border-radius:0 7px 7px 0;font-size:.83rem;color:var(--tm);line-height:1.65}
+.annotation strong{color:var(--t1)}
+.annotation b{color:var(--cyan)}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="tbtn" onclick="takeScreenshot()">&#128247; Screenshot</button>
+  <button class="tbtn" onclick="exportCSV()">&#11015; Export CSV</button>
+  <button class="tbtn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">&#8856; Copy Link</button>
+</div>
+
+<nav>
+  <a href="index.html">&#8592; RF Toolbox</a>
+  <span class="sep">›</span>
+  <span>Modulation &amp; BER</span>
+</nav>
+
+<header>
+  <div class="tag">Tool 13 · Digital Modulation</div>
+  <h1>Modulation &amp; BER</h1>
+  <p>BER vs Eb/N0 curves for common modulations. Shannon capacity limit. Required SNR for target BER. Spectral efficiency tradeoff.</p>
+</header>
+
+<div class="eq-box">
+  <div class="eq-card">
+    <div class="eq-col">
+      <div class="eq-label">BER Formulas (AWGN)</div>
+      <div class="eq-primary">BER_BPSK = Q(√(2·Eb/N0))</div>
+      <div class="eq-secondary">BER_QPSK = Q(√(2·Eb/N0)) [same as BPSK]</div>
+      <div class="eq-secondary">BER_M-QAM ≈ (4/log₂M)·(1−1/√M)·Q(√(3log₂M·Eb/((M−1)·N0)))</div>
+      <div class="eq-note">Q(x) = ½·erfc(x/√2). Eb/N0 = SNR/log₂(M) in linear scale.</div>
+    </div>
+    <div class="eq-col">
+      <div class="eq-label">Shannon Capacity</div>
+      <div class="eq-primary">C = B·log₂(1 + SNR)  bits/s/Hz</div>
+      <div class="eq-secondary">Eb/N0|_min = (2^(C/B) − 1)·B/C  [capacity limit]</div>
+      <div class="eq-note">Shannon limit: minimum Eb/N0 for reliable comms = −1.59 dB (C/B → 0). BPSK theoretical penalty ≈ +1 dB above Shannon.</div>
+    </div>
+    <div class="eq-col">
+      <div class="eq-label">Spectral Efficiency</div>
+      <div class="eq-secondary">SE = log₂(M)  bits/s/Hz  [uncoded ideal]</div>
+      <div class="eq-secondary">BPSK: 1 · QPSK: 2 · 16-QAM: 4 · 64-QAM: 6 · 256-QAM: 8</div>
+      <div class="eq-note">Coding rate r reduces SE by factor r. 5G NR: up to 256-QAM + rate 0.93 = 7.5 b/s/Hz per stream.</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <div>
+    <div class="panel" style="margin-bottom:1rem">
+      <h3>Modulations to Show</h3>
+      <div class="mod-checks" id="modChecks"></div>
+
+      <div class="panel-sep"></div>
+      <h3 style="margin-bottom:.6rem">Operating Point</h3>
+      <div class="sr">
+        <label>Eb/N0 (operating) <span id="vEbN0">10.0 dB</span></label>
+        <input type="range" id="sEbN0" min="-5" max="35" step="0.5" value="10">
+        <div class="hints"><span>−5 dB</span><span>35 dB</span></div>
+      </div>
+
+      <div class="panel-sep"></div>
+      <h3 style="margin-bottom:.6rem">Target BER</h3>
+      <div class="ber-target-row">
+        <span>BER =</span>
+        <select id="selBERtarget" style="background:var(--deep);border:1px solid var(--bdr);color:var(--blue);border-radius:5px;padding:.28rem .45rem;font-size:.82rem">
+          <option value="-3">10⁻³</option>
+          <option value="-4">10⁻⁴</option>
+          <option value="-5">10⁻⁵</option>
+          <option value="-6" selected>10⁻⁶</option>
+          <option value="-9">10⁻⁹</option>
+          <option value="-12">10⁻¹²</option>
+        </select>
+      </div>
+
+      <div class="panel-sep"></div>
+      <h3 style="margin-bottom:.5rem">Required Eb/N0 for Target BER</h3>
+      <table class="results-table" id="resultsTable">
+        <thead><tr><th>Modulation</th><th>Eb/N0 req</th><th>SE (b/Hz)</th><th>BER @ op</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="chart-panel">
+    <div class="charts-grid">
+      <div>
+        <h3 style="margin-bottom:.6rem">BER vs Eb/N0 — AWGN Channel</h3>
+        <div class="chart-wrap"><canvas id="chartBER"></canvas></div>
+      </div>
+      <div>
+        <h3 style="margin-bottom:.6rem">Spectral Efficiency vs Required Eb/N0</h3>
+        <div class="chart-wrap-sm"><canvas id="chartSE"></canvas></div>
+      </div>
+    </div>
+    <div class="annotation" id="annotation">Computing…</div>
+  </div>
+</div>
+
+<script>
+// Q function via erfc
+function Q(x) {
+  return 0.5 * erfc(x / Math.SQRT2);
+}
+function erfc(x) {
+  // Abramowitz & Stegun approximation, max error 1.5e-7
+  const p=0.3275911, a=[0.254829592,-0.284496736,1.421413741,-1.453152027,1.061405429];
+  const t = 1/(1+p*Math.abs(x));
+  let poly = 0; a.forEach((c,i) => poly = poly*t + c);
+  const e = 1 - poly * t * Math.exp(-x*x);
+  return x >= 0 ? 1-e : 1+e;
+}
+
+// BER functions (Eb/N0 is linear)
+const MODS = [
+  { key:'bpsk',   label:'BPSK',    M:2,   color:'#58a6ff', se:1,
+    ber: eb => Q(Math.sqrt(2*eb)) },
+  { key:'qpsk',   label:'QPSK',    M:4,   color:'#00c8ff', se:2,
+    ber: eb => Q(Math.sqrt(2*eb)) },
+  { key:'8psk',   label:'8-PSK',   M:8,   color:'#3fb950', se:3,
+    ber: eb => (2/3) * Q(Math.sqrt(2*3*eb) * Math.sin(Math.PI/8)) },
+  { key:'16qam',  label:'16-QAM',  M:16,  color:'#e6c547', se:4,
+    ber: eb => (3/8) * erfc(Math.sqrt(eb * 4 / 10)) },
+  { key:'64qam',  label:'64-QAM',  M:64,  color:'#f0883e', se:6,
+    ber: eb => (7/24) * erfc(Math.sqrt(eb * 6 / 42)) },
+  { key:'256qam', label:'256-QAM', M:256, color:'#f85149', se:8,
+    ber: eb => (15/64) * erfc(Math.sqrt(eb * 8 / 170)) },
+  { key:'shannon', label:'Shannon limit', M:0, color:'#bc8cff', se:null,
+    ber: null },
+];
+
+// Invert BER to find required Eb/N0 (bisection)
+function reqEbN0(mod, targetBER, loDb=-5, hiDb=40) {
+  if (!mod.ber) return null;
+  for (let i=0; i<60; i++) {
+    const mid = (loDb+hiDb)/2;
+    const b = mod.ber(Math.pow(10, mid/10));
+    if (b > targetBER) loDb=mid; else hiDb=mid;
+  }
+  return (loDb+hiDb)/2;
+}
+
+// Shannon: minimum Eb/N0 for given spectral efficiency SE (bits/s/Hz)
+function shannonEbN0_dB(se) {
+  // C/B = SE = log2(1 + SNR) => SNR = 2^SE - 1
+  // Eb/N0 = SNR / SE (linear)
+  const snr = Math.pow(2, se) - 1;
+  return 10*Math.log10(snr/se);
+}
+
+let chartBER=null, chartSE=null;
+let activeKeys = new Set(['bpsk','qpsk','16qam','64qam','256qam','shannon']);
+
+function buildCheckboxes() {
+  const wrap = document.getElementById('modChecks');
+  MODS.forEach(m => {
+    const label = document.createElement('label');
+    label.className = 'mod-check';
+    const cb = document.createElement('input');
+    cb.type='checkbox'; cb.id='cb_'+m.key;
+    cb.checked = activeKeys.has(m.key);
+    cb.addEventListener('change', () => {
+      if(cb.checked) activeKeys.add(m.key); else activeKeys.delete(m.key);
+      update();
+    });
+    const dot = document.createElement('div');
+    dot.className='mod-dot'; dot.style.background=m.color;
+    label.appendChild(cb); label.appendChild(dot);
+    label.appendChild(document.createTextNode(' '+m.label));
+    wrap.appendChild(label);
+  });
+}
+
+function initCharts() {
+  const berCtx=document.getElementById('chartBER').getContext('2d');
+  chartBER = new Chart(berCtx, {
+    type:'line',
+    data:{datasets:[]},
+    options:{
+      animation:{duration:0},responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+      scales:{
+        x:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Eb/N0 (dB)'},min:-5,max:35},
+        y:{type:'logarithmic',grid:{color:'#252830'},
+          ticks:{color:'#8b949e',callback:v=>{const e=Math.round(Math.log10(v));return e<0?'10^'+e:''}},
+          title:{display:true,color:'#8b949e',text:'Bit Error Rate (BER)'},min:1e-12,max:1}
+      }
+    }
+  });
+
+  const seCtx=document.getElementById('chartSE').getContext('2d');
+  chartSE = new Chart(seCtx, {
+    type:'line',
+    data:{datasets:[]},
+    options:{
+      animation:{duration:0},responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Required Eb/N0 (dB)'}},
+        y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Spectral Efficiency (bits/s/Hz)'},min:0,max:9}
+      }
+    }
+  });
+}
+
+function update() {
+  const EbN0_dB = +document.getElementById('sEbN0').value;
+  const EbN0_lin = Math.pow(10, EbN0_dB/10);
+  const targetExp = +document.getElementById('selBERtarget').value;
+  const targetBER = Math.pow(10, targetExp);
+
+  document.getElementById('vEbN0').textContent = EbN0_dB.toFixed(1)+' dB';
+
+  // BER curves
+  const xArr = Array.from({length:161},(_,i)=>-5+i*0.25); // Eb/N0 in dB
+
+  // Shannon curve: BER → Shannon limit line (parametric: for each SE, min Eb/N0)
+  const shannonPts = Array.from({length:100},(_,i)=>{
+    const se = 0.1 + i * 8.9/99;
+    return {x: shannonEbN0_dB(se), y: se};
+  });
+
+  const berDatasets = [];
+  MODS.forEach(m => {
+    if (!activeKeys.has(m.key)) return;
+    if (m.key === 'shannon') return; // handled separately on SE chart
+    const data = xArr.map(db => {
+      const eb = Math.pow(10, db/10);
+      const ber = m.ber(eb);
+      return {x: db, y: ber < 1e-13 ? null : ber};
+    });
+    // Operating point marker
+    const berOp = m.ber(EbN0_lin);
+    berDatasets.push({
+      label: m.label, data, borderColor: m.color, borderWidth: 2, pointRadius: 0, fill:false, tension:0,
+      spanGaps: false,
+    });
+    // Operating point dot
+    if (berOp > 1e-13) {
+      berDatasets.push({
+        label:'', data:[{x:EbN0_dB, y:berOp}],
+        borderColor:m.color, pointBackgroundColor:m.color,
+        pointRadius:5, borderWidth:0, fill:false, showLine:false
+      });
+    }
+  });
+
+  // BER target horizontal line
+  berDatasets.push({
+    label:'Target BER', data:[{x:-5,y:targetBER},{x:35,y:targetBER}],
+    borderColor:'rgba(255,255,255,.25)',borderDash:[4,4],borderWidth:1,pointRadius:0,fill:false
+  });
+  // Operating Eb/N0 vertical line
+  berDatasets.push({
+    label:'', data:[{x:EbN0_dB,y:1},{x:EbN0_dB,y:1e-13}],
+    borderColor:'rgba(88,166,255,.3)',borderDash:[3,3],borderWidth:1,pointRadius:0,fill:false
+  });
+
+  chartBER.data.datasets = berDatasets;
+  chartBER.update();
+
+  // SE chart: plot modulation points + Shannon bound
+  const seDatasets = [];
+  if (activeKeys.has('shannon')) {
+    seDatasets.push({
+      label:'Shannon bound',data:shannonPts,borderColor:'#bc8cff',borderWidth:2,pointRadius:0,fill:false,tension:0
+    });
+  }
+  MODS.filter(m=>m.se&&activeKeys.has(m.key)).forEach(m=>{
+    const req = reqEbN0(m, targetBER);
+    if (req===null) return;
+    seDatasets.push({
+      label:m.label,data:[{x:req,y:m.se}],
+      borderColor:m.color,pointBackgroundColor:m.color,pointRadius:7,borderWidth:0,fill:false,showLine:false
+    });
+  });
+  chartSE.data.datasets = seDatasets;
+  chartSE.update();
+
+  // Results table
+  const tbody = document.querySelector('#resultsTable tbody');
+  tbody.innerHTML = '';
+  const active = MODS.filter(m=>m.ber&&activeKeys.has(m.key));
+  active.forEach(m=>{
+    const req = reqEbN0(m, targetBER);
+    const berOp = m.ber(EbN0_lin);
+    const penalty = req !== null ? (req - shannonEbN0_dB(m.se)).toFixed(1) : '—';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color:${m.color}">${m.label}</td>
+      <td>${req!==null?req.toFixed(1)+' dB':'—'}</td>
+      <td>${m.se}</td>
+      <td>${berOp<1e-13?'<10⁻¹³':berOp.toExponential(1)}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  // Annotation — find which mods are below target BER at operating point
+  const passing = active.filter(m => m.ber(EbN0_lin) < targetBER).map(m=>m.label);
+  const failing = active.filter(m => m.ber(EbN0_lin) >= targetBER).map(m=>m.label);
+  const shannonSE = Math.log2(1 + EbN0_lin);
+  const shannonMin = shannonEbN0_dB(1); // min Eb/N0 for 1 b/s/Hz
+
+  const best = active.reduce((a,b) => {
+    const ra=reqEbN0(a,targetBER)||99, rb=reqEbN0(b,targetBER)||99;
+    return ra<rb?a:b;
+  });
+
+  document.getElementById('annotation').innerHTML =
+    `<strong>At Eb/N0 = ${EbN0_dB} dB (operating), target BER = 10^${targetExp}:</strong><br>
+    <b style="color:var(--grn)">Below target BER:</b> ${passing.length?passing.join(', '):'none'}.&nbsp;
+    <b style="color:var(--red)">Above target BER:</b> ${failing.length?failing.join(', '):'none'}.<br>
+    Shannon capacity at this SNR: <b>${shannonSE.toFixed(2)} bits/s/Hz</b>
+    (theoretical maximum spectral efficiency; no practical modulation reaches this).
+    Shannon absolute minimum Eb/N0 = <b>−1.59 dB</b> (C/B → 0).<br>
+    For target BER 10^${targetExp}: most efficient choice is <b style="color:${best.color}">${best.label}</b>
+    (requires ${reqEbN0(best,targetBER)?.toFixed(1)} dB Eb/N0, SE = ${best.se} b/s/Hz).
+    Higher-order QAM delivers more bits/s/Hz but needs more Eb/N0 — the fundamental modulation tradeoff.`;
+}
+
+buildCheckboxes();
+initCharts();
+['sEbN0','selBERtarget'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+update();
+
+// Toolbar
+function takeScreenshot(){}
+function exportCSV(){
+  const EbN0_dB=+document.getElementById('sEbN0').value;
+  const targetBER=Math.pow(10,+document.getElementById('selBERtarget').value);
+  const lines=['PARAMETERS','Parameter,Value','Operating Eb/N0,'+EbN0_dB+' dB','Target BER,'+targetBER.toExponential(),'','REQUIRED Eb/N0 FOR TARGET BER','Modulation,Required Eb/N0 (dB),SE (b/s/Hz)'];
+  MODS.filter(m=>m.ber).forEach(m=>{
+    const req=reqEbN0(m,targetBER);
+    lines.push(m.label+','+(req!==null?req.toFixed(2):'N/A')+','+m.se);
+  });
+  lines.push('','BER CURVES (selected mods)','Eb/N0 (dB),'+ MODS.filter(m=>m.ber&&activeKeys.has(m.key)).map(m=>m.label).join(','));
+  Array.from({length:41},(_,i)=>-5+i).forEach(db=>{
+    const row=[db];
+    MODS.filter(m=>m.ber&&activeKeys.has(m.key)).forEach(m=>{
+      const b=m.ber(Math.pow(10,db/10));
+      row.push(b<1e-13?'<1e-13':b.toExponential(3));
+    });
+    lines.push(row.join(','));
+  });
+  const blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='rf_toolbox_ber_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+function copyLink(){
+  const p=new URLSearchParams({ebn0:document.getElementById('sEbN0').value,target:document.getElementById('selBERtarget').value});
+  navigator.clipboard.writeText(location.href.split('?')[0]+'?'+p.toString()).then(()=>{
+    const btn=document.getElementById('copyBtn');btn.textContent='✓ Copied';setTimeout(()=>btn.textContent='⎘ Copy Link',1500);
+  });
+}
+function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+
+(function(){
+  const p=new URLSearchParams(location.search);
+  if(p.has('ebn0'))   document.getElementById('sEbN0').value=p.get('ebn0');
+  if(p.has('target')) document.getElementById('selBERtarget').value=p.get('target');
+  if([...p.keys()].length>0) update();
+})();
+</script>
+</body>
+</html>

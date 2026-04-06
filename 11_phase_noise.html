@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase Noise / Leeson's Equation | RF Toolbox</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#16181d;--card:#1e2128;--deep:#0d1117;
+  --bdr:#30363d;--t1:#e6edf3;--t2:#c9d1d9;--tm:#8b949e;
+  --blue:#58a6ff;--grn:#3fb950;--org:#f0883e;--red:#f85149;--yel:#e6c547;--pur:#bc8cff;
+  --cyan:#00c8ff;
+}
+body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+
+.toolbar{position:fixed;top:14px;right:16px;display:flex;gap:6px;z-index:100}
+.tbtn{background:var(--card);border:1px solid var(--bdr);color:var(--tm);border-radius:5px;padding:5px 10px;font-size:.75rem;cursor:pointer;transition:border-color .15s,color .15s}
+.tbtn:hover{border-color:var(--blue);color:var(--blue)}
+
+nav{padding:.75rem 1.5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.75rem;background:var(--card)}
+nav a{color:var(--blue);text-decoration:none;font-size:.88rem}
+nav .sep{color:var(--bdr)}
+nav span{color:var(--tm);font-size:.85rem}
+
+header{padding:1.5rem 1.5rem 1rem;max-width:1180px;margin:0 auto}
+header .tag{font-size:.72rem;font-weight:600;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:.3rem}
+header h1{font-size:1.7rem;font-weight:700;color:var(--t1)}
+header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
+
+.eq-box{max-width:1180px;margin:0 auto .9rem;padding:0 1.5rem}
+.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.1rem 1.75rem;display:flex;flex-wrap:wrap;gap:1.5rem}
+.eq-col{flex:1;min-width:280px}
+.eq-label{font-size:.7rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-primary{font-family:'Courier New',monospace;font-size:.95rem;color:var(--t1);line-height:2}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.82rem;color:var(--pur);line-height:1.9}
+.eq-note{font-size:.74rem;color:var(--tm);margin-top:.25rem}
+
+.layout{display:grid;grid-template-columns:300px 1fr;gap:1.2rem;max-width:1180px;margin:0 auto;padding:0 1.5rem 2rem}
+@media(max-width:768px){.layout{grid-template-columns:1fr}}
+
+.panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem}
+.panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
+.panel-sep{border-top:1px solid var(--bdr);margin:.85rem 0}
+
+.sr{margin-bottom:.9rem}
+.sr label{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem}
+.sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
+.hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
+
+.preset-row{margin-bottom:.9rem}
+.preset-row label{font-size:.76rem;color:var(--tm);display:block;margin-bottom:.3rem}
+.preset-select{width:100%;background:var(--deep);border:1px solid var(--bdr);color:var(--t2);border-radius:6px;padding:6px 8px;font-size:.78rem;cursor:pointer}
+.preset-select:focus{outline:none;border-color:var(--blue)}
+
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.5rem}
+.mc{background:var(--deep);border:1px solid var(--bdr);border-radius:6px;padding:.5rem .7rem}
+.mc .ml{font-size:.65rem;color:var(--tm);text-transform:uppercase;letter-spacing:.8px}
+.mc .mv{font-family:'Courier New',monospace;font-size:1rem;font-weight:700;margin-top:.1rem;color:var(--cyan)}
+.mc .mu{font-size:.65rem;color:var(--tm)}
+
+.chart-panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem;display:flex;flex-direction:column;gap:.8rem}
+.chart-panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase}
+.chart-wrap{position:relative;height:400px}
+
+.annotation{border-left:3px solid var(--blue);background:var(--deep);padding:10px 14px;border-radius:0 7px 7px 0;font-size:.83rem;color:var(--tm);line-height:1.65}
+.annotation strong{color:var(--t1)}
+.annotation b{color:var(--cyan)}
+
+.region-labels{display:flex;gap:1rem;flex-wrap:wrap;font-size:.75rem;margin-top:.3rem}
+.rl{display:flex;align-items:center;gap:.35rem}
+.rl-dot{width:10px;height:10px;border-radius:50%}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="tbtn" onclick="takeScreenshot()">&#128247; Screenshot</button>
+  <button class="tbtn" onclick="exportCSV()">&#11015; Export CSV</button>
+  <button class="tbtn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">&#8856; Copy Link</button>
+</div>
+
+<nav>
+  <a href="index.html">&#8592; RF Toolbox</a>
+  <span class="sep">›</span>
+  <span>Phase Noise</span>
+</nav>
+
+<header>
+  <div class="tag">Tool 11 · Oscillators</div>
+  <h1>Phase Noise / Leeson's Equation</h1>
+  <p>Oscillator phase noise L(Δf) vs offset frequency. Integrated phase noise, timing jitter, EVM impact.</p>
+</header>
+
+<div class="eq-box">
+  <div class="eq-card">
+    <div class="eq-col">
+      <div class="eq-label">Leeson's Equation</div>
+      <div class="eq-primary">L(Δf) = 10·log[(2FkT/Ps)·(1+(f₀/2QL·Δf)²)·(1+fc/|Δf|)]</div>
+      <div class="eq-note">F = noise figure (linear) · k = 1.38×10⁻²³ J/K · T = 290 K · Ps = carrier power · QL = loaded Q · fc = flicker corner</div>
+    </div>
+    <div class="eq-col">
+      <div class="eq-label">Integrated Phase Noise &amp; Jitter</div>
+      <div class="eq-secondary">φ_rms = √(2 · ∫_f1^f2 10^(L(Δf)/10) dΔf)  [rad]</div>
+      <div class="eq-secondary">t_jitter = φ_rms / (2π · f₀)  [s]</div>
+      <div class="eq-note">Integrate from f1 to f2 (typically 100 Hz to 10 MHz or channel BW)</div>
+    </div>
+    <div class="eq-col">
+      <div class="eq-label">Three Noise Regions</div>
+      <div class="eq-secondary">1/f³: slope −30 dB/dec (flicker dominated, Δf &lt; fc)</div>
+      <div class="eq-secondary">1/f²: slope −20 dB/dec (Leeson region, fc &lt; Δf &lt; f₀/2QL)</div>
+      <div class="eq-secondary">Flat: thermal noise floor (Δf &gt; f₀/2QL)</div>
+      <div class="eq-note">Floor = 10·log(2FkT/Ps) · Corner = f₀/2QL</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <div>
+    <div class="panel" style="margin-bottom:1rem">
+      <h3>Oscillator Parameters</h3>
+
+      <div class="preset-row">
+        <label>Load Scenario</label>
+        <select class="preset-select" id="presetSel" onchange="loadPreset(this.value)">
+          <option value="">— Load Scenario —</option>
+          <option value="tcxo">TCXO (10 MHz, moderate Q)</option>
+          <option value="vcxo">VCXO (100 MHz, medium Q)</option>
+          <option value="dro">DRO (10 GHz, high Q)</option>
+          <option value="vco">VCO (2.4 GHz, low Q)</option>
+          <option value="sapphire">Sapphire oscillator (10 GHz, ultra-high Q)</option>
+        </select>
+      </div>
+
+      <div class="sr">
+        <label>Carrier frequency f₀ <span id="vF0">10 MHz</span></label>
+        <input type="range" id="sF0" min="6" max="40" step="0.01" value="7">
+        <div class="hints"><span>1 MHz</span><span>10 GHz</span></div>
+      </div>
+
+      <div class="sr">
+        <label>Loaded Q <span id="vQL">10 000</span></label>
+        <input type="range" id="sQL" min="1" max="6" step="0.01" value="4">
+        <div class="hints"><span>10</span><span>1 M</span></div>
+      </div>
+
+      <div class="sr">
+        <label>Carrier power Ps <span id="vPs">0 dBm</span></label>
+        <input type="range" id="sPs" min="-20" max="20" step="0.5" value="0">
+        <div class="hints"><span>−20 dBm</span><span>+20 dBm</span></div>
+      </div>
+
+      <div class="sr">
+        <label>Noise figure F <span id="vF">3.0 dB</span></label>
+        <input type="range" id="sF" min="0" max="20" step="0.25" value="3">
+        <div class="hints"><span>0 dB</span><span>20 dB</span></div>
+      </div>
+
+      <div class="sr">
+        <label>Flicker corner fc <span id="vFc">10 kHz</span></label>
+        <input type="range" id="sFc" min="1" max="7" step="0.05" value="4">
+        <div class="hints"><span>10 Hz</span><span>10 MHz</span></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:1rem">
+      <h3>Integration Band</h3>
+      <div class="sr">
+        <label>From Δf <span id="vFint1">1 kHz</span></label>
+        <input type="range" id="sFint1" min="1" max="7" step="0.1" value="3">
+        <div class="hints"><span>10 Hz</span><span>10 MHz</span></div>
+      </div>
+      <div class="sr">
+        <label>To Δf <span id="vFint2">1 MHz</span></label>
+        <input type="range" id="sFint2" min="1" max="7" step="0.1" value="6">
+        <div class="hints"><span>10 Hz</span><span>10 MHz</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Results</h3>
+      <div class="metrics">
+        <div class="mc"><div class="ml">L @ 1 kHz</div><div class="mv" id="mL1k">—</div><div class="mu">dBc/Hz</div></div>
+        <div class="mc"><div class="ml">L @ 10 kHz</div><div class="mv" id="mL10k">—</div><div class="mu">dBc/Hz</div></div>
+        <div class="mc"><div class="ml">L @ 100 kHz</div><div class="mv" id="mL100k">—</div><div class="mu">dBc/Hz</div></div>
+        <div class="mc"><div class="ml">L @ 1 MHz</div><div class="mv" id="mL1M">—</div><div class="mu">dBc/Hz</div></div>
+        <div class="mc"><div class="ml">Noise floor</div><div class="mv" id="mFloor">—</div><div class="mu">dBc/Hz</div></div>
+        <div class="mc"><div class="ml">Leeson BW</div><div class="mv" id="mLeeson">—</div><div class="mu">Hz</div></div>
+        <div class="mc" style="grid-column:span 2"><div class="ml">Integrated phase noise (φ_rms)</div><div class="mv" id="mIPN" style="color:var(--org)">—</div><div class="mu">dBc &nbsp;·&nbsp; <span id="mIPN_rad">—</span> rad rms</div></div>
+        <div class="mc" style="grid-column:span 2"><div class="ml">Timing jitter (at f₀)</div><div class="mv" id="mJitter" style="color:var(--red)">—</div><div class="mu">fs rms</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-panel">
+    <h3 id="chartTitle">Phase Noise L(Δf) — dBc/Hz vs Offset Frequency</h3>
+    <div class="chart-wrap">
+      <canvas id="chartPN"></canvas>
+    </div>
+    <div class="region-labels">
+      <div class="rl"><div class="rl-dot" style="background:#f85149"></div><span style="color:var(--tm)">1/f³ region (−30 dB/dec)</span></div>
+      <div class="rl"><div class="rl-dot" style="background:#f0883e"></div><span style="color:var(--tm)">1/f² region (−20 dB/dec)</span></div>
+      <div class="rl"><div class="rl-dot" style="background:#58a6ff"></div><span style="color:var(--tm)">Thermal floor</span></div>
+      <div class="rl"><div class="rl-dot" style="background:rgba(188,140,255,.6)"></div><span style="color:var(--tm)">Integration band</span></div>
+    </div>
+    <div class="annotation" id="annotation">Computing…</div>
+  </div>
+</div>
+
+<script>
+const k = 1.380649e-23;
+const T = 290;
+
+function fmtHz(hz) {
+  if (hz >= 1e9) return (hz/1e9).toPrecision(3)+' GHz';
+  if (hz >= 1e6) return (hz/1e6).toPrecision(3)+' MHz';
+  if (hz >= 1e3) return (hz/1e3).toPrecision(3)+' kHz';
+  return hz.toPrecision(3)+' Hz';
+}
+function fmtOffset(log10f) {
+  const hz = Math.pow(10, log10f);
+  return fmtHz(hz);
+}
+
+// Sliders are log10 of the relevant quantity
+function getF0()  { return Math.pow(10, +document.getElementById('sF0').value);  }
+function getQL()  { return Math.pow(10, +document.getElementById('sQL').value);  }
+function getPs()  { return +document.getElementById('sPs').value; } // dBm
+function getF()   { return +document.getElementById('sF').value; }  // dB
+function getFc()  { return Math.pow(10, +document.getElementById('sFc').value); }
+function getFi1() { return Math.pow(10, +document.getElementById('sFint1').value); }
+function getFi2() { return Math.pow(10, +document.getElementById('sFint2').value); }
+
+function leeson(df, f0, QL, Ps_dBm, F_dB, fc) {
+  const Ps_W = Math.pow(10, (Ps_dBm - 30) / 10);
+  const F_lin = Math.pow(10, F_dB / 10);
+  const term1 = 2 * F_lin * k * T / Ps_W;
+  const term2 = 1 + Math.pow(f0 / (2 * QL * df), 2);
+  const term3 = 1 + fc / Math.abs(df);
+  return 10 * Math.log10(term1 * term2 * term3);
+}
+
+// Log-spaced offsets from 10 Hz to 100 MHz
+function logOffsets(n) {
+  const pts = [];
+  const lo = 1, hi = 8; // 10^1 to 10^8
+  for (let i = 0; i < n; i++) pts.push(Math.pow(10, lo + (hi - lo) * i / (n - 1)));
+  return pts;
+}
+
+let chart = null;
+function initChart() {
+  const ctx = document.getElementById('chartPN').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: { datasets: [
+      { label: 'Phase Noise L(Δf)', data: [], borderColor: '#58a6ff', borderWidth: 2.5, pointRadius: 0, fill: false, tension: 0 },
+      { label: 'Integration band', data: [], borderColor: 'rgba(188,140,255,.4)', backgroundColor: 'rgba(188,140,255,.08)', borderWidth: 1, pointRadius: 0, fill: true, tension: 0 },
+    ]},
+    options: {
+      animation: { duration: 0 }, responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#8b949e', font: { size: 11 }, boxWidth: 12 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + ' dBc/Hz',
+            title: ctx => 'Δf = ' + fmtHz(ctx[0].parsed.x)
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'logarithmic',
+          grid: { color: '#252830' },
+          ticks: { color: '#8b949e', maxTicksLimit: 10, callback: v => fmtHz(v) },
+          title: { display: true, color: '#8b949e', text: 'Offset Frequency Δf (Hz)' }
+        },
+        y: {
+          grid: { color: '#252830' },
+          ticks: { color: '#8b949e' },
+          title: { display: true, color: '#8b949e', text: 'Phase Noise L(Δf) (dBc/Hz)' }
+        }
+      }
+    }
+  });
+}
+
+function update() {
+  const f0  = getF0();
+  const QL  = getQL();
+  const Ps  = getPs();
+  const F   = getF();
+  const fc  = getFc();
+  const fi1 = getFi1();
+  const fi2 = Math.max(getFi2(), fi1 * 10);
+
+  // Display labels
+  document.getElementById('vF0').textContent = fmtHz(f0);
+  document.getElementById('vQL').textContent = QL >= 1e6 ? (QL/1e6).toFixed(2)+' M' : QL >= 1e3 ? (QL/1e3).toFixed(1)+' k' : QL.toFixed(0);
+  document.getElementById('vPs').textContent = Ps.toFixed(1)+' dBm';
+  document.getElementById('vF').textContent  = F.toFixed(1)+' dB';
+  document.getElementById('vFc').textContent = fmtHz(fc);
+  document.getElementById('vFint1').textContent = fmtHz(fi1);
+  document.getElementById('vFint2').textContent = fmtHz(fi2);
+
+  const dfs = logOffsets(400);
+  const pn  = dfs.map(df => leeson(df, f0, QL, Ps, F, fc));
+
+  // Phase noise at spot frequencies
+  const L1k   = leeson(1e3, f0, QL, Ps, F, fc);
+  const L10k  = leeson(1e4, f0, QL, Ps, F, fc);
+  const L100k = leeson(1e5, f0, QL, Ps, F, fc);
+  const L1M   = leeson(1e6, f0, QL, Ps, F, fc);
+
+  // Thermal floor = 10*log10(2FkT/Ps_W)
+  const Ps_W   = Math.pow(10, (Ps - 30) / 10);
+  const F_lin  = Math.pow(10, F / 10);
+  const floor  = 10 * Math.log10(2 * F_lin * k * T / Ps_W);
+  const leeson_bw = f0 / (2 * QL);
+
+  // Integrated phase noise (numerical integration, linear SSB→DSB→φ_rms)
+  let ipn_lin = 0;
+  const n_int = 2000;
+  const log_fi1 = Math.log10(fi1), log_fi2 = Math.log10(fi2);
+  for (let i = 0; i < n_int; i++) {
+    const df_a = Math.pow(10, log_fi1 + (log_fi2 - log_fi1) * i / n_int);
+    const df_b = Math.pow(10, log_fi1 + (log_fi2 - log_fi1) * (i + 1) / n_int);
+    const L_mid = leeson((df_a + df_b) / 2, f0, QL, Ps, F, fc);
+    ipn_lin += Math.pow(10, L_mid / 10) * (df_b - df_a);
+  }
+  const phi_rms = Math.sqrt(2 * ipn_lin);
+  const ipn_dBc = 10 * Math.log10(ipn_lin);
+  const jitter_s = phi_rms / (2 * Math.PI * f0);
+  const jitter_fs = jitter_s * 1e15;
+
+  document.getElementById('mL1k').textContent   = L1k.toFixed(1);
+  document.getElementById('mL10k').textContent  = L10k.toFixed(1);
+  document.getElementById('mL100k').textContent = L100k.toFixed(1);
+  document.getElementById('mL1M').textContent   = L1M.toFixed(1);
+  document.getElementById('mFloor').textContent = floor.toFixed(1);
+  document.getElementById('mLeeson').textContent = fmtHz(leeson_bw);
+  document.getElementById('mIPN').textContent    = ipn_dBc.toFixed(1);
+  document.getElementById('mIPN_rad').textContent = phi_rms < 0.01 ? phi_rms.toExponential(2) : phi_rms.toFixed(4);
+  document.getElementById('mJitter').textContent  = jitter_fs < 1 ? (jitter_s * 1e18).toFixed(1)+' as' : jitter_fs.toFixed(1);
+  document.getElementById('mJitter').nextElementSibling.textContent = jitter_fs < 1 ? 'as rms' : 'fs rms';
+
+  // Integration band overlay data (set to L(df) only within fi1..fi2)
+  const intData = dfs.map((df, i) => ({
+    x: df,
+    y: (df >= fi1 && df <= fi2) ? pn[i] : null
+  }));
+
+  if (!chart) initChart();
+  chart.data.datasets[0].data = dfs.map((df, i) => ({ x: df, y: pn[i] }));
+  chart.data.datasets[1].data = intData;
+
+  // Annotation
+  const qual = ipn_dBc < -60 ? 'Excellent' : ipn_dBc < -40 ? 'Good' : ipn_dBc < -20 ? 'Moderate' : 'Poor';
+  const evm_pct = (phi_rms * 180 / Math.PI).toFixed(2);
+  document.getElementById('annotation').innerHTML =
+    `<strong>f₀ = ${fmtHz(f0)}, Q_L = ${QL >= 1e3 ? (QL/1e3).toFixed(0)+'k' : QL.toFixed(0)}, Ps = ${Ps} dBm, F = ${F} dB, fc = ${fmtHz(fc)}.</strong><br>
+    Thermal noise floor: <b>${floor.toFixed(1)} dBc/Hz</b>. Leeson half-bandwidth: <b>${fmtHz(leeson_bw)}</b>
+    (offsets inside this boundary see the 1/f² rise; outside is the flat floor).<br>
+    Integrated phase noise (${fmtHz(fi1)}–${fmtHz(fi2)}): <b>${ipn_dBc.toFixed(1)} dBc</b> → φ_rms = <b>${phi_rms < 0.01 ? phi_rms.toExponential(2) : phi_rms.toFixed(4)} rad</b> → jitter = <b>${jitter_fs < 1 ? (jitter_s*1e18).toFixed(1)+' as' : jitter_fs.toFixed(1)+' fs'}</b> rms. ${qual} oscillator.<br>
+    Phase error ≈ <b>${evm_pct}°</b> rms — in a 16QAM system, EVM &lt; 3° is typically required for acceptable BER.
+    ${fc > leeson_bw ? '<b style="color:var(--org)">Note: flicker corner exceeds Leeson BW — 1/f³ dominates much of the useful range. Reduce fc or increase Q.</b>' : ''}`;
+
+  chart.update();
+}
+
+// Presets
+const PRESETS = {
+  tcxo:    { sF0: 7, sQL: 4.3, sPs: 3, sF: 5, sFc: 3.7 },   // 10 MHz, Q=20k, 2 mW, 5 dB, 5 kHz
+  vcxo:    { sF0: 8, sQL: 3.3, sPs: 3, sF: 6, sFc: 4.3 },   // 100 MHz, Q=2k, 2 mW, 6 dB, 20 kHz
+  dro:     { sF0: 10, sQL: 4.7, sPs: 5, sF: 4, sFc: 4 },    // 10 GHz, Q=50k, 3 mW, 4 dB, 10 kHz
+  vco:     { sF0: 9.38, sQL: 2, sPs: 0, sF: 8, sFc: 4.7 }, // 2.4 GHz, Q=100, 1 mW, 8 dB, 50 kHz
+  sapphire:{ sF0: 10, sQL: 5.7, sPs: 10, sF: 2, sFc: 2 },  // 10 GHz, Q=500k, 10 mW, 2 dB, 100 Hz
+};
+function loadPreset(key) {
+  if (!PRESETS[key]) return;
+  const p = PRESETS[key];
+  Object.entries(p).forEach(([id, v]) => { document.getElementById(id).value = v; });
+  update();
+}
+
+// Toolbar
+function takeScreenshot() {
+  if (typeof html2canvas !== 'undefined') {
+    html2canvas(document.body).then(c => {
+      const a = document.createElement('a');
+      a.download = 'phase_noise.png'; a.href = c.toDataURL(); a.click();
+    });
+  }
+}
+function exportCSV() {
+  const f0=getF0(), QL=getQL(), Ps=getPs(), F=getF(), fc=getFc(), fi1=getFi1(), fi2=getFi2();
+  const lines = ['PARAMETERS','Parameter,Value',
+    'Carrier frequency f0,'+fmtHz(f0),
+    'Loaded Q,'+QL.toFixed(0),
+    'Carrier power Ps,'+Ps+' dBm',
+    'Noise figure F,'+F+' dB',
+    'Flicker corner fc,'+fmtHz(fc),
+    'Integration from,'+fmtHz(fi1),
+    'Integration to,'+fmtHz(fi2),
+    '','SPOT PHASE NOISE','Offset,L(Δf) dBc/Hz',
+    '1 kHz,'+leeson(1e3,f0,QL,Ps,F,fc).toFixed(2),
+    '10 kHz,'+leeson(1e4,f0,QL,Ps,F,fc).toFixed(2),
+    '100 kHz,'+leeson(1e5,f0,QL,Ps,F,fc).toFixed(2),
+    '1 MHz,'+leeson(1e6,f0,QL,Ps,F,fc).toFixed(2),
+    '10 MHz,'+leeson(1e7,f0,QL,Ps,F,fc).toFixed(2),
+    '','RESULTS','Result,Value',
+    'Integrated PN,'+document.getElementById('mIPN').textContent+' dBc',
+    'Phase rms,'+document.getElementById('mIPN_rad').textContent+' rad',
+    'Timing jitter,'+document.getElementById('mJitter').textContent,
+    'Noise floor,'+document.getElementById('mFloor').textContent+' dBc/Hz',
+    'Leeson half-BW,'+document.getElementById('mLeeson').textContent,
+    '','SPECTRUM','Offset (Hz),L(Δf) (dBc/Hz)',
+  ];
+  logOffsets(200).forEach(df => lines.push(df.toFixed(2)+','+leeson(df,f0,QL,Ps,F,fc).toFixed(2)));
+  const blob = new Blob([lines.join('\n')],{type:'text/csv'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='rf_toolbox_phase_noise_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+}
+function copyLink() {
+  const p = new URLSearchParams({
+    f0: document.getElementById('sF0').value,
+    ql: document.getElementById('sQL').value,
+    ps: document.getElementById('sPs').value,
+    f:  document.getElementById('sF').value,
+    fc: document.getElementById('sFc').value,
+    fi1:document.getElementById('sFint1').value,
+    fi2:document.getElementById('sFint2').value,
+  });
+  navigator.clipboard.writeText(location.href.split('?')[0]+'?'+p.toString()).then(()=>{
+    const btn=document.getElementById('copyBtn');btn.textContent='✓ Copied';setTimeout(()=>btn.textContent='⎘ Copy Link',1500);
+  });
+}
+function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+
+// Wire up sliders
+['sF0','sQL','sPs','sF','sFc','sFint1','sFint2'].forEach(id =>
+  document.getElementById(id).addEventListener('input', update)
+);
+
+initChart();
+update();
+
+// URL param restore
+(function(){
+  const p=new URLSearchParams(location.search);
+  if(p.has('f0'))  document.getElementById('sF0').value=p.get('f0');
+  if(p.has('ql'))  document.getElementById('sQL').value=p.get('ql');
+  if(p.has('ps'))  document.getElementById('sPs').value=p.get('ps');
+  if(p.has('f'))   document.getElementById('sF').value=p.get('f');
+  if(p.has('fc'))  document.getElementById('sFc').value=p.get('fc');
+  if(p.has('fi1')) document.getElementById('sFint1').value=p.get('fi1');
+  if(p.has('fi2')) document.getElementById('sFint2').value=p.get('fi2');
+  if([...p.keys()].length>0) update();
+})();
+</script>
+</body>
+</html>

@@ -22,6 +22,9 @@ const PAGES = [
   '08_fspl.html',
   '09_transmission_line.html',
   '10_link_budget.html',
+  '11_phase_noise.html',
+  '12_pa_efficiency.html',
+  '13_modulation_ber.html',
 ];
 
 const VIEWPORTS = [
@@ -45,8 +48,14 @@ async function main() {
     }
   }
 
-  const outDir = path.join(__dirname, 'screenshots');
-  if (!fs.existsSync(outDir)) fs.mkdirSync(outDir);
+ // Clear and recreate screenshots dir
+const outDir = path.join(__dirname, 'screenshots');
+if (fs.existsSync(outDir)) {
+  fs.readdirSync(outDir).forEach(f => fs.unlinkSync(path.join(outDir, f)));
+} else {
+  fs.mkdirSync(outDir);
+}
+console.log('🗑  Cleared old screenshots');
 
   const browser = await puppeteer.launch({
     headless: 'new',

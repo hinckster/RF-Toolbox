@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Power Amplifier / Efficiency | RF Toolbox</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#16181d;--card:#1e2128;--deep:#0d1117;
+  --bdr:#30363d;--t1:#e6edf3;--t2:#c9d1d9;--tm:#8b949e;
+  --blue:#58a6ff;--grn:#3fb950;--org:#f0883e;--red:#f85149;--yel:#e6c547;--pur:#bc8cff;
+  --cyan:#00c8ff;
+}
+body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+
+.toolbar{position:fixed;top:14px;right:16px;display:flex;gap:6px;z-index:100}
+.tbtn{background:var(--card);border:1px solid var(--bdr);color:var(--tm);border-radius:5px;padding:5px 10px;font-size:.75rem;cursor:pointer;transition:border-color .15s,color .15s}
+.tbtn:hover{border-color:var(--blue);color:var(--blue)}
+
+nav{padding:.75rem 1.5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.75rem;background:var(--card)}
+nav a{color:var(--blue);text-decoration:none;font-size:.88rem}
+nav .sep{color:var(--bdr)}
+nav span{color:var(--tm);font-size:.85rem}
+
+header{padding:1.5rem 1.5rem 1rem;max-width:1180px;margin:0 auto}
+header .tag{font-size:.72rem;font-weight:600;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:.3rem}
+header h1{font-size:1.7rem;font-weight:700;color:var(--t1)}
+header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
+
+.eq-box{max-width:1180px;margin:0 auto .9rem;padding:0 1.5rem}
+.eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.1rem 1.75rem;display:flex;flex-wrap:wrap;gap:1.5rem}
+.eq-col{flex:1;min-width:240px}
+.eq-label{font-size:.7rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-primary{font-family:'Courier New',monospace;font-size:.95rem;color:var(--t1);line-height:2}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.82rem;color:var(--pur);line-height:1.9}
+.eq-note{font-size:.74rem;color:var(--tm);margin-top:.25rem}
+
+.layout{display:grid;grid-template-columns:300px 1fr;gap:1.2rem;max-width:1180px;margin:0 auto;padding:0 1.5rem 2rem}
+@media(max-width:768px){.layout{grid-template-columns:1fr}}
+
+.panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem}
+.panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
+.panel-sep{border-top:1px solid var(--bdr);margin:.85rem 0}
+
+.sr{margin-bottom:.9rem}
+.sr label{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem}
+.sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
+.hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
+
+.preset-row{margin-bottom:.9rem}
+.preset-row label{font-size:.76rem;color:var(--tm);display:block;margin-bottom:.3rem}
+.preset-select{width:100%;background:var(--deep);border:1px solid var(--bdr);color:var(--t2);border-radius:6px;padding:6px 8px;font-size:.78rem;cursor:pointer}
+.preset-select:focus{outline:none;border-color:var(--blue)}
+
+.class-tabs{display:flex;gap:.35rem;margin-bottom:1rem;flex-wrap:wrap}
+.ctab{padding:.35rem .7rem;background:var(--deep);border:1px solid var(--bdr);border-radius:5px;font-size:.78rem;cursor:pointer;color:var(--tm);transition:.15s}
+.ctab.active{border-color:var(--blue);color:var(--blue);background:rgba(88,166,255,.08)}
+
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.5rem}
+.mc{background:var(--deep);border:1px solid var(--bdr);border-radius:6px;padding:.5rem .7rem}
+.mc .ml{font-size:.65rem;color:var(--tm);text-transform:uppercase;letter-spacing:.8px}
+.mc .mv{font-family:'Courier New',monospace;font-size:1rem;font-weight:700;margin-top:.1rem;color:var(--cyan)}
+.mc .mu{font-size:.65rem;color:var(--tm)}
+
+.chart-panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem;display:flex;flex-direction:column;gap:.8rem}
+.chart-panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+@media(max-width:900px){.charts-grid{grid-template-columns:1fr}}
+.chart-wrap{position:relative;height:300px}
+
+.annotation{border-left:3px solid var(--blue);background:var(--deep);padding:10px 14px;border-radius:0 7px 7px 0;font-size:.83rem;color:var(--tm);line-height:1.65}
+.annotation strong{color:var(--t1)}
+.annotation b{color:var(--cyan)}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="tbtn" onclick="takeScreenshot()">&#128247; Screenshot</button>
+  <button class="tbtn" onclick="exportCSV()">&#11015; Export CSV</button>
+  <button class="tbtn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">&#8856; Copy Link</button>
+</div>
+
+<nav>
+  <a href="index.html">&#8592; RF Toolbox</a>
+  <span class="sep">›</span>
+  <span>Power Amplifier</span>
+</nav>
+
+<header>
+  <div class="tag">Tool 12 · Amplifiers</div>
+  <h1>Power Amplifier / P1dB / Efficiency</h1>
+  <p>PA classes A, B, AB, C: drain efficiency vs output back-off, gain compression, OIP3. PAPR impact on average efficiency.</p>
+</header>
+
+<div class="eq-box">
+  <div class="eq-card">
+    <div class="eq-col">
+      <div class="eq-label">Efficiency vs Back-off</div>
+      <div class="eq-primary">η_A = Pout / (2·Psat) · η_B = (π/4)·√(Pout/Psat)</div>
+      <div class="eq-note">Back-off (BO) = Psat − Pout [dB]. Class A peaks at 50%, Class B at 78.5%.</div>
+    </div>
+    <div class="eq-col">
+      <div class="eq-label">Gain Compression (Saleh model)</div>
+      <div class="eq-secondary">Pout ≈ G·Pin − (G·Pin)³/(3·P1dB²) [soft compression]</div>
+      <div class="eq-secondary">P1dB(in) = P1dB(out) − G + 1 dB</div>
+      <div class="eq-note">At P1dB: actual gain is 1 dB below small-signal gain G</div>
+    </div>
+    <div class="eq-col">
+      <div class="eq-label">OIP3 &amp; PAPR</div>
+      <div class="eq-secondary">OIP3 ≈ P1dB(out) + 9.6 dB [rule of thumb]</div>
+      <div class="eq-secondary">η_avg = η_peak · Pout_avg/Pout_peak</div>
+      <div class="eq-note">OFDM: PAPR 8–12 dB. Must back off from P1dB to avoid compression.</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <div>
+    <div class="panel" style="margin-bottom:1rem">
+      <h3>PA Parameters</h3>
+
+      <div class="preset-row">
+        <label>Load Scenario</label>
+        <select class="preset-select" id="presetSel" onchange="loadPreset(this.value)">
+          <option value="">— Load Scenario —</option>
+          <option value="wifi">WiFi PA (2.4 GHz, 20 dBm)</option>
+          <option value="cellular">Cellular PA (28 dBm, LTE)</option>
+          <option value="lna">Low-power LNA stage</option>
+          <option value="radar">Radar PA (40 dBm)</option>
+          <option value="classb">Ideal Class B example</option>
+        </select>
+      </div>
+
+      <div class="panel-sep"></div>
+      <div class="sr">
+        <label>Small-signal gain G <span id="vG">20.0 dB</span></label>
+        <input type="range" id="sG" min="5" max="40" step="0.5" value="20">
+        <div class="hints"><span>5 dB</span><span>40 dB</span></div>
+      </div>
+      <div class="sr">
+        <label>Output P1dB <span id="vP1dB">30.0 dBm</span></label>
+        <input type="range" id="sP1dB" min="10" max="55" step="0.5" value="30">
+        <div class="hints"><span>10 dBm</span><span>55 dBm</span></div>
+      </div>
+      <div class="sr">
+        <label>Operating Pout <span id="vPop">24.0 dBm</span></label>
+        <input type="range" id="sPop" min="0" max="55" step="0.5" value="24">
+        <div class="hints"><span>0 dBm</span><span>55 dBm</span></div>
+      </div>
+      <div class="sr">
+        <label>Vdd supply <span id="vVdd">3.3 V</span></label>
+        <input type="range" id="sVdd" min="1" max="50" step="0.5" value="3.3">
+        <div class="hints"><span>1 V</span><span>50 V</span></div>
+      </div>
+      <div class="sr">
+        <label>PAPR <span id="vPAPR">8.0 dB</span></label>
+        <input type="range" id="sPAPR" min="0" max="15" step="0.5" value="8">
+        <div class="hints"><span>0 dB (CW)</span><span>15 dB (OFDM)</span></div>
+      </div>
+
+      <div class="panel-sep"></div>
+      <h3 style="margin-bottom:.6rem">PA Class</h3>
+      <div class="class-tabs">
+        <button class="ctab active" id="tab-A"   onclick="setClass('A')">Class A</button>
+        <button class="ctab"        id="tab-AB"  onclick="setClass('AB')">Class AB</button>
+        <button class="ctab"        id="tab-B"   onclick="setClass('B')">Class B</button>
+        <button class="ctab"        id="tab-C"   onclick="setClass('C')">Class C</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Results at Operating Point</h3>
+      <div class="metrics">
+        <div class="mc"><div class="ml">Pout (operating)</div><div class="mv" id="mPop">—</div><div class="mu">dBm</div></div>
+        <div class="mc"><div class="ml">Back-off from P1dB</div><div class="mv" id="mBO">—</div><div class="mu">dB</div></div>
+        <div class="mc"><div class="ml">Peak efficiency η</div><div class="mv" id="mEtaPeak" style="color:var(--grn)">—</div><div class="mu">%</div></div>
+        <div class="mc"><div class="ml">η at operating Pout</div><div class="mv" id="mEtaOp" style="color:var(--grn)">—</div><div class="mu">%</div></div>
+        <div class="mc"><div class="ml">Avg η (with PAPR)</div><div class="mv" id="mEtaAvg" style="color:var(--org)">—</div><div class="mu">%</div></div>
+        <div class="mc"><div class="ml">DC power draw</div><div class="mv" id="mPdc">—</div><div class="mu">W</div></div>
+        <div class="mc"><div class="ml">OIP3</div><div class="mv" id="mOIP3" style="color:var(--pur)">—</div><div class="mu">dBm</div></div>
+        <div class="mc"><div class="ml">IIP3</div><div class="mv" id="mIIP3" style="color:var(--pur)">—</div><div class="mu">dBm</div></div>
+        <div class="mc" style="grid-column:span 2"><div class="ml">Gain at operating point (with compression)</div><div class="mv" id="mGop">—</div><div class="mu">dB</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-panel">
+    <div class="charts-grid">
+      <div>
+        <h3 style="margin-bottom:.6rem">Efficiency vs Output Power (Back-off)</h3>
+        <div class="chart-wrap"><canvas id="chartEta"></canvas></div>
+      </div>
+      <div>
+        <h3 style="margin-bottom:.6rem">Gain Compression (AM-AM)</h3>
+        <div class="chart-wrap"><canvas id="chartGain"></canvas></div>
+      </div>
+    </div>
+    <div class="annotation" id="annotation">Computing…</div>
+  </div>
+</div>
+
+<script>
+let paClass = 'A';
+let chartEta = null, chartGain = null;
+
+function setClass(c) {
+  paClass = c;
+  ['A','AB','B','C'].forEach(x => {
+    document.getElementById('tab-'+x).classList.toggle('active', x===c);
+  });
+  update();
+}
+
+// Efficiency vs back-off models
+// back-off = Pout/Psat (linear, 0 to 1)
+function eta(x, cls) {
+  // x = Pout/Psat_linear (0 to 1)
+  if (x <= 0) return 0;
+  switch(cls) {
+    case 'A':  return 0.5 * x;                               // η = Pout/(2*Psat)
+    case 'B':  return (Math.PI/4) * Math.sqrt(x);            // η = π/4 * √(Pout/Psat)
+    case 'AB': return 0.5 * x + (Math.PI/4 - 0.5) * Math.sqrt(x); // interpolation A→B
+    case 'C':  {
+      // Class C: higher peak efficiency but very nonlinear. Approximate:
+      // as conduction angle θ → 0, η → 1; but gain → 0.
+      // Model: η ≈ (π/4)*(1 + (1-x)) * √x — simplified
+      return Math.min(0.95, (Math.PI/4) * (1.5 - 0.5*x) * Math.sqrt(x));
+    }
+  }
+}
+
+function peakEta(cls) {
+  switch(cls) {
+    case 'A':  return 0.5;
+    case 'B':  return Math.PI/4;
+    case 'AB': return 0.65; // typical
+    case 'C':  return 0.80; // theoretical max approaches 100%, practical ~70-85%
+  }
+}
+
+// Gain compression: saleh-like soft limiter
+// Gcomp(Pin) = G_small_signal * 1/(1 + (Pin/IP3_in)^2) approximation
+// More practical: Pout = G*Pin - G^3*Pin^3/(3*(G*Psat))
+function gainCompressed(Pin_dBm, G_dB, P1dB_out_dBm) {
+  // P1dB_in = P1dB_out - G_dB + 1 (1 dB gain compression definition)
+  const P1dB_in_dBm = P1dB_out_dBm - G_dB + 1;
+  const P1dB_in_W = Math.pow(10, (P1dB_in_dBm - 30) / 10);
+  const Pin_W = Math.pow(10, (Pin_dBm - 30) / 10);
+  const G_lin = Math.pow(10, G_dB / 10);
+  // Saleh AM-AM: Pout = G*Pin / (1 + Pin/P_sat_in)
+  // Where P_sat_in gives 1 dB compression at P1dB_in
+  // At P1dB: G/(1+P1dB_in/Psat_in) = G/10^0.1 → Psat_in = P1dB_in/(10^0.1 - 1)
+  const Psat_in_W = P1dB_in_W / (Math.pow(10, 0.1) - 1);
+  const Pout_W = G_lin * Pin_W / (1 + Pin_W / Psat_in_W);
+  const Pout_dBm = 10 * Math.log10(Pout_W) + 30;
+  const G_act = Pout_dBm - Pin_dBm;
+  return { Pout_dBm, G_act };
+}
+
+function initCharts() {
+  const etaCtx = document.getElementById('chartEta').getContext('2d');
+  chartEta = new Chart(etaCtx, {
+    type: 'line',
+    data: { datasets: [
+      { label: 'PA class',        data: [], borderColor: '#58a6ff', borderWidth: 2.5, pointRadius: 0, fill: false },
+      { label: 'Class A ref',     data: [], borderColor: '#8b949e', borderWidth: 1,   pointRadius: 0, fill: false, borderDash:[4,3] },
+      { label: 'Class B ref',     data: [], borderColor: '#3fb950', borderWidth: 1,   pointRadius: 0, fill: false, borderDash:[4,3] },
+      { label: 'Operating point', data: [], borderColor: '#f0883e', borderWidth: 0,   pointRadius: 7, pointBackgroundColor:'#f0883e' },
+    ]},
+    options: {
+      animation:{duration:0},responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+      scales:{
+        x:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Output Power (dBm)'}},
+        y:{grid:{color:'#252830'},ticks:{color:'#8b949e',callback:v=>v.toFixed(0)+'%'},title:{display:true,color:'#8b949e',text:'Drain Efficiency (%)'},min:0,max:100}
+      }
+    }
+  });
+
+  const gainCtx = document.getElementById('chartGain').getContext('2d');
+  chartGain = new Chart(gainCtx, {
+    type: 'line',
+    data: { datasets: [
+      { label: 'Actual Pout',      data: [], borderColor: '#58a6ff', borderWidth: 2.5, pointRadius: 0, fill: false },
+      { label: 'Linear (no comp)', data: [], borderColor: '#8b949e', borderWidth: 1,   pointRadius: 0, fill: false, borderDash:[4,3] },
+      { label: 'P1dB',             data: [], borderColor: '#f85149', borderWidth: 1.5, pointRadius: 0, fill: false, borderDash:[2,3] },
+      { label: 'Operating point',  data: [], borderColor: '#f0883e', borderWidth: 0,   pointRadius: 7, pointBackgroundColor:'#f0883e' },
+    ]},
+    options: {
+      animation:{duration:0},responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+      scales:{
+        x:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Input Power Pin (dBm)'}},
+        y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Output Power Pout (dBm)'}}
+      }
+    }
+  });
+}
+
+function update() {
+  const G      = +document.getElementById('sG').value;
+  const P1dB_o = +document.getElementById('sP1dB').value;
+  const Pop    = +document.getElementById('sPop').value;
+  const Vdd    = +document.getElementById('sVdd').value;
+  const PAPR   = +document.getElementById('sPAPR').value;
+
+  document.getElementById('vG').textContent    = G.toFixed(1)+' dB';
+  document.getElementById('vP1dB').textContent = P1dB_o.toFixed(1)+' dBm';
+  document.getElementById('vPop').textContent  = Pop.toFixed(1)+' dBm';
+  document.getElementById('vVdd').textContent  = Vdd.toFixed(1)+' V';
+  document.getElementById('vPAPR').textContent = PAPR.toFixed(1)+' dB';
+
+  // Psat: P1dB is typically 2-3 dB below Psat. Use Psat = P1dB + 2 dB
+  const Psat_dBm = P1dB_o + 2;
+  const Psat_W   = Math.pow(10, (Psat_dBm - 30) / 10);
+
+  // Efficiency chart: Pout from (Psat-20) to Psat
+  const poutMin = Psat_dBm - 20;
+  const poutArr = Array.from({length:200}, (_,i) => poutMin + i * 20 / 199);
+
+  const etaMain = poutArr.map(p => {
+    const x = Math.pow(10, (p - Psat_dBm) / 10); // Pout/Psat linear
+    return { x: p, y: eta(x, paClass) * 100 };
+  });
+  const etaA = poutArr.map(p => ({ x: p, y: eta(Math.pow(10,(p-Psat_dBm)/10), 'A') * 100 }));
+  const etaB = poutArr.map(p => ({ x: p, y: eta(Math.pow(10,(p-Psat_dBm)/10), 'B') * 100 }));
+
+  const popClamped = Math.min(Pop, Psat_dBm);
+  const xOp = Math.pow(10, (popClamped - Psat_dBm) / 10);
+  const etaOp = eta(xOp, paClass) * 100;
+  const etaPeak = peakEta(paClass) * 100;
+
+  // PAPR: average Pout = Pop - PAPR
+  const PopAvg_dBm = Pop - PAPR;
+  const xAvg = Math.pow(10, (Math.min(PopAvg_dBm, Psat_dBm) - Psat_dBm) / 10);
+  const etaAvg = eta(xAvg, paClass) * 100;
+
+  // DC power from efficiency and Pout at operating
+  const Pop_W   = Math.pow(10, (popClamped - 30) / 10);
+  const Pdc_W   = etaOp > 0 ? Pop_W / (etaOp / 100) : 0;
+
+  // OIP3 rule of thumb: OIP3 ≈ P1dB_out + 9.6 dB
+  const OIP3 = P1dB_o + 9.6;
+  const IIP3 = OIP3 - G;
+
+  // Gain compression at operating Pout (find Pin from compressed AM-AM)
+  // Pin = Pop - G initially (small signal)
+  const Pin_ss = Pop - G;
+  const { Pout_dBm: Pout_actual, G_act } = gainCompressed(Pin_ss, G, P1dB_o);
+
+  // Gain compression chart: Pin from (P1dB_in - 20) to P1dB_in
+  const P1dB_in = P1dB_o - G + 1;
+  const pinMin = P1dB_in - 20;
+  const pinArr = Array.from({length:200}, (_,i) => pinMin + i * 25 / 199);
+  const poutActual = pinArr.map(pin => {
+    const { Pout_dBm } = gainCompressed(pin, G, P1dB_o);
+    return { x: pin, y: Pout_dBm };
+  });
+  const poutLinear = pinArr.map(pin => ({ x: pin, y: pin + G }));
+  const p1dbLine   = pinArr.map(pin => ({ x: pin, y: P1dB_o }));
+
+  // Update efficiency chart
+  chartEta.data.datasets[0].data = etaMain;
+  chartEta.data.datasets[0].label = `Class ${paClass}`;
+  chartEta.data.datasets[1].data = paClass !== 'A' ? etaA : [];
+  chartEta.data.datasets[2].data = paClass !== 'B' ? etaB : [];
+  chartEta.data.datasets[3].data = [{ x: popClamped, y: etaOp }];
+  chartEta.update();
+
+  // Update gain chart
+  chartGain.data.datasets[0].data = poutActual;
+  chartGain.data.datasets[1].data = poutLinear;
+  chartGain.data.datasets[2].data = p1dbLine;
+  chartGain.data.datasets[3].data = [{ x: Pin_ss, y: Pout_actual }];
+  chartGain.update();
+
+  // Metrics
+  const bo = P1dB_o - popClamped;
+  document.getElementById('mPop').textContent    = popClamped.toFixed(1);
+  document.getElementById('mBO').textContent     = bo.toFixed(1);
+  document.getElementById('mEtaPeak').textContent= etaPeak.toFixed(1);
+  document.getElementById('mEtaOp').textContent  = etaOp.toFixed(1);
+  document.getElementById('mEtaAvg').textContent = etaAvg.toFixed(1);
+  document.getElementById('mPdc').textContent    = Pdc_W >= 1 ? Pdc_W.toFixed(2) : (Pdc_W*1000).toFixed(1)+' m';
+  document.getElementById('mOIP3').textContent   = OIP3.toFixed(1);
+  document.getElementById('mIIP3').textContent   = IIP3.toFixed(1);
+  document.getElementById('mGop').textContent    = G_act.toFixed(2);
+
+  // Annotation
+  const compNote = bo < 1 ? ' <b style="color:var(--red)">NEAR SATURATION — severe compression.</b>' :
+    bo < 3 ? ' <b style="color:var(--org)">Heavy compression zone — significant AM-AM distortion.</b>' :
+    bo < 6 ? ' Moderate back-off — some gain compression.' :
+    ' Linear region — gain well within 1 dB of small signal.';
+  const paprNote = PAPR > 0 ? `With PAPR = ${PAPR} dB (e.g. OFDM), average Pout = ${(Pop-PAPR).toFixed(1)} dBm → avg η = <b>${etaAvg.toFixed(1)}%</b>. ` :
+    'CW signal (PAPR = 0 dB). ';
+
+  document.getElementById('annotation').innerHTML =
+    `<strong>Class ${paClass} PA:</strong> G = ${G} dB, P1dB(out) = ${P1dB_o} dBm, Psat ≈ ${Psat_dBm.toFixed(1)} dBm.
+    Peak efficiency: <b>${etaPeak.toFixed(1)}%</b>
+    (Class A max 50%, Class B max 78.5%).<br>
+    At Pout = ${popClamped.toFixed(1)} dBm (back-off = <b>${bo.toFixed(1)} dB</b>): η = <b>${etaOp.toFixed(1)}%</b>,
+    DC draw ≈ <b>${Pdc_W >= 1 ? Pdc_W.toFixed(2)+' W' : (Pdc_W*1000).toFixed(1)+' mW'}</b>.${compNote}<br>
+    ${paprNote}OIP3 ≈ <b>${OIP3.toFixed(1)} dBm</b> (P1dB + 9.6 dB rule). IIP3 = <b>${IIP3.toFixed(1)} dBm</b>.
+    ${paClass==='A'?'Class A: constant DC power regardless of output level — efficiency always low at back-off.':
+      paClass==='B'?'Class B: DC draws proportional to output envelope — efficiency rises with Pout.':
+      paClass==='AB'?'Class AB: practical compromise — better back-off efficiency than A, better linearity than B.':
+      'Class C: highest peak efficiency but only valid for narrowband/constant-envelope signals (no OFDM).'}`;
+}
+
+// Presets
+const PRESETS = {
+  wifi:     { sG:20, sP1dB:30, sPop:24, sVdd:3.3, sPAPR:8 },
+  cellular: { sG:25, sP1dB:33, sPop:28, sVdd:3.6, sPAPR:10 },
+  lna:      { sG:15, sP1dB:10, sPop:0,  sVdd:3.3, sPAPR:0 },
+  radar:    { sG:30, sP1dB:42, sPop:40, sVdd:28,  sPAPR:0 },
+  classb:   { sG:20, sP1dB:35, sPop:27, sVdd:12,  sPAPR:0 },
+};
+function loadPreset(key) {
+  if (!PRESETS[key]) return;
+  const p = PRESETS[key];
+  Object.entries(p).forEach(([id,v]) => { document.getElementById(id).value = v; });
+  update();
+}
+
+// Toolbar
+function takeScreenshot() {}
+function exportCSV() {
+  const G=+document.getElementById('sG').value, P1dB_o=+document.getElementById('sP1dB').value;
+  const Pop=+document.getElementById('sPop').value, Vdd=+document.getElementById('sVdd').value;
+  const PAPR=+document.getElementById('sPAPR').value;
+  const Psat_dBm = P1dB_o + 2;
+  const lines = ['PARAMETERS','Parameter,Value',
+    'PA Class,'+paClass,
+    'Small-signal gain G,'+G+' dB',
+    'Output P1dB,'+P1dB_o+' dBm',
+    'Operating Pout,'+Pop+' dBm',
+    'Vdd supply,'+Vdd+' V',
+    'PAPR,'+PAPR+' dB',
+    '','RESULTS','Result,Value',
+    'Operating Pout,'+document.getElementById('mPop').textContent+' dBm',
+    'Back-off from P1dB,'+document.getElementById('mBO').textContent+' dB',
+    'Peak efficiency,'+document.getElementById('mEtaPeak').textContent+' %',
+    'Efficiency at Pout,'+document.getElementById('mEtaOp').textContent+' %',
+    'Avg efficiency (PAPR),'+document.getElementById('mEtaAvg').textContent+' %',
+    'DC power,'+document.getElementById('mPdc').textContent+' W',
+    'OIP3,'+document.getElementById('mOIP3').textContent+' dBm',
+    'IIP3,'+document.getElementById('mIIP3').textContent+' dBm',
+    'Gain at operating point,'+document.getElementById('mGop').textContent+' dB',
+  ];
+  const blob = new Blob([lines.join('\n')],{type:'text/csv'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='rf_toolbox_pa_efficiency_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+}
+function copyLink() {
+  const p = new URLSearchParams({
+    g: document.getElementById('sG').value,
+    p1db: document.getElementById('sP1dB').value,
+    pop: document.getElementById('sPop').value,
+    vdd: document.getElementById('sVdd').value,
+    papr: document.getElementById('sPAPR').value,
+    cls: paClass,
+  });
+  navigator.clipboard.writeText(location.href.split('?')[0]+'?'+p.toString()).then(()=>{
+    const btn=document.getElementById('copyBtn');btn.textContent='✓ Copied';setTimeout(()=>btn.textContent='⎘ Copy Link',1500);
+  });
+}
+function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+
+['sG','sP1dB','sPop','sVdd','sPAPR'].forEach(id =>
+  document.getElementById(id).addEventListener('input', update)
+);
+
+initCharts();
+update();
+
+(function(){
+  const p=new URLSearchParams(location.search);
+  if(p.has('g'))    document.getElementById('sG').value=p.get('g');
+  if(p.has('p1db')) document.getElementById('sP1dB').value=p.get('p1db');
+  if(p.has('pop'))  document.getElementById('sPop').value=p.get('pop');
+  if(p.has('vdd'))  document.getElementById('sVdd').value=p.get('vdd');
+  if(p.has('papr')) document.getElementById('sPAPR').value=p.get('papr');
+  if(p.has('cls'))  { paClass=p.get('cls'); setClass(paClass); }
+  if([...p.keys()].length>0) update();
+})();
+</script>
+</body>
+</html>
