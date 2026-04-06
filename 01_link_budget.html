@@ -98,11 +98,20 @@ table.budget tr.total td:first-child{color:var(--t1);font-family:'Segoe UI',syst
 .annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;margin-top:.8rem;font-size:.88rem;color:var(--tm);line-height:1.75}
 .annotation strong{color:var(--t1)}
 .annotation b{color:var(--blue)}
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.help-overlay.open{display:flex}
+.help-box{background:#fff;border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;max-height:80vh;overflow-y:auto}
+.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+.help-try li::marker{color:#b5895a}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
   <button class="tbtn" onclick="takeScreenshot('Link Budget')">📷 Screenshot</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
   <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
@@ -535,6 +544,51 @@ function copyLink(){
 }
 
 update();
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 </script>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">System Link Budget — Help</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Computes a full cascaded RF link budget following the Friis transmission equation (Pozar eq. 2.40). Each loss and gain element is applied in sequence to track cumulative received power. Receiver sensitivity is derived from thermal noise: S_min = kTB + NF + SNR_req + L_impl. Link Margin = P_r − S_min; positive means the link closes.</div>
+
+    <div class="help-section">Sliders &amp; inputs</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Tx Power P_t:</strong> Transmitter output power, 0–40 dBm (1 mW – 10 W).</li>
+        <li><strong>Frequency f:</strong> Carrier frequency, 100 MHz – 60 GHz. Higher frequency → more FSPL.</li>
+        <li><strong>Distance d:</strong> Log-scale slider, 1 m – 100 km. Every 10× distance adds 20 dB FSPL.</li>
+        <li><strong>Tx/Rx Antenna Gain G_t, G_r:</strong> Directional antenna gain, 0–40 dBi. Dipole ≈ 2.15 dBi, patch ≈ 6–10 dBi, dish ≈ 25–40 dBi.</li>
+        <li><strong>Tx/Rx Cable Loss L_tx, L_rx:</strong> Feeder and connector losses, 0–10 dB.</li>
+        <li><strong>Atmospheric Loss L_atm:</strong> Rain, oxygen absorption. Significant above 10 GHz.</li>
+        <li><strong>Noise Figure NF:</strong> Receiver noise figure, 0–20 dB. Directly sets noise floor.</li>
+        <li><strong>Bandwidth BW:</strong> Log-scale, 1 kHz – 200 MHz. Wider bandwidth → higher noise floor.</li>
+        <li><strong>Required SNR:</strong> Demodulation threshold, 0–30 dB. Depends on modulation and coding.</li>
+        <li><strong>Implementation Loss:</strong> Practical penalties (ADC, synchronization), typically 1–3 dB.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">How to read the charts</div>
+    <div class="help-body">The waterfall table shows power at each stage (dBm) and running margin (dB) relative to final sensitivity. Green pills = gain stages; red pills = loss stages. The margin chart plots Link Margin vs Distance — the cliff edge where the line crosses 0 dB is the maximum range. A 6 dB margin is a comfortable design target.</div>
+
+    <div class="help-section">Key results</div>
+    <div class="help-body"><strong>FSPL:</strong> Free-space path loss at the chosen frequency and distance. <strong>Received Power:</strong> Power at the receiver input. <strong>Sensitivity:</strong> Minimum detectable signal level. <strong>Link Margin:</strong> Headroom above sensitivity; positive = link closes, negative = link fails.</div>
+
+    <div class="help-section">Things to try</div>
+    <ul class="help-try">
+      <li>Set frequency to 28 GHz (5G mmWave) vs 2.4 GHz — observe the FSPL increase at the same distance.</li>
+      <li>Compare a 10 dBi patch antenna vs a 30 dBi dish — see how 20 dBi extra gain extends the maximum range dramatically.</li>
+      <li>Set BW = 100 MHz vs 200 kHz (NB-IoT) — the noise floor drops 27 dB, enabling much longer range at low data rates.</li>
+    </ul>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">Pozar, <em>Microwave Engineering</em>, 4th ed., Wiley, 2012, §2.7 (Friis transmission equation). Friis, H.T., <em>Proc. IRE</em>, 34(5), 1946.</div>
+  </div>
+</div>
 </body>
 </html>
