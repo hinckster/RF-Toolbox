@@ -9,17 +9,17 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:       #0d0d0f;
-    --card:     #1e1e24;
-    --surface:  #16161a;
-    --border:   #2a2a35;
-    --accent:   #00c8ff;
-    --accent2:  #7b61ff;
-    --text:     #e2e2e8;
-    --muted:    #888899;
-    --green:    #00e5a0;
-    --orange:   #ffaa00;
-    --red:      #ff4d6d;
+    --bg:       #ffffff;
+    --card:     #f4f5f7;
+    --surface:  #f4f5f7;
+    --border:   #d0d4da;
+    --accent:   #b5895a;
+    --accent2:  #7c3aed;
+    --text:     #1a1d23;
+    --muted:    #718096;
+    --green:    #16a34a;
+    --orange:   #d97706;
+    --red:      #dc2626;
   }
 
   html, body {
@@ -389,12 +389,12 @@
   .preset-row { margin-bottom: 1rem; }
   .preset-row label { font-size: .76rem; color: #8b949e; display: block; margin-bottom: .3rem; }
   .preset-select {
-    width: 100%; background: #0d1117; border: 1px solid #30363d;
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
     color: #c9d1d9; border-radius: 6px; padding: 6px 8px;
     font-size: .78rem; font-family: 'Segoe UI', system-ui, sans-serif; cursor: pointer;
   }
   .preset-select:focus { outline: none; border-color: #58a6ff; }
-  .preset-select option { background: #0d1117; }
+  .preset-select option { background: var(--surface); }
 
   /* ── MOBILE ──────────────────────────────────────────── */
   @media (max-width: 700px) {
@@ -832,7 +832,7 @@ function updateChart(pr, sensitivity, fspl) {
   const colors  = segments.map(s => s.isGain
     ? 'rgba(0,229,160,0.78)'
     : (s.delta < -10 ? 'rgba(255,77,109,0.78)' : 'rgba(255,170,0,0.78)'));
-  const borders = segments.map(s => s.isGain ? '#00e5a0' : (s.delta < -10 ? '#ff4d6d' : '#ffaa00'));
+  const borders = segments.map(s => s.isGain ? '#16a34a' : (s.delta < -10 ? '#dc2626' : '#d97706'));
 
   const ctx = document.getElementById('waterfall-chart').getContext('2d');
 
@@ -888,29 +888,29 @@ function updateChart(pr, sensitivity, fspl) {
             }
           },
           backgroundColor: '#1e1e24',
-          borderColor: '#2a2a35',
+          borderColor: '#e2e5ea',
           borderWidth: 1,
-          titleColor: '#e2e2e8',
-          bodyColor: '#888899',
+          titleColor: '#1a1d23',
+          bodyColor: '#718096',
           padding: 10,
         },
       },
       scales: {
         x: {
           stacked: true,
-          grid:  { color: '#2a2a35' },
-          ticks: { color: '#888899', font: { family: "'Courier New', monospace", size: 11 } },
+          grid:  { color: '#e2e5ea' },
+          ticks: { color: '#718096', font: { family: "'Courier New', monospace", size: 11 } },
           title: {
             display: true,
             text: 'Power Level (dBm)',
-            color: '#888899',
+            color: '#718096',
             font: { size: 11, family: 'Segoe UI, system-ui, sans-serif' }
           }
         },
         y: {
           stacked: true,
-          grid:  { color: '#2a2a35' },
-          ticks: { color: '#888899', font: { size: 11, family: 'Segoe UI, system-ui, sans-serif' } },
+          grid:  { color: '#e2e5ea' },
+          ticks: { color: '#718096', font: { size: 11, family: 'Segoe UI, system-ui, sans-serif' } },
         }
       }
     }
@@ -1043,14 +1043,14 @@ const sensitivityLinePlugin = {
     ctx.save();
     ctx.beginPath();
     ctx.setLineDash([5, 4]);
-    ctx.strokeStyle = '#ffaa00';
+    ctx.strokeStyle = '#d97706';
     ctx.lineWidth = 1.5;
     ctx.moveTo(x, top);
     ctx.lineTo(x, bottom);
     ctx.stroke();
 
     ctx.setLineDash([]);
-    ctx.fillStyle = '#ffaa00';
+    ctx.fillStyle = '#d97706';
     ctx.font = '11px Segoe UI, system-ui, sans-serif';
     ctx.fillText('Sensitivity', x + 5, top + 14);
     ctx.restore();
