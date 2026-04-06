@@ -7,9 +7,9 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #0d0d0f; --surface: #16161a; --card: #1e1e24; --border: #2a2a35;
-    --accent: #00c8ff; --accent2: #7b61ff; --text: #e2e2e8; --muted: #888899;
-    --green: #00e5a0; --orange: #ffaa00; --red: #ff4d6d;
+    --bg: #ffffff; --surface: #f4f5f7; --card: #f4f5f7; --border: #d0d4da;
+    --accent: #b5895a; --accent2: #7c3aed; --text: #1a1d23; --muted: #718096;
+    --green: #16a34a; --orange: #d97706; --red: #dc2626;
   }
   body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
 
@@ -50,7 +50,7 @@
   .hints { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 0.15rem; }
   .sr-row { display:flex; align-items:center; gap:6px; }
   .sr-row input[type=range] { flex:1; width:auto; min-width:0; }
-  .si { width:72px; background:#0d1117; border:1px solid var(--border); border-radius:4px; color:var(--accent); font-family:'Courier New',monospace; font-size:.82rem; padding:3px 6px; text-align:right; transition:border-color .15s; -moz-appearance:textfield; appearance:textfield; }
+  .si { width:72px; background:var(--surface); border:1px solid var(--border); border-radius:4px; color:var(--accent); font-family:'Courier New',monospace; font-size:.82rem; padding:3px 6px; text-align:right; transition:border-color .15s; -moz-appearance:textfield; appearance:textfield; }
   .si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
   .si:focus { outline:none; border-color:var(--accent); }
   .si.err { border-color:var(--red); color:var(--red); }
@@ -88,12 +88,12 @@
   .preset-row { margin-bottom: 1rem; }
   .preset-row label { font-size: .76rem; color: #8b949e; display: block; margin-bottom: .3rem; }
   .preset-select {
-    width: 100%; background: #0d1117; border: 1px solid #30363d;
-    color: #c9d1d9; border-radius: 6px; padding: 6px 8px;
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); border-radius: 6px; padding: 6px 8px;
     font-size: .78rem; font-family: 'Segoe UI', system-ui, sans-serif; cursor: pointer;
   }
-  .preset-select:focus { outline: none; border-color: #58a6ff; }
-  .preset-select option { background: #0d1117; }
+  .preset-select:focus { outline: none; border-color: var(--accent); }
+  .preset-select option { background: var(--surface); }
 </style>
 </head>
 <body>
@@ -245,34 +245,34 @@ function drawSmith() {
   ctx.clearRect(0, 0, S, S);
 
   ctx.beginPath(); ctx.arc(cx,cy,R,0,2*Math.PI);
-  ctx.strokeStyle='#4a5060'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.strokeStyle='#adb5c0'; ctx.lineWidth=1.5; ctx.stroke();
 
   [0, 0.2, 0.5, 1, 2, 5, 10].forEach(r => {
     const cx_ = cx+R*r/(r+1), cr = R/(r+1);
     ctx.beginPath(); ctx.arc(cx_,cy,cr,0,2*Math.PI);
-    ctx.strokeStyle = r===0 ? '#4a5a6a' : (r===1 ? '#5a6a80' : '#3d4f65');
+    ctx.strokeStyle = r===0 ? '#adb5c0' : (r===1 ? '#8a9ab0' : '#c8cdd5');
     ctx.lineWidth   = r===1 ? 1.2 : 1.0; ctx.stroke();
-    if (r>0 && r<=5) { ctx.fillStyle='#7a8a9a'; ctx.font='9px monospace'; ctx.fillText(r, cx+R*(r/(r+1)+1/(r+1))+3, cy+4); }
+    if (r>0 && r<=5) { ctx.fillStyle='#718096'; ctx.font='9px monospace'; ctx.fillText(r, cx+R*(r/(r+1)+1/(r+1))+3, cy+4); }
   });
 
   [0.2, 0.5, 1, 2, 5].forEach(x => {
     [-x, x].forEach(xi => {
       ctx.beginPath(); ctx.arc(cx+R, cy-R/xi, Math.abs(R/xi), 0, 2*Math.PI);
-      ctx.strokeStyle='#3d4f65'; ctx.lineWidth=1.0; ctx.stroke();
-      ctx.fillStyle='#7a8a9a'; ctx.font='9px monospace';
+      ctx.strokeStyle='#c8cdd5'; ctx.lineWidth=1.0; ctx.stroke();
+      ctx.fillStyle='#718096'; ctx.font='9px monospace';
       ctx.fillText((xi>0?'+':'')+xi+'j', cx+R-5, cy-R/xi+(xi>0?-Math.abs(R/xi)-2:Math.abs(R/xi)+10));
     });
   });
 
   ctx.beginPath(); ctx.moveTo(cx-R,cy); ctx.lineTo(cx+R,cy);
-  ctx.strokeStyle='#4a5060'; ctx.lineWidth=1; ctx.stroke();
+  ctx.strokeStyle='#adb5c0'; ctx.lineWidth=1; ctx.stroke();
 
   [0.25,0.5,0.75].forEach(g => {
     ctx.beginPath(); ctx.arc(cx,cy,R*g,0,2*Math.PI);
-    ctx.strokeStyle='#2d3a55'; ctx.lineWidth=0.8; ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle='#b5895a'; ctx.lineWidth=1.2; ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
   });
 
-  ctx.fillStyle='#8a9aaa'; ctx.font='9px monospace';
+  ctx.fillStyle='#b5895a'; ctx.font='9px monospace';
   ctx.fillText('SC', cx-R-20, cy+4); ctx.fillText('OC', cx+R+4, cy+4);
   ctx.fillText('+jX', cx+4, cy-R-8); ctx.fillText('−jX', cx+4, cy+R+14);
 
@@ -283,19 +283,19 @@ function drawSmith() {
 
   if (gmag<1) {
     ctx.beginPath(); ctx.arc(cx,cy,R*gmag,0,2*Math.PI);
-    ctx.strokeStyle='rgba(255,170,0,0.35)'; ctx.lineWidth=1.5;
+    ctx.strokeStyle='rgba(181,137,90,0.6)'; ctx.lineWidth=1.5;
     ctx.setLineDash([6,3]); ctx.stroke(); ctx.setLineDash([]);
   }
 
   ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(px,py);
-  ctx.strokeStyle='rgba(0,200,255,0.3)'; ctx.lineWidth=1; ctx.stroke();
+  ctx.strokeStyle='rgba(181,137,90,0.7)'; ctx.lineWidth=1.5; ctx.stroke();
 
   ctx.beginPath(); ctx.arc(px,py,7,0,2*Math.PI);
   ctx.fillStyle='#ff4d6d'; ctx.fill();
   ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
 
   const label = `(${gr.toFixed(3)}, ${gi>=0?'+':''}${gi.toFixed(3)}j)`;
-  ctx.fillStyle='#e2e2e8'; ctx.font='bold 11px monospace';
+  ctx.fillStyle='#1a1d23'; ctx.font='bold 11px monospace';
   let lx=px+12, ly=py-8;
   if (lx+140>S) lx=px-150; if (ly<16) ly=py+18;
   ctx.fillText(label, lx, ly);
@@ -338,7 +338,7 @@ function update() {
   if (gmag < 0.01) {
     lBox.innerHTML = '<span style="color:#00e5a0">Already matched — no network needed.</span>';
   } else if (R_ <= 0) {
-    lBox.innerHTML = '<span style="color:#888899">R = 0 — cannot synthesize L-match.</span>';
+    lBox.innerHTML = '<span style="color:#718096">R = 0 — cannot synthesize L-match.</span>';
   } else {
     const lines = [];
     // Step 1: cancel reactance with series element
@@ -435,10 +435,10 @@ function takeScreenshot(toolName) {
   const out = document.createElement('canvas');
   out.width = totalWidth; out.height = maxHeight + titleHeight + padding * 2;
   const c = out.getContext('2d');
-  c.fillStyle='#0d0d0f'; c.fillRect(0,0,out.width,out.height);
-  c.fillStyle='#e2e2e8'; c.font='bold 14px Segoe UI, system-ui, sans-serif';
+  c.fillStyle='#f4f5f7'; c.fillRect(0,0,out.width,out.height);
+  c.fillStyle='#1a1d23'; c.font='bold 14px Segoe UI, system-ui, sans-serif';
   c.fillText(toolName+'  ·  RF Toolbox  ·  hinckster.github.io/RF-Toolbox', padding, titleHeight/2+5);
-  c.fillStyle='#888899'; c.font='11px monospace';
+  c.fillStyle='#718096'; c.font='11px monospace';
   c.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC', padding, titleHeight-4);
   let x = padding;
   canvases.forEach(cv => { c.drawImage(cv,x,titleHeight+padding); x += cv.width+padding; });
