@@ -341,6 +341,40 @@ and confirm the issues are resolved before committing.
 
 ---
 
+## Host Site Integration
+
+The toolbox is embedded in **noahhinckley.com** (Google Sites portfolio) at `hinckster.github.io/RF-Toolbox`. These rules keep the toolbox visually coherent with the host site without violating the self-contained-file safeguard.
+
+### Copper/Gold Accent — `#b5895a`
+Applied to all **structural chrome** that bridges the toolbox to the portfolio identity:
+- Toolbar button hover state (`border-color`, `color`)
+- Section tag label above `<h1>` (`header .tag`)
+- Annotation box left border
+- Equation box section labels (`.eq-label`)
+- Nav breadcrumb link color
+- index.html: card hover border/glow, card number, back-link, footer links, bio text, hero-tag
+
+### Dark Teal Hero — `#0d2d3a`
+Used only on `index.html` hero background to match the portfolio hero section.
+
+### Data-vs-Chrome Rule
+The copper accent applies **only to non-data UI chrome** (labels, borders, hover states, navigation). It must **never** be applied to:
+- Slider `accent-color` — keep `#58a6ff` (blue) for functional/interactive elements
+- Chart line colors — data palette unchanged
+- Metric card value colors (green/yellow/red semantic colors)
+
+### Back-Link Pattern
+`index.html` has a "← Back to Portfolio" link top-left pointing to `https://www.noahhinckley.com/home`.
+
+### Breadcrumb Pattern
+Every tool page nav: `noahhinckley.com › RF Toolbox › Tool Name`
+- `noahhinckley.com` → `https://www.noahhinckley.com/home`
+- `RF Toolbox` → `index.html`
+- `Tool Name` → plain text (current page)
+- Link color: `#b5895a`
+
+---
+
 ## File Index
 
 | File | Topic | Equation | Status |
