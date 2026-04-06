@@ -8,9 +8,9 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #0d0d0f; --surface: #16161a; --card: #1e1e24; --border: #2a2a35;
-  --accent: #00c8ff; --accent2: #7b61ff; --text: #e2e2e8; --muted: #888899;
-  --green: #00e5a0; --orange: #ffaa00; --red: #ff4d6d; --purple: #bc8cff;
+  --bg: #ffffff; --surface: #f4f5f7; --card: #f4f5f7; --border: #d0d4da;
+  --accent: #b5895a; --accent2: #7c3aed; --text: #1a1d23; --muted: #718096;
+  --green: #16a34a; --orange: #d97706; --red: #dc2626; --purple: #7c3aed;
 }
 body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; font-size: 14px; }
 
@@ -480,7 +480,7 @@ function sensitivityAnalysis(base) {
 // ─────────────────────────────────────────────────────────────────
 // CHARTS
 // ─────────────────────────────────────────────────────────────────
-const CHART_COLORS = ['#00c8ff','#00e5a0','#ffaa00','#ff4d6d','#bc8cff','#7b61ff','#58d9a0','#ff8b50'];
+const CHART_COLORS = ['#2563eb','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2','#059669','#ea580c'];
 
 const ctxNF = document.getElementById('chartNF').getContext('2d');
 const chartNF = new Chart(ctxNF, {
@@ -491,10 +491,10 @@ const chartNF = new Chart(ctxNF, {
   ] },
   options: {
     animation: { duration: 0 }, responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { labels: { color: '#888899', font: { size: 11 } } }, tooltip: { callbacks: { label: ctx => ' ' + parseFloat(ctx.raw).toFixed(1) + ' dBm' } } },
+    plugins: { legend: { labels: { color: '#718096', font: { size: 11 } } }, tooltip: { callbacks: { label: ctx => ' ' + parseFloat(ctx.raw).toFixed(1) + ' dBm' } } },
     scales: {
-      x: { ticks: { color: '#888899', font: { size: 10 } }, grid: { color: '#2a2a35' } },
-      y: { ticks: { color: '#888899', font: { size: 10 } }, grid: { color: '#2a2a35' }, title: { display: true, text: 'dBm', color: '#888899', font: { size: 11 } } }
+      x: { ticks: { color: '#718096', font: { size: 10 } }, grid: { color: '#e2e5ea' } },
+      y: { ticks: { color: '#718096', font: { size: 10 } }, grid: { color: '#e2e5ea' }, title: { display: true, text: 'dBm', color: '#718096', font: { size: 11 } } }
     }
   }
 });
@@ -505,10 +505,10 @@ const chartContrib = new Chart(ctxC, {
   data: { labels: [], datasets: [{ label: 'NF Contribution (dB)', data: [], backgroundColor: [], borderColor: [], borderWidth: 1.5 }] },
   options: {
     animation: { duration: 0 }, responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { labels: { color: '#888899', font: { size: 11 } } }, tooltip: { callbacks: { label: ctx => ' ' + parseFloat(ctx.raw).toFixed(3) + ' dB equiv.' } } },
+    plugins: { legend: { labels: { color: '#718096', font: { size: 11 } } }, tooltip: { callbacks: { label: ctx => ' ' + parseFloat(ctx.raw).toFixed(3) + ' dB equiv.' } } },
     scales: {
-      x: { ticks: { color: '#888899', font: { size: 10 } }, grid: { color: '#2a2a35' } },
-      y: { ticks: { color: '#888899', font: { size: 10 } }, grid: { color: '#2a2a35' }, title: { display: true, text: 'Contribution (dB)', color: '#888899', font: { size: 11 } } }
+      x: { ticks: { color: '#718096', font: { size: 10 } }, grid: { color: '#e2e5ea' } },
+      y: { ticks: { color: '#718096', font: { size: 10 } }, grid: { color: '#e2e5ea' }, title: { display: true, text: 'Contribution (dB)', color: '#718096', font: { size: 11 } } }
     }
   }
 });
@@ -533,7 +533,7 @@ function renderTable(res) {
     const cumGain  = r ? r.cumG_dB.toFixed(1) : '—';
     const cumNF    = r ? r.NF_sys_here.toFixed(2) : '—';
     const contPct  = r ? r.contrib_pct.toFixed(1) : '—';
-    const contCol  = r ? (r.contrib_pct > 50 ? '#ff4d6d' : r.contrib_pct > 20 ? '#ffaa00' : '#00e5a0') : '#888899';
+    const contCol  = r ? (r.contrib_pct > 50 ? '#dc2626' : r.contrib_pct > 20 ? '#d97706' : '#16a34a') : '#718096';
     const barW     = r ? Math.max(2, (r.contrib_pct / Math.max(maxContrib, 1)) * 90) : 0;
 
     const typeOpts = TYPE_OPTS.map(t => `<option value="${t.v}"${s.type===t.v?' selected':''}>${t.l}</option>`).join('');
@@ -653,13 +653,13 @@ function renderWhatIf(res) {
       <td>
         ${isP ? '<span style="color:var(--muted);font-size:.75rem">passive—coupled to gain</span>' :
           `<span style="display:inline-flex;align-items:center;gap:.4rem">
-            <span class="lev-bar" style="width:${nfW}px;background:${nfLev>0.3?'#ff4d6d':nfLev>0.1?'#ffaa00':'#00e5a0'}"></span>
+            <span class="lev-bar" style="width:${nfW}px;background:${nfLev>0.3?'#dc2626':nfLev>0.1?'#d97706':'#16a34a'}"></span>
             <span style="color:var(--accent2)">${nfLev > 0 ? '−'+nfLev.toFixed(3)+' dB' : '≈0'}</span>
           </span>`}
       </td>
       <td>
         <span style="display:inline-flex;align-items:center;gap:.4rem">
-          <span class="lev-bar" style="width:${gW}px;background:${gLev>0.3?'#ff4d6d':gLev>0.1?'#ffaa00':'#00e5a0'}"></span>
+          <span class="lev-bar" style="width:${gW}px;background:${gLev>0.3?'#dc2626':gLev>0.1?'#d97706':'#16a34a'}"></span>
           <span style="color:var(--accent2)">${gLev > 0 ? '−'+gLev.toFixed(3)+' dB' : '≈0'}</span>
         </span>
       </td>
@@ -829,10 +829,10 @@ function takeScreenshot() {
   const out = document.createElement('canvas');
   out.width = tw; out.height = mh + th + pad * 2;
   const c = out.getContext('2d');
-  c.fillStyle = '#0d0d0f'; c.fillRect(0,0,out.width,out.height);
+  c.fillStyle = '#f4f5f7'; c.fillRect(0,0,out.width,out.height);
   c.fillStyle = '#e2e2e8'; c.font = 'bold 14px Segoe UI,system-ui,sans-serif';
   c.fillText('Noise Figure Cascade  ·  RF Toolbox  ·  hinckster.github.io/RF-Toolbox', pad, th/2+5);
-  c.fillStyle = '#888899'; c.font = '11px monospace';
+  c.fillStyle = '#718096'; c.font = '11px monospace';
   c.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC', pad, th-4);
   let x = pad;
   canvases.forEach(cv => { c.drawImage(cv,x,th+pad); x += cv.width+pad; });
@@ -884,7 +884,7 @@ function copyLink() {
   var url = location.href.split('?')[0] + '?' + new URLSearchParams(prm).toString();
   navigator.clipboard.writeText(url).then(function() {
     var btn = document.getElementById('copyBtn'), orig = btn.textContent;
-    btn.textContent = '✓ Copied!'; btn.style.color='#00e5a0'; btn.style.borderColor='#00e5a0';
+    btn.textContent = '✓ Copied!'; btn.style.color='#16a34a'; btn.style.borderColor='#16a34a';
     setTimeout(function() { btn.textContent=orig; btn.style.color=''; btn.style.borderColor=''; }, 2000);
   });
 }
