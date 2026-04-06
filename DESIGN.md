@@ -266,22 +266,23 @@ and confirm the issues are resolved before committing.
 
 ## Design System
 
-### Colors
+### Colors — White Theme
 | Token | Hex | Usage |
 |---|---|---|
-| `bg-base` | `#16181d` | Page background |
-| `bg-card` | `#1e2128` | Cards, panels |
-| `bg-deep` | `#0d1117` | Inputs, metric boxes |
-| `border` | `#30363d` | All borders |
-| `text-primary` | `#e6edf3` | Headings |
-| `text-secondary` | `#c9d1d9` | Body text |
-| `text-muted` | `#8b949e` | Labels, captions |
-| `accent-blue` | `#58a6ff` | Primary accent, sliders |
-| `accent-green` | `#3fb950` | Good/pass states |
-| `accent-orange` | `#f0883e` | Warning states |
-| `accent-red` | `#f85149` | Error/fail states |
+| `bg-base` | `#ffffff` | Page background |
+| `bg-card` | `#f4f5f7` | Cards, panels |
+| `bg-deep` | `#eaecef` | Inputs, metric boxes |
+| `border` | `#d0d4da` | All borders |
+| `text-primary` | `#1a1d23` | Headings |
+| `text-secondary` | `#4a5568` | Body text |
+| `text-muted` | `#718096` | Labels, captions |
+| `accent-copper` | `#b5895a` | UI chrome, sliders, nav — matches portfolio |
+| `accent-blue` | `#2563eb` | Data traces, functional accent |
+| `accent-green` | `#16a34a` | Good/pass states |
+| `accent-orange` | `#d97706` | Warning states |
+| `accent-red` | `#dc2626` | Error/fail states |
 | `accent-yellow` | `#e6c547` | Highlighted variables |
-| `accent-purple` | `#bc8cff` | Secondary data |
+| `accent-purple` | `#7c3aed` | Secondary data |
 
 ### Typography
 - **Font stack:** `'Segoe UI', system-ui, sans-serif`
@@ -306,12 +307,12 @@ and confirm the issues are resolved before committing.
 - Font: monospace, 0.92rem, line-height 2
 
 #### Sliders
-- `accent-color: #58a6ff`, track height 4px
-- Label left, live value right in `accent-blue` monospace
+- `accent-color: #b5895a` (copper), track height 4px
+- Label left, live value right in copper `#b5895a` monospace
 - Value transitions: `transition: all 200ms ease`
 
 #### Annotation Box
-- Left border: 3px solid `accent-blue`
+- Left border: 3px solid `#b5895a` (copper)
 - Background `bg-card`, padding 11px 14px
 - Must always be non-empty
 - Must show specific current numbers, not generic text
@@ -330,11 +331,11 @@ and confirm the issues are resolved before committing.
   animation: { duration: 0 },       // always off — sliders need instant response
   responsive: true,
   scales: {
-    x: { grid: { color: '#252830' }, ticks: { color: '#8b949e' } },
-    y: { grid: { color: '#252830' }, ticks: { color: '#8b949e' } }
+    x: { grid: { color: '#e2e5ea' }, ticks: { color: '#718096' } },
+    y: { grid: { color: '#e2e5ea' }, ticks: { color: '#718096' } }
   },
   plugins: {
-    legend: { labels: { color: '#8b949e', font: { size: 11 }, boxWidth: 14 } }
+    legend: { labels: { color: '#718096', font: { size: 11 }, boxWidth: 14 } }
   }
 }
 ```
