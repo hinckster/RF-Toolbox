@@ -72,11 +72,20 @@ table.stages tr.total td:first-child{color:var(--t1)}
 .annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;font-size:.88rem;color:var(--tm);line-height:1.75}
 .annotation strong{color:var(--t1)}
 .annotation b{color:var(--blue)}
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.help-overlay.open{display:flex}
+.help-box{background:#fff;border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;max-height:80vh;overflow-y:auto}
+.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+.help-try li::marker{color:#b5895a}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
   <button class="tbtn" onclick="takeScreenshot('Receiver Dynamic Range')">📷 Screenshot</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
   <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
@@ -418,6 +427,49 @@ function copyLink(){
 }
 
 update();
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 </script>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Receiver Dynamic Range — Help</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Performs a complete cascaded receiver chain analysis using Friis's noise figure formula and the cascaded IIP3 formula. Computes system noise floor (kTB + NF), output P1dB (OIP3 − 9.6 dB rule), and Spurious-Free Dynamic Range: SFDR = ⅔(OIP3_sys − N_floor). All four stages are editable inline.</div>
+
+    <div class="help-section">Inputs (inline table)</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>NF (dB):</strong> Noise Figure of each stage. LNA NF is most critical — even 0.5 dB increase ripples through the whole cascade.</li>
+        <li><strong>Gain (dB):</strong> Stage gain (positive) or insertion loss (negative, e.g., filter = −1 dB). High first-stage gain suppresses downstream NF but degrades IIP3.</li>
+        <li><strong>IIP3 (dBm):</strong> Input-referred third-order intercept. Mixers and amplifiers at high gain typically limit system IIP3.</li>
+        <li><strong>System Bandwidth:</strong> Sets noise floor (kTBF). 20 MHz ≈ 5G NR, 200 kHz ≈ LTE narrowband.</li>
+        <li><strong>Input signal level:</strong> Reference signal power — shows where your signal sits within the dynamic range window.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">How to read the charts</div>
+    <div class="help-body">
+      <strong>Dynamic Range Window (left):</strong> Horizontal bars show: noise floor (bottom), your input signal, IM3 products, P1dB (compression onset), and OIP3. SFDR is the gap between the noise floor and where IM3 products reach it.<br><br>
+      <strong>Stage-by-Stage buildup (right):</strong> Cascaded NF (blue) rises with each stage — ideally flat after a high-gain LNA. Cascaded OIP3 (orange) typically drops at high-gain stages.
+    </div>
+
+    <div class="help-section">Key results</div>
+    <div class="help-body"><strong>Cascaded NF</strong> — total system noise figure; <strong>IIP3/OIP3</strong> — input/output intercept referred to system input/output; <strong>SFDR</strong> — maximum dynamic range before IM3 products rise above noise; <strong>P1dB</strong> — estimated compression point. Red/orange/green color coding indicates poor/marginal/good performance.</div>
+
+    <div class="help-section">Things to try</div>
+    <ul class="help-try">
+      <li>Reduce LNA NF from 1.5 to 0.8 dB — watch the system NF drop nearly 1:1, demonstrating first-stage dominance (Friis).</li>
+      <li>Increase LNA Gain from 20 to 30 dB — IIP3 degrades as the mixer now sees higher input power; observe the SFDR tradeoff.</li>
+      <li>Set BW = 200 kHz (LTE NB-IoT) vs 100 MHz (5G mmWave) — noise floor shifts 27 dB; see how SFDR changes.</li>
+    </ul>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">Pozar, <em>Microwave Engineering</em>, 4th ed., Wiley, 2012, §10.1–10.3 (Friis cascade, IIP3 cascade, SFDR).</div>
+  </div>
+</div>
 </body>
 </html>
