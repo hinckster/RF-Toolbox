@@ -8,9 +8,9 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #0d0d0f; --surface: #16161a; --card: #1e1e24; --border: #2a2a35;
-    --accent: #00c8ff; --accent2: #7b61ff; --text: #e2e2e8; --muted: #888899;
-    --green: #00e5a0; --orange: #ffaa00; --red: #ff4d6d;
+    --bg: #ffffff; --surface: #f4f5f7; --card: #f4f5f7; --border: #d0d4da;
+    --accent: #b5895a; --accent2: #7c3aed; --text: #1a1d23; --muted: #718096;
+    --green: #16a34a; --orange: #d97706; --red: #dc2626;
   }
   body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
 
@@ -58,7 +58,7 @@
   .slider-row .hints { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
   .sr-row { display:flex; align-items:center; gap:6px; }
   .sr-row input[type=range] { flex:1; width:auto; min-width:0; }
-  .si { width:72px; background:#0d1117; border:1px solid var(--border); border-radius:4px; color:var(--accent); font-family:'Courier New',monospace; font-size:.82rem; padding:3px 6px; text-align:right; transition:border-color .15s; -moz-appearance:textfield; appearance:textfield; }
+  .si { width:72px; background:var(--surface); border:1px solid var(--border); border-radius:4px; color:var(--accent); font-family:'Courier New',monospace; font-size:.82rem; padding:3px 6px; text-align:right; transition:border-color .15s; -moz-appearance:textfield; appearance:textfield; }
   .si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
   .si:focus { outline:none; border-color:var(--accent); }
   .si.err { border-color:var(--red); color:var(--red); }
@@ -81,7 +81,7 @@
     padding: 0.35rem 0.9rem; border-radius: 20px; border: 1px solid var(--border);
     background: var(--surface); color: var(--muted); font-size: 0.8rem; cursor: pointer; transition: 0.15s;
   }
-  .sweep-btn.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+  .sweep-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
 
   /* ── Annotation box ── */
   .annotation {
@@ -92,14 +92,14 @@
   .annotation strong { color: var(--text); }
 
   .preset-row { margin-bottom: 1rem; }
-  .preset-row label { font-size: .76rem; color: #8b949e; display: block; margin-bottom: .3rem; }
+  .preset-row label { font-size: .76rem; color: var(--muted); display: block; margin-bottom: .3rem; }
   .preset-select {
-    width: 100%; background: #0d1117; border: 1px solid #30363d;
-    color: #c9d1d9; border-radius: 6px; padding: 6px 8px;
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); border-radius: 6px; padding: 6px 8px;
     font-size: .78rem; font-family: 'Segoe UI', system-ui, sans-serif; cursor: pointer;
   }
   .preset-select:focus { outline: none; border-color: #58a6ff; }
-  .preset-select option { background: #0d1117; }
+  .preset-select option { background: var(--surface); }
 </style>
 </head>
 <body>
@@ -332,10 +332,10 @@ const chart = new Chart(ctx, {
   },
   options: {
     responsive: true, maintainAspectRatio: false, animation: { duration: 0 },
-    plugins: { legend: { labels: { color: '#888899', font: { size: 11 } } }, tooltip: { mode: 'index', intersect: false } },
+    plugins: { legend: { labels: { color: '#718096', font: { size: 11 } } }, tooltip: { mode: 'index', intersect: false } },
     scales: {
-      x: { ticks: { color: '#888899', maxTicksLimit: 8, font: { size: 10 } }, grid: { color: '#2a2a35' }, title: { display: true, color: '#888899', font: { size: 11 } } },
-      y: { ticks: { color: '#888899', font: { size: 10 } }, grid: { color: '#2a2a35' }, title: { display: true, text: 'Power (dBm)', color: '#888899', font: { size: 11 } } }
+      x: { ticks: { color: '#718096', maxTicksLimit: 8, font: { size: 10 } }, grid: { color: '#e2e5ea' }, title: { display: true, color: '#718096', font: { size: 11 } } },
+      y: { ticks: { color: '#718096', font: { size: 10 } }, grid: { color: '#e2e5ea' }, title: { display: true, text: 'Power (dBm)', color: '#718096', font: { size: 11 } } }
     }
   }
 });
@@ -477,7 +477,7 @@ function takeScreenshot(toolName) {
   c.fillStyle = '#0d0d0f'; c.fillRect(0, 0, out.width, out.height);
   c.fillStyle = '#e2e2e8'; c.font = 'bold 14px Segoe UI, system-ui, sans-serif';
   c.fillText(toolName + '  ·  RF Toolbox  ·  hinckster.github.io/RF-Toolbox', padding, titleHeight / 2 + 5);
-  c.fillStyle = '#888899'; c.font = '11px monospace';
+  c.fillStyle = '#718096'; c.font = '11px monospace';
   c.fillText(new Date().toISOString().slice(0,19).replace('T',' ') + ' UTC', padding, titleHeight - 4);
   let x = padding;
   canvases.forEach(cv => { c.drawImage(cv, x, titleHeight + padding); x += cv.width + padding; });
