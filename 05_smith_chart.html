@@ -94,11 +94,20 @@
   }
   .preset-select:focus { outline: none; border-color: var(--accent); }
   .preset-select option { background: var(--surface); }
+  .help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+  .help-overlay.open{display:flex}
+  .help-box{background:#fff;border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;max-height:80vh;overflow-y:auto}
+  .help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+  .help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+  .help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+  .help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+  .help-try li::marker{color:#b5895a}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
   <button class="tbtn" onclick="takeScreenshot('Smith Chart')">📷 Screenshot</button>
   <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
@@ -546,6 +555,58 @@ function loadPreset(key) {
     document.getElementById('iX').value = (+document.getElementById('sX').value).toFixed(0);
   }
 })();
+
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 </script>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Smith Chart — Help</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Maps any load impedance Z_L = R + jX onto the complex reflection coefficient plane using Γ = (Z_L − Z₀)/(Z_L + Z₀). From Γ it derives VSWR = (1+|Γ|)/(1−|Γ|), return loss = −20·log₁₀|Γ| dB, admittance Y_L = G + jB, Q factor = |X|/R, and mismatch loss = −10·log₁₀(1−|Γ|²) dB. The L-match synthesis section computes a two-element lumped network (series + shunt reactive element) to transform Z_L to Z₀.</div>
+
+    <div class="help-section">Sliders &amp; inputs</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Z₀</strong> — reference (system) impedance in ohms (1–400 Ω). Changes the normalization; all Smith Chart circles rescale relative to this value.</li>
+        <li><strong>Resistance R</strong> — real part of load impedance (0–500 Ω). Dragging left toward 0 Ω approaches a short circuit (Γ = −1, left edge of chart); large R approaches open circuit (Γ = +1, right edge).</li>
+        <li><strong>Reactance X</strong> — imaginary part of load impedance (−300 to +300 Ω). Positive X = inductive load (upper half of chart); negative X = capacitive (lower half). X = 0 keeps the point on the real axis.</li>
+        <li><strong>Quick Presets</strong> — buttons to instantly jump to canonical loads: Matched (50 Ω), Short, Open, 50+j50, 100−j75, 25 Ω, 75 Ω, 100 Ω.</li>
+        <li><strong>Load Scenario</strong> — dropdown presets for real-world scenarios including inductive antenna load, capacitive coax-to-antenna, near-matched, and severe open-circuit mismatch.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">How to read the chart</div>
+    <div class="help-body">The outer circle is the unit |Γ| = 1 boundary — points here represent total reflection (short or open circuits). The horizontal real axis runs from SC (short, left) to OC (open, right); the center is the perfectly matched point z = 1 + j0. Solid gray circles are constant-resistance contours (r = 0.2, 0.5, 1, 2, 5, 10); the r = 1 circle (slightly darker) passes through center. Arcs are constant-reactance contours (x = ±0.2, ±0.5, ±1, ±2, ±5). The three dashed copper circles at |Γ| = 0.25, 0.5, 0.75 are reference VSWR circles. The pink/red dot is Z_L; the copper vector from center shows the Γ phasor; the dashed copper circle through the dot is the constant-VSWR locus for that load.</div>
+
+    <div class="help-section">Key results</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Z_L / z (norm.)</strong> — actual and Z₀-normalized impedance; z = Z_L/Z₀ is what the Smith Chart directly plots.</li>
+        <li><strong>|Γ| / ∠Γ</strong> — reflection coefficient magnitude and phase angle; |Γ| = 0 is perfect match, |Γ| = 1 is total reflection.</li>
+        <li><strong>VSWR</strong> — standing wave ratio; 1.0 = no standing wave, higher values indicate worse mismatch.</li>
+        <li><strong>Return Loss</strong> — power reflected back to source in dB; RL &gt; 20 dB means &lt;1% power reflected.</li>
+        <li><strong>Y_L (G, B)</strong> — admittance in mS; useful for shunt matching element design.</li>
+        <li><strong>Q factor</strong> — |X|/R; indicates how narrowband a matching network must be. High Q means narrower bandwidth.</li>
+        <li><strong>Mismatch Loss</strong> — power lost to reflection, in dB = −10·log₁₀(1−|Γ|²).</li>
+        <li><strong>L-Match Synthesis</strong> — step-by-step series + shunt reactive values to transform Z_L → Z₀, with required Q and element signs shown.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Things to try</div>
+    <ul class="help-try">
+      <li>Load the "Antenna — inductive load" preset (100+j50 Ω into 50 Ω) and read the L-match synthesis box — then verify that adding the listed series capacitor moves the point to the r = 1 circle on the Smith Chart.</li>
+      <li>Drag R from 0 to 500 Ω with X = 0 and watch the point sweep left to right along the real axis, traversing all constant-r circles. Note VSWR peaks at the extremes and returns to 1.0 when R = Z₀ = 50 Ω.</li>
+      <li>Set R = 50, X = 0, then slowly increase X — observe the point tracing upward along the r = 1 circle, reaching the inductive region while VSWR and mismatch loss grow.</li>
+    </ul>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">P. H. Smith, "Transmission line calculator," <em>Electronics</em>, vol. 12, no. 1, pp. 29–31, Jan. 1939. See also D. M. Pozar, <em>Microwave Engineering</em>, 4th ed. Hoboken, NJ: Wiley, 2012, §2.4.</div>
+  </div>
+</div>
 </body>
 </html>
