@@ -407,6 +407,36 @@
     td.td-desc { display: none; }
     .chart-container { height: 260px; }
   }
+
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.help-overlay.open{display:flex}
+.help-box{background:#fff;border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;max-height:80vh;overflow-y:auto}
+.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+.help-try li::marker{color:#b5895a}
+
+/* Custom component rows */
+#custom-comp-section { margin-top: 0; }
+.custom-comp-table { width:100%; border-collapse:collapse; }
+.custom-comp-row { background:#fffbf5; border-left:4px solid #b5895a; }
+.custom-comp-row td { padding:.35rem .6rem; border-bottom:1px solid #e8ddd0; }
+.custom-comp-row:last-child td { border-bottom:none; }
+.custom-name-inp { background:#fff8f0; border:1px solid #d0b890; border-radius:4px; color:#1a1d23; font-family:'Segoe UI',system-ui,sans-serif; font-size:.82rem; padding:.25rem .45rem; width:160px; }
+.custom-name-inp:focus { outline:none; border-color:#b5895a; }
+.custom-val-inp { background:#fff8f0; border:1px solid #d0b890; border-radius:4px; color:#b5895a; font-family:'Courier New',monospace; font-size:.82rem; padding:.25rem .4rem; width:70px; text-align:right; }
+.custom-val-inp:focus { outline:none; border-color:#b5895a; }
+.custom-del-btn { background:none; border:1px solid #d0b890; border-radius:4px; color:#718096; cursor:pointer; font-size:.8rem; padding:.2rem .45rem; transition:.15s; }
+.custom-del-btn:hover { border-color:#dc2626; color:#dc2626; }
+.custom-run-cell { font-family:'Courier New',monospace; font-size:.82rem; color:#718096; text-align:right; padding-right:18px; }
+#add-comp-wrap { padding:.6rem 0 .4rem; display:flex; align-items:center; gap:.7rem; }
+#add-comp-btn { background:#fff8f0; border:1px dashed #b5895a; border-radius:5px; color:#b5895a; cursor:pointer; font-size:.8rem; padding:.3rem .9rem; transition:.15s; }
+#add-comp-btn:hover { background:#f5ede0; }
+#add-comp-btn:disabled { opacity:.4; cursor:default; }
+#add-comp-hint { font-size:.73rem; color:#718096; }
+.custom-type-sel { background:#fff8f0; border:1px solid #d0b890; border-radius:4px; color:#b5895a; font-size:.78rem; padding:.22rem .3rem; cursor:pointer; }
+.custom-type-sel:focus { outline:none; }
 </style>
 </head>
 <body>
@@ -422,6 +452,7 @@
 
 <!-- TOOLBAR -->
 <div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
   <button id="btn-screenshot" title="Save screenshot">📷 Screenshot</button>
   <button id="btn-exportcsv" title="Export CSV" onclick="exportCSV()">⬇ Export CSV</button>
   <button id="btn-fullscreen" title="Toggle fullscreen">⛶ Fullscreen</button>
@@ -498,6 +529,17 @@
     </table>
   </div>
 
+  <!-- CUSTOM COMPONENTS -->
+  <div id="custom-comp-section">
+    <table class="custom-comp-table" id="custom-comp-table">
+      <tbody id="custom-comp-tbody"></tbody>
+    </table>
+    <div id="add-comp-wrap">
+      <button id="add-comp-btn" onclick="addCustomComponent()">+ Add Component</button>
+      <span id="add-comp-hint">Custom gain/loss terms — max 8</span>
+    </div>
+  </div>
+
   <!-- SUMMARY -->
   <div class="summary-box" id="summary-box">
     <div class="summary-item">
@@ -532,6 +574,56 @@
 
 </div><!-- /main -->
 
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Link Budget Calculator — Help</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Performs a cascaded link budget in dB following the Friis transmission equation: Pr = Pt + Gt + Gr − FSPL − L<sub>cables</sub> − NF. Free-space path loss is computed as FSPL = 20·log₁₀(4πdf/c) where d is range in metres and f is frequency in Hz. Link margin = Pr − Sensitivity; it represents the dB headroom above the receiver sensitivity floor.</div>
+
+    <div class="help-section">Sliders &amp; inputs</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Frequency (100 MHz–100 GHz, log scale):</strong> Carrier frequency. FSPL grows as 20·log₁₀(f), so doubling frequency adds 6 dB of path loss.</li>
+        <li><strong>Distance (0.1 km–1000 km, log scale):</strong> Link range. FSPL grows as 20·log₁₀(d); doubling distance adds 6 dB.</li>
+        <li><strong>Tx Power Pt (dBm):</strong> Transmitter output power delivered to the antenna port.</li>
+        <li><strong>Tx Antenna Gain Gt (dBi):</strong> Boresight gain of the transmit antenna over an isotropic radiator.</li>
+        <li><strong>Tx Cable/Connector Loss (dB, enter as negative):</strong> Ohmic losses between PA output and antenna feed.</li>
+        <li><strong>Atmospheric/Rain Loss (dB, enter as negative):</strong> Gaseous absorption and rain fade margin — especially relevant above 10 GHz.</li>
+        <li><strong>Rx Antenna Gain Gr (dBi):</strong> Boresight gain of the receive antenna.</li>
+        <li><strong>Rx Cable/Connector Loss (dB, enter as negative):</strong> Feed-line loss between receive antenna and LNA input.</li>
+        <li><strong>Noise Figure Margin NF (dB, enter as negative):</strong> System noise figure plus implementation loss allowance.</li>
+        <li><strong>Sensitivity (dBm):</strong> Minimum detectable signal for the required SNR/BER; displayed in orange as a reference floor.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">How to read the chart</div>
+    <div class="help-body">The Budget Waterfall chart is a horizontal stacked bar showing how the signal level evolves through each link stage. Green bars are gains (Pt, antenna gains); orange/red bars are losses. Each bar starts where the previous one ended, so the right edge of the last bar is the received power Pr. The vertical dashed orange line marks the sensitivity floor — any bar that crosses to the left of it will be highlighted red in the table above.</div>
+
+    <div class="help-section">Key results</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Received Power Pr:</strong> Total signal power at the receiver input after all gains and losses.</li>
+        <li><strong>Sensitivity:</strong> The required minimum power for reliable detection (user-set).</li>
+        <li><strong>Link Margin:</strong> Pr − Sensitivity in dB. Green ≥ 6 dB (healthy), orange 0–6 dB (thin), red &lt; 0 dB (link fails).</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Things to try</div>
+    <div class="help-body">
+      <ul class="help-try">
+        <li>Load the "LEO Satellite" preset — notice how 550 km of FSPL at 12 GHz dominates all other terms, and a 40 dBi dish is needed to close the link.</li>
+        <li>With any scenario, double the distance (slide right by ~0.3 on the log scale): link margin drops by exactly 6 dB, confirming the inverse-square law.</li>
+        <li>Try the "5G mmWave" preset then reduce Tx antenna gain from 25 to 3 dBi (omnidirectional): margin goes negative — showing why mmWave requires beam-steering.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">Stutzman, W. L. &amp; Thiele, G. A. <em>Antenna Theory and Design</em>, 3rd ed. Wiley, 2013. Chapter 11: System Design Considerations and Link Budget Analysis.</div>
+  </div>
+</div>
+
 <script>
 /* =========================================================
    DATA MODEL
@@ -565,6 +657,118 @@ function calcFSPL(freqGHz, distKm) {
   const f = freqGHz * 1e9;
   const d = distKm  * 1e3;
   return 20 * Math.log10((4 * Math.PI * d * f) / SPEED_OF_LIGHT);
+}
+
+/* =========================================================
+   CUSTOM COMPONENTS
+   ========================================================= */
+const customComponents = [];
+let customIdCounter = 0;
+const MAX_CUSTOM = 8;
+
+function renderCustomRows() {
+  const tbody = document.getElementById('custom-comp-tbody');
+  tbody.innerHTML = '';
+  customComponents.forEach(cc => {
+    const tr = document.createElement('tr');
+    tr.className = 'custom-comp-row';
+    tr.id = 'custom-row-' + cc.id;
+
+    // Type selector (Gain / Loss)
+    const tdType = document.createElement('td');
+    const sel = document.createElement('select');
+    sel.className = 'custom-type-sel';
+    sel.innerHTML = '<option value="gain">+Gain</option><option value="loss">−Loss</option>';
+    sel.value = cc.type;
+    sel.addEventListener('change', () => {
+      cc.type = sel.value;
+      // update sign
+      const absVal = Math.abs(cc.value);
+      cc.value = cc.type === 'gain' ? absVal : -absVal;
+      valInp.style.color = cc.type === 'gain' ? 'var(--green)' : 'var(--red)';
+      recalc();
+    });
+    tdType.appendChild(sel);
+    tr.appendChild(tdType);
+
+    // Name input
+    const tdName = document.createElement('td');
+    const nameInp = document.createElement('input');
+    nameInp.type = 'text';
+    nameInp.className = 'custom-name-inp';
+    nameInp.placeholder = 'Component name';
+    nameInp.value = cc.name;
+    nameInp.addEventListener('input', () => { cc.name = nameInp.value; });
+    tdName.appendChild(nameInp);
+    tr.appendChild(tdName);
+
+    // Value input (dB)
+    const tdVal = document.createElement('td');
+    const valInp = document.createElement('input');
+    valInp.type = 'number';
+    valInp.className = 'custom-val-inp';
+    valInp.step = '0.5';
+    valInp.value = Math.abs(cc.value);
+    valInp.style.color = cc.type === 'gain' ? 'var(--green)' : 'var(--red)';
+    valInp.addEventListener('input', () => {
+      const absVal = parseFloat(valInp.value) || 0;
+      cc.value = cc.type === 'gain' ? absVal : -absVal;
+      recalc();
+    });
+    const unitSpan = document.createElement('span');
+    unitSpan.textContent = ' dB';
+    unitSpan.style.cssText = 'font-size:.75rem;color:var(--muted);margin-left:3px';
+    tdVal.appendChild(valInp);
+    tdVal.appendChild(unitSpan);
+    tr.appendChild(tdVal);
+
+    // Running total cell
+    const tdRun = document.createElement('td');
+    tdRun.className = 'custom-run-cell';
+    tdRun.id = 'run-custom-' + cc.id;
+    tdRun.textContent = '—';
+    tr.appendChild(tdRun);
+
+    // Delete button
+    const tdDel = document.createElement('td');
+    const delBtn = document.createElement('button');
+    delBtn.className = 'custom-del-btn';
+    delBtn.textContent = '×';
+    delBtn.title = 'Remove';
+    delBtn.addEventListener('click', () => { deleteCustomComponent(cc.id); });
+    tdDel.appendChild(delBtn);
+    tr.appendChild(tdDel);
+
+    tbody.appendChild(tr);
+  });
+
+  // Update add button state
+  const addBtn = document.getElementById('add-comp-btn');
+  const hint = document.getElementById('add-comp-hint');
+  if (addBtn) {
+    addBtn.disabled = customComponents.length >= MAX_CUSTOM;
+    hint.textContent = customComponents.length >= MAX_CUSTOM
+      ? 'Maximum 8 custom components reached'
+      : `Custom gain/loss terms — max 8 (${customComponents.length}/8 used)`;
+  }
+}
+
+function addCustomComponent() {
+  if (customComponents.length >= MAX_CUSTOM) return;
+  const id = ++customIdCounter;
+  customComponents.push({ id, name: '', type: 'loss', value: -1 });
+  renderCustomRows();
+  recalc();
+  // Focus name input
+  const nameInp = document.querySelector(`#custom-row-${id} .custom-name-inp`);
+  if (nameInp) nameInp.focus();
+}
+
+function deleteCustomComponent(id) {
+  const idx = customComponents.findIndex(cc => cc.id === id);
+  if (idx !== -1) customComponents.splice(idx, 1);
+  renderCustomRows();
+  recalc();
 }
 
 /* =========================================================
@@ -688,7 +892,6 @@ function recalc() {
   // We treat Pt as absolute power. Each add/sub term modifies the running power.
   // ref (sensitivity) row: we just display it but don't add it to running total.
   let running = 0;
-  let pr = 0; // will be set after row 8 (index 7)
   const runningTotals = [];
 
   rows.forEach((row, idx) => {
@@ -709,9 +912,25 @@ function recalc() {
     }
 
     runningTotals.push(running);
+  });
 
-    // Pr is after the NF row (idx 7, 0-based)
-    if (idx === 7) pr = running;
+  // Apply custom components to running total
+  // running here = value after NF row (before ref/sensitivity row modifies nothing)
+  let prBase = running; // power after all standard rows, before custom components
+  customComponents.forEach(cc => {
+    prBase += cc.value; // value already signed (+gain, -loss)
+  });
+  let pr = prBase;
+
+  // Update custom component running total cells
+  let ccRunning = running; // start from after NF row
+  customComponents.forEach(cc => {
+    ccRunning += cc.value;
+    const cell = document.getElementById('run-custom-' + cc.id);
+    if (cell) {
+      cell.textContent = ccRunning.toFixed(2) + ' dBm';
+      cell.style.color = ccRunning < sensitivity ? 'var(--red)' : 'var(--text)';
+    }
   });
 
   // Update running total cells and alert highlighting
@@ -819,6 +1038,12 @@ function buildChartData(pr, sensitivity, fspl) {
   seg('Rx Cable Loss', lrxRow.value, false);         // negative
   seg('Noise Figure', nfRow.value, false);            // negative
 
+  // Custom components appear after NF in the waterfall (copper colored)
+  customComponents.forEach(cc => {
+    seg(cc.name || 'Custom', cc.value, cc.value >= 0);
+    segments[segments.length - 1].isCustom = true;
+  });
+
   return { segments, sensitivity: sensRow.value };
 }
 
@@ -829,10 +1054,12 @@ function updateChart(pr, sensitivity, fspl) {
   // Invisible base dataset (transparent) to float bars
   const bases   = segments.map(s => Math.min(s.start, s.end));
   const heights = segments.map(s => Math.abs(s.delta));
-  const colors  = segments.map(s => s.isGain
-    ? 'rgba(0,229,160,0.78)'
+  const colors  = segments.map(s => s.isCustom
+    ? 'rgba(181,137,90,0.7)'
+    : s.isGain ? 'rgba(0,229,160,0.78)'
     : (s.delta < -10 ? 'rgba(255,77,109,0.78)' : 'rgba(255,170,0,0.78)'));
-  const borders = segments.map(s => s.isGain ? '#16a34a' : (s.delta < -10 ? '#dc2626' : '#d97706'));
+  const borders = segments.map(s => s.isCustom ? '#b5895a'
+    : s.isGain ? '#16a34a' : (s.delta < -10 ? '#dc2626' : '#d97706'));
 
   const ctx = document.getElementById('waterfall-chart').getContext('2d');
 
@@ -1115,6 +1342,7 @@ function loadPreset(key) {
    INIT
    ========================================================= */
 buildTable();
+renderCustomRows();
 updateFreqDisplay();
 updateDistDisplay();
 recalc();
@@ -1149,6 +1377,10 @@ recalc();
   });
   recalc();
 })();
+
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 </script>
 </body>
 </html>
