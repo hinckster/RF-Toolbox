@@ -8,9 +8,9 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#16181d;--card:#1e2128;--deep:#0d1117;
-  --bdr:#30363d;--t1:#e6edf3;--t2:#c9d1d9;--tm:#8b949e;
-  --blue:#58a6ff;--grn:#3fb950;--org:#f0883e;--red:#f85149;--yel:#e6c547;--pur:#bc8cff;
+  --bg:#ffffff;--card:#f4f5f7;--deep:#eaecef;
+  --bdr:#d0d4da;--t1:#1a1d23;--t2:#4a5568;--tm:#718096;
+  --blue:#2563eb;--grn:#16a34a;--org:#d97706;--red:#dc2626;--yel:#e6c547;--pur:#7c3aed;
 }
 body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
 
@@ -44,8 +44,8 @@ header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 
 .sr{margin-bottom:.85rem}
 .sr label{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.22rem}
-.sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
-input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
+.sr label span{color:#b5895a;font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
+input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 .hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
 
 .ni{background:var(--deep);border:1px solid var(--bdr);border-radius:4px;color:var(--blue);font-family:'Courier New',monospace;font-size:.82rem;padding:.28rem .45rem;width:70px;text-align:right}
@@ -247,7 +247,7 @@ function drawSmith(gL, gAtLine, stubs){
   const R=Math.min(w,h)*0.45;
   const ctx=smithCtx;
   ctx.clearRect(0,0,w,h);
-  ctx.fillStyle='#0d1117';
+  ctx.fillStyle='#ffffff';
   ctx.fillRect(0,0,w,h);
 
   // Helper: map Γ (re,im) to canvas pixels
@@ -262,7 +262,7 @@ function drawSmith(gL, gAtLine, stubs){
     const p=toXY(center);
     ctx.beginPath();
     ctx.arc(p.x, p.y, radius*R, 0, 2*PI);
-    ctx.strokeStyle=r===1?'rgba(88,166,255,.35)':'rgba(255,255,255,.08)';
+    ctx.strokeStyle=r===1?'rgba(37,99,235,.4)':'rgba(180,180,190,.5)';
     ctx.lineWidth=r===1?1.5:0.8;
     ctx.stroke();
   });
@@ -286,7 +286,7 @@ function drawSmith(gL, gAtLine, stubs){
   // Outer unit circle
   ctx.beginPath();
   ctx.arc(cx,cy,R,0,2*PI);
-  ctx.strokeStyle='rgba(88,166,255,.5)';
+  ctx.strokeStyle='rgba(181,137,90,.7)';
   ctx.lineWidth=1.5;
   ctx.stroke();
 
@@ -326,24 +326,24 @@ function drawSmith(gL, gAtLine, stubs){
   // Current position on TL (rotated point)
   const pg=toXY(gAtLine);
   ctx.beginPath();ctx.arc(pg.x,pg.y,7,0,2*PI);
-  ctx.fillStyle='#58a6ff';ctx.fill();
+  ctx.fillStyle='#dc2626';ctx.fill();
   ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
 
   // Load point (original)
   const pl=toXY(gL);
   // Γ vector from center to load
   ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(pl.x,pl.y);
-  ctx.strokeStyle='rgba(88,166,255,.7)';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.strokeStyle='rgba(181,137,90,.9)';ctx.lineWidth=1.5;ctx.stroke();
   ctx.beginPath();ctx.arc(pl.x,pl.y,7,0,2*PI);
   ctx.fillStyle='#f85149';ctx.fill();
 
   // Labels
-  ctx.fillStyle='#8b949e';ctx.font='10px monospace';
+  ctx.fillStyle='#718096';ctx.font='10px monospace';
   ctx.fillText('0',cx+R+4,cy+4);
   ctx.fillText('∞',cx-R-18,cy+4);
   ctx.fillStyle='#f85149';ctx.font='bold 11px sans-serif';
   ctx.fillText('ZL',pl.x+8,pl.y-8);
-  ctx.fillStyle='#58a6ff';
+  ctx.fillStyle='#b5895a';
   ctx.fillText('Z_in',pg.x+8,pg.y-8);
 }
 
@@ -352,16 +352,16 @@ const tlCtx=document.getElementById('chartTL').getContext('2d');
 const tlChart=new Chart(tlCtx,{
   type:'line',
   data:{datasets:[
-    {label:'|V(z)/V⁺|',data:[],borderColor:'#58a6ff',borderWidth:2.5,pointRadius:0,fill:'origin',backgroundColor:'rgba(88,166,255,.08)'},
+    {label:'|V(z)/V⁺|',data:[],borderColor:'#2563eb',borderWidth:2.5,pointRadius:0,fill:'origin',backgroundColor:'rgba(37,99,235,.08)'},
     {label:'|I(z)/I⁺|·Z₀',data:[],borderColor:'#bc8cff',borderDash:[4,3],borderWidth:2,pointRadius:0,fill:false},
     {label:'Load Plane',data:[],borderColor:'rgba(248,81,73,.7)',borderDash:[3,3],borderWidth:1.5,pointRadius:0,showLine:true,fill:false}
   ]},
   options:{
     animation:{duration:0},responsive:true,
-    plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+    plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:12}}},
     scales:{
-      x:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Distance from load (wavelengths)'}},
-      y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Normalized voltage / current amplitude'},min:0}
+      x:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Distance from load (wavelengths)'}},
+      y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Normalized voltage / current amplitude'},min:0}
     }
   }
 });
