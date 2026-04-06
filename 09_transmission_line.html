@@ -92,11 +92,21 @@
   }
   .preset-select:focus { outline: none; border-color: var(--accent); }
   .preset-select option { background: var(--surface); }
+
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.help-overlay.open{display:flex}
+.help-box{background:#fff;border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;max-height:80vh;overflow-y:auto}
+.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+.help-try li::marker{color:#b5895a}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
   <button class="tbtn" onclick="takeScreenshot()">&#128247; Screenshot</button>
   <button class="tbtn" onclick="exportCSV()">&#11015; Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
@@ -209,6 +219,53 @@
     </div>
 
     <div class="annotation" id="annotation">Updating&#8230;</div>
+  </div>
+</div>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Transmission Line — Help</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Computes the complex reflection coefficient Γ<sub>L</sub> = (Z<sub>L</sub> − Z₀) / (Z<sub>L</sub> + Z₀) for a lossless transmission line terminated in a complex load Z<sub>L</sub> = R + jX. From |Γ|, VSWR = (1 + |Γ|) / (1 − |Γ|) and return loss RL = −20·log₁₀(|Γ|) are derived. The standing wave envelope |V(z)| = |V⁺|·√(1 + |Γ|² + 2|Γ|·cos(2βz + φ)) is plotted along the line, and the input impedance Z<sub>in</sub> = Z₀·(Z<sub>L</sub> + jZ₀·tan βL) / (Z₀ + jZ<sub>L</sub>·tan βL) is calculated at the source end.</div>
+
+    <div class="help-section">Sliders &amp; inputs</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Resistance R (0–300 Ω):</strong> Real part of the load impedance. Set to Z₀ (e.g., 50 Ω) for a matched load (|Γ| = 0).</li>
+        <li><strong>Reactance X (−200 to +200 Ω):</strong> Imaginary part of the load. Positive values are inductive, negative are capacitive. X = 0 gives a purely resistive load.</li>
+        <li><strong>Z₀ (10–200 Ω):</strong> Characteristic impedance of the transmission line. Standard values are 50 Ω (RF/microwave) and 75 Ω (cable TV/video).</li>
+        <li><strong>Line length (0–720°):</strong> Electrical length of the line in degrees (0°–720° = 0–2λ). A half-wave (180°) line transforms Z<sub>L</sub> back to itself; a quarter-wave (90°) inverts it as Z₀²/Z<sub>L</sub>.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">How to read the chart</div>
+    <div class="help-body">The main chart shows the normalized voltage magnitude |V(z)|/|V⁺| versus distance from the load (in wavelengths, going left toward the source). The solid cyan line oscillates between VSWR (upper dashed orange) and 1/VSWR (lower dashed orange). A flat line at 1.0 indicates a perfect match. Peaks (voltage maxima) repeat every λ/2. The mini Smith chart inset shows the Γ<sub>L</sub> point (red dot) and the VSWR circle (dashed copper arc); the load lies on the real axis only when X = 0. SC (short circuit) and OC (open circuit) are labeled on the left and right real-axis edges.</div>
+
+    <div class="help-section">Key results</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>|Γ<sub>L</sub>|:</strong> Reflection coefficient magnitude. 0 = perfect match, 1 = total reflection (short or open).</li>
+        <li><strong>∠Γ<sub>L</sub>:</strong> Phase angle of Γ. Determines where the first voltage maximum falls on the line.</li>
+        <li><strong>VSWR:</strong> Voltage standing wave ratio. 1:1 = perfect match; &gt;2:1 is generally unacceptable for most RF systems.</li>
+        <li><strong>Return Loss (dB):</strong> Power reflected back; higher (more positive) is better. &gt;20 dB is excellent.</li>
+        <li><strong>Vmax pos.:</strong> Distance from the load to the nearest voltage maximum, in wavelengths.</li>
+        <li><strong>|Z<sub>in</sub>|:</strong> Magnitude of the input impedance seen at the source end of the line.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Things to try</div>
+    <div class="help-body">
+      <ul class="help-try">
+        <li>Set R = 50, X = 0, Z₀ = 50: observe |Γ| = 0, VSWR = 1, flat standing wave — a perfect match.</li>
+        <li>Set R = 0, X = 0 (short circuit): |Γ| = 1, VSWR = ∞. Sweep line length and watch Z<sub>in</sub> cycle through all reactive values from 0 to ∞.</li>
+        <li>Load the "Dipole antenna feed" preset (Z<sub>L</sub> = 73 + j42 Ω into 50 Ω) and adjust line length to 90° to see how a quarter-wave section transforms the impedance.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">Pozar, D. M. <em>Microwave Engineering</em>, 4th ed. Wiley, 2012. Chapters 2–3: Transmission Line Theory and the Smith Chart.</div>
   </div>
 </div>
 
@@ -690,6 +747,10 @@ function loadPreset(key) {
     syncLenInput();
   }
 })();
+
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 </script>
 </body>
 </html>
