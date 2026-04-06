@@ -49,6 +49,13 @@ header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 .sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600}
 input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 .hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
+.sr-row{display:flex;align-items:center;gap:6px}
+.sr-row input[type=range]{flex:1;width:auto;min-width:0}
+.si{width:72px;background:#0d1117;border:1px solid var(--bdr);border-radius:4px;color:var(--blue);font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;text-align:right;transition:border-color .15s;-moz-appearance:textfield;appearance:textfield}
+.si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.si:focus{outline:none;border-color:var(--blue)}
+.si.err{border-color:var(--red);color:var(--red)}
+.si-unit{font-size:.75rem;color:var(--tm);white-space:nowrap}
 
 .preset-row{margin-bottom:.9rem}
 .preset-row label{font-size:.76rem;color:var(--tm);display:block;margin-bottom:.3rem}
@@ -138,28 +145,48 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 
       <div class="panel-sep"></div>
       <div class="sr">
-        <label>Small-signal gain G <span id="vG">20.0 dB</span></label>
-        <input type="range" id="sG" min="5" max="40" step="0.5" value="20">
+        <label>Small-signal gain G <span id="vG" style="display:none">20.0 dB</span></label>
+        <div class="sr-row">
+          <input type="range" id="sG" min="5" max="40" step="0.5" value="20">
+          <input type="number" class="si" id="iG" value="20.0">
+          <span class="si-unit">dB</span>
+        </div>
         <div class="hints"><span>5 dB</span><span>40 dB</span></div>
       </div>
       <div class="sr">
-        <label>Output P1dB <span id="vP1dB">30.0 dBm</span></label>
-        <input type="range" id="sP1dB" min="10" max="55" step="0.5" value="30">
+        <label>Output P1dB <span id="vP1dB" style="display:none">30.0 dBm</span></label>
+        <div class="sr-row">
+          <input type="range" id="sP1dB" min="10" max="55" step="0.5" value="30">
+          <input type="number" class="si" id="iP1dB" value="30.0">
+          <span class="si-unit">dBm</span>
+        </div>
         <div class="hints"><span>10 dBm</span><span>55 dBm</span></div>
       </div>
       <div class="sr">
-        <label>Operating Pout <span id="vPop">24.0 dBm</span></label>
-        <input type="range" id="sPop" min="0" max="55" step="0.5" value="24">
+        <label>Operating Pout <span id="vPop" style="display:none">24.0 dBm</span></label>
+        <div class="sr-row">
+          <input type="range" id="sPop" min="0" max="55" step="0.5" value="24">
+          <input type="number" class="si" id="iPop" value="24.0">
+          <span class="si-unit">dBm</span>
+        </div>
         <div class="hints"><span>0 dBm</span><span>55 dBm</span></div>
       </div>
       <div class="sr">
-        <label>Vdd supply <span id="vVdd">3.3 V</span></label>
-        <input type="range" id="sVdd" min="1" max="50" step="0.5" value="3.3">
+        <label>Vdd supply <span id="vVdd" style="display:none">3.3 V</span></label>
+        <div class="sr-row">
+          <input type="range" id="sVdd" min="1" max="50" step="0.5" value="3.3">
+          <input type="number" class="si" id="iVdd" value="3.3">
+          <span class="si-unit">V</span>
+        </div>
         <div class="hints"><span>1 V</span><span>50 V</span></div>
       </div>
       <div class="sr">
-        <label>PAPR <span id="vPAPR">8.0 dB</span></label>
-        <input type="range" id="sPAPR" min="0" max="15" step="0.5" value="8">
+        <label>PAPR <span id="vPAPR" style="display:none">8.0 dB</span></label>
+        <div class="sr-row">
+          <input type="range" id="sPAPR" min="0" max="15" step="0.5" value="8">
+          <input type="number" class="si" id="iPAPR" value="8.0">
+          <span class="si-unit">dB</span>
+        </div>
         <div class="hints"><span>0 dB (CW)</span><span>15 dB (OFDM)</span></div>
       </div>
 
@@ -420,11 +447,18 @@ const PRESETS = {
   radar:    { sG:30, sP1dB:42, sPop:40, sVdd:28,  sPAPR:0 },
   classb:   { sG:20, sP1dB:35, sPop:27, sVdd:12,  sPAPR:0 },
 };
+function syncAll12() {
+  document.getElementById('iG').value    = (+document.getElementById('sG').value).toFixed(1);
+  document.getElementById('iP1dB').value = (+document.getElementById('sP1dB').value).toFixed(1);
+  document.getElementById('iPop').value  = (+document.getElementById('sPop').value).toFixed(1);
+  document.getElementById('iVdd').value  = (+document.getElementById('sVdd').value).toFixed(1);
+  document.getElementById('iPAPR').value = (+document.getElementById('sPAPR').value).toFixed(1);
+}
 function loadPreset(key) {
   if (!PRESETS[key]) return;
   const p = PRESETS[key];
   Object.entries(p).forEach(([id,v]) => { document.getElementById(id).value = v; });
-  update();
+  update(); syncAll12();
 }
 
 // Toolbar
@@ -471,9 +505,29 @@ function copyLink() {
 }
 function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
 
-['sG','sP1dB','sPop','sVdd','sPAPR'].forEach(id =>
-  document.getElementById(id).addEventListener('input', update)
-);
+// ── Slider ↔ text-input wiring ──
+function linkSliderInput(sliderId, inputId, decimals, onUpdate, min, max) {
+  const slider = document.getElementById(sliderId);
+  const inp = document.getElementById(inputId);
+  function sync() { inp.value = (+slider.value).toFixed(decimals); inp.classList.remove('err'); }
+  slider.addEventListener('input', () => { sync(); onUpdate(); });
+  inp.addEventListener('input', () => {
+    const v = parseFloat(inp.value);
+    if (isNaN(v) || v < min || v > max) { inp.classList.add('err'); return; }
+    inp.classList.remove('err'); slider.value = v; onUpdate();
+  });
+  inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) { const c = Math.max(min, Math.min(max, v)); inp.value = c.toFixed(decimals); inp.classList.remove('err'); slider.value = c; onUpdate(); }
+  });
+  sync();
+}
+
+linkSliderInput('sG',    'iG',    1, update, 5, 40);
+linkSliderInput('sP1dB', 'iP1dB', 1, update, 10, 55);
+linkSliderInput('sPop',  'iPop',  1, update, 0, 55);
+linkSliderInput('sVdd',  'iVdd',  1, update, 1, 50);
+linkSliderInput('sPAPR', 'iPAPR', 1, update, 0, 15);
 
 initCharts();
 update();
@@ -486,7 +540,7 @@ update();
   if(p.has('vdd'))  document.getElementById('sVdd').value=p.get('vdd');
   if(p.has('papr')) document.getElementById('sPAPR').value=p.get('papr');
   if(p.has('cls'))  { paClass=p.get('cls'); setClass(paClass); }
-  if([...p.keys()].length>0) update();
+  if([...p.keys()].length>0) { update(); syncAll12(); }
 })();
 </script>
 </body>
