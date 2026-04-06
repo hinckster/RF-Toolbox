@@ -116,11 +116,6 @@ table.whatif tr:last-child td { border-bottom: none; }
 /* ── Hidden file input ── */
 #importInput { display: none; }
 
-/* ── Swap row ── */
-.swap-row { max-width: 1200px; margin: 0 auto .5rem; padding: 0 1.5rem; display: flex; gap: .5rem; align-items: center; }
-.swap-row span { font-size: .73rem; color: var(--muted); margin-right: .25rem; }
-.swap-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: .28rem .65rem; font-size: .78rem; cursor: pointer; transition: .15s; }
-.swap-btn:hover { border-color: var(--accent2); color: var(--accent2); }
 
 .help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
 .help-overlay.open{display:flex}
@@ -237,15 +232,6 @@ table.whatif tr:last-child td { border-bottom: none; }
     </thead>
     <tbody id="stageTbody"></tbody>
   </table>
-</div>
-
-<!-- Swap row -->
-<div class="swap-row">
-  <span>Quick swap:</span>
-  <button class="swap-btn" onclick="swapStages(0,1)">1 ↔ 2</button>
-  <button class="swap-btn" onclick="swapStages(1,2)">2 ↔ 3</button>
-  <button class="swap-btn" onclick="swapStages(2,3)">3 ↔ 4</button>
-  <button class="swap-btn" onclick="swapStages(3,4)">4 ↔ 5</button>
 </div>
 
 <!-- Charts -->
@@ -709,12 +695,6 @@ function toggleTeqMode() {
   btn.style.color = teqMode ? 'var(--accent2)' : '';
   var th = document.getElementById('thNF');
   if (th) th.textContent = teqMode ? 'Teq (K)' : 'NF (dB)';
-  refresh();
-}
-
-function swapStages(i, j) {
-  if (i < 0 || j >= stages.length || i >= stages.length || j < 0) return;
-  var tmp = stages[i]; stages[i] = stages[j]; stages[j] = tmp;
   refresh();
 }
 
