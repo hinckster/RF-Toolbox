@@ -8,10 +8,10 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#16181d;--card:#1e2128;--deep:#0d1117;
-  --bdr:#30363d;--t1:#e6edf3;--t2:#c9d1d9;--tm:#8b949e;
-  --blue:#58a6ff;--grn:#3fb950;--org:#f0883e;--red:#f85149;--yel:#e6c547;--pur:#bc8cff;
-  --cyan:#00c8ff;
+  --bg:#ffffff;--card:#f4f5f7;--deep:#eaecef;
+  --bdr:#d0d4da;--t1:#1a1d23;--t2:#4a5568;--tm:#718096;
+  --blue:#2563eb;--grn:#16a34a;--org:#d97706;--red:#dc2626;--yel:#e6c547;--pur:#7c3aed;
+  --cyan:#0284c7;
 }
 body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
 
@@ -47,24 +47,24 @@ header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 
 .sr{margin-bottom:.9rem}
 .sr label{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem}
-.sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600}
-input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
+.sr label span{color:#b5895a;font-family:'Courier New',monospace;font-weight:600}
+input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 .hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
 .sr-row{display:flex;align-items:center;gap:6px}
 .sr-row input[type=range]{flex:1;width:auto;min-width:0}
-.si{width:72px;background:#0d1117;border:1px solid var(--bdr);border-radius:4px;color:var(--blue);font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;text-align:right;transition:border-color .15s;-moz-appearance:textfield;appearance:textfield}
+.si{width:72px;background:var(--deep);border:1px solid var(--bdr);border-radius:4px;color:#b5895a;font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;text-align:right;transition:border-color .15s;-moz-appearance:textfield;appearance:textfield}
 .si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.si:focus{outline:none;border-color:var(--blue)}
+.si:focus{outline:none;border-color:#b5895a}
 .si.err{border-color:var(--red);color:var(--red)}
 .si-unit{font-size:.75rem;color:var(--tm);white-space:nowrap}
 
 .mod-checks{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.9rem}
 .mod-check{display:flex;align-items:center;gap:.5rem;font-size:.83rem;cursor:pointer}
-.mod-check input{accent-color:var(--blue);width:14px;height:14px}
+.mod-check input{accent-color:#b5895a;width:14px;height:14px}
 .mod-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 
 .ber-target-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.9rem;font-size:.85rem}
-.ber-target-row input{background:var(--deep);border:1px solid var(--bdr);color:var(--blue);border-radius:5px;padding:.28rem .45rem;font-size:.82rem;font-family:'Courier New',monospace;width:80px}
+.ber-target-row input{background:var(--deep);border:1px solid var(--bdr);color:#b5895a;border-radius:5px;padding:.28rem .45rem;font-size:.82rem;font-family:'Courier New',monospace;width:80px}
 
 .results-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:.5rem}
 .results-table th{font-size:.67rem;color:var(--tm);text-transform:uppercase;letter-spacing:.7px;padding:.3rem .4rem;border-bottom:1px solid var(--bdr);text-align:left}
@@ -152,7 +152,7 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
       <h3 style="margin-bottom:.6rem">Target BER</h3>
       <div class="ber-target-row">
         <span>BER =</span>
-        <select id="selBERtarget" style="background:var(--deep);border:1px solid var(--bdr);color:var(--blue);border-radius:5px;padding:.28rem .45rem;font-size:.82rem">
+        <select id="selBERtarget" style="background:var(--deep);border:1px solid var(--bdr);color:#b5895a;border-radius:5px;padding:.28rem .45rem;font-size:.82rem">
           <option value="-3">10⁻³</option>
           <option value="-4">10⁻⁴</option>
           <option value="-5">10⁻⁵</option>
@@ -267,12 +267,12 @@ function initCharts() {
     data:{datasets:[]},
     options:{
       animation:{duration:0},responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+      plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:12}}},
       scales:{
-        x:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Eb/N0 (dB)'},min:-5,max:35},
-        y:{type:'logarithmic',grid:{color:'#252830'},
-          ticks:{color:'#8b949e',callback:v=>{const e=Math.round(Math.log10(v));return e<0?'10^'+e:''}},
-          title:{display:true,color:'#8b949e',text:'Bit Error Rate (BER)'},min:1e-12,max:1}
+        x:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Eb/N0 (dB)'},min:-5,max:35},
+        y:{type:'logarithmic',grid:{color:'#e2e5ea'},
+          ticks:{color:'#718096',callback:v=>{const e=Math.round(Math.log10(v));return e<0?'10^'+e:''}},
+          title:{display:true,color:'#718096',text:'Bit Error Rate (BER)'},min:1e-12,max:1}
       }
     }
   });
@@ -285,8 +285,8 @@ function initCharts() {
       animation:{duration:0},responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false}},
       scales:{
-        x:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Required Eb/N0 (dB)'}},
-        y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Spectral Efficiency (bits/s/Hz)'},min:0,max:9}
+        x:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Required Eb/N0 (dB)'}},
+        y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Spectral Efficiency (bits/s/Hz)'},min:0,max:9}
       }
     }
   });
