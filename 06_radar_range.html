@@ -47,6 +47,15 @@ header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 .sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
 input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 .hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
+.sr-row{display:flex;align-items:center;gap:6px}
+.sr-row input[type=range]{flex:1;width:auto;min-width:0}
+.si{width:72px;background:#0d1117;border:1px solid var(--bdr);border-radius:4px;color:var(--blue);font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;text-align:right;transition:border-color .15s;-moz-appearance:textfield;appearance:textfield}
+.si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.si:focus{outline:none;border-color:var(--blue)}
+.si.err{border-color:var(--red);color:var(--red)}
+.si-unit{font-size:.75rem;color:var(--tm);white-space:nowrap}
+.si-unit.tog{cursor:pointer;user-select:none}
+.si-unit.tog:hover{color:var(--blue);text-decoration:underline}
 
 .metrics{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.9rem}
 .mc{background:var(--deep);border:1px solid var(--bdr);border-radius:6px;padding:.6rem .8rem}
@@ -135,33 +144,57 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
       </div>
       <a href="#" onclick="sendToLinkBudget(); return false;" style="display:block;text-align:right;color:#58a6ff;font-size:.75rem;text-decoration:none;margin-top:.2rem;margin-bottom:.6rem">→ Open in Link Budget</a>
       <div class="sr">
-        <label>Tx Power P<sub>t</sub> <span id="vPt">1000 W</span></label>
-        <input type="range" id="sPt" min="0" max="4" step="0.05" value="3">
+        <label>Tx Power P<sub>t</sub> <span id="vPt" style="display:none">1000 W</span></label>
+        <div class="sr-row">
+          <input type="range" id="sPt" min="0" max="4" step="0.05" value="3">
+          <input type="number" class="si" id="iPt" value="1000">
+          <span class="si-unit tog" id="uPt" onclick="togglePtUnit()">W</span>
+        </div>
         <div class="hints"><span>1 W</span><span>10 kW</span></div>
       </div>
       <div class="sr">
-        <label>Antenna Gain G<sub>t</sub>=G<sub>r</sub> <span id="vGt">35.0 dBi</span></label>
-        <input type="range" id="sGt" min="0" max="50" step="0.5" value="35">
+        <label>Antenna Gain G<sub>t</sub>=G<sub>r</sub> <span id="vGt" style="display:none">35.0 dBi</span></label>
+        <div class="sr-row">
+          <input type="range" id="sGt" min="0" max="50" step="0.5" value="35">
+          <input type="number" class="si" id="iGt" value="35.0">
+          <span class="si-unit">dBi</span>
+        </div>
         <div class="hints"><span>0 dBi</span><span>50 dBi</span></div>
       </div>
       <div class="sr">
-        <label>Frequency f <span id="vF">9.5 GHz</span></label>
-        <input type="range" id="sF" min="0.1" max="100" step="0.1" value="9.5">
+        <label>Frequency f <span id="vF" style="display:none">9.5 GHz</span></label>
+        <div class="sr-row">
+          <input type="range" id="sF" min="0.1" max="100" step="0.1" value="9.5">
+          <input type="number" class="si" id="iF" value="9.500">
+          <span class="si-unit tog" id="uF" onclick="toggleFUnit()">GHz</span>
+        </div>
         <div class="hints"><span>0.1 GHz</span><span>100 GHz</span></div>
       </div>
       <div class="sr">
-        <label>Target RCS σ <span id="vRCS">0 dBsm</span></label>
-        <input type="range" id="sRCS" min="-30" max="40" step="0.5" value="0">
+        <label>Target RCS σ <span id="vRCS" style="display:none">0 dBsm</span></label>
+        <div class="sr-row">
+          <input type="range" id="sRCS" min="-30" max="40" step="0.5" value="0">
+          <input type="number" class="si" id="iRCS" value="0.0">
+          <span class="si-unit">dBsm</span>
+        </div>
         <div class="hints"><span>−30 dBsm</span><span>+40 dBsm</span></div>
       </div>
       <div class="sr">
-        <label>System Loss L <span id="vL">3.0 dB</span></label>
-        <input type="range" id="sL" min="0" max="20" step="0.25" value="3">
+        <label>System Loss L <span id="vL" style="display:none">3.0 dB</span></label>
+        <div class="sr-row">
+          <input type="range" id="sL" min="0" max="20" step="0.25" value="3">
+          <input type="number" class="si" id="iL" value="3.00">
+          <span class="si-unit">dB</span>
+        </div>
         <div class="hints"><span>0 dB</span><span>20 dB</span></div>
       </div>
       <div class="sr">
-        <label>S_min (sensitivity) <span id="vSmin">-100 dBm</span></label>
-        <input type="range" id="sSmin" min="-130" max="-60" step="0.5" value="-100">
+        <label>S_min (sensitivity) <span id="vSmin" style="display:none">-100 dBm</span></label>
+        <div class="sr-row">
+          <input type="range" id="sSmin" min="-130" max="-60" step="0.5" value="-100">
+          <input type="number" class="si" id="iSmin" value="-100.0">
+          <span class="si-unit">dBm</span>
+        </div>
         <div class="hints"><span>−130 dBm</span><span>−60 dBm</span></div>
       </div>
     </div>
@@ -169,13 +202,21 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
     <div class="panel" style="margin-bottom:1rem">
       <h3>Pulse Compression</h3>
       <div class="sr">
-        <label>Pulse width τ <span id="vTau">1.0 μs</span></label>
-        <input type="range" id="sTau" min="0.01" max="100" step="0.01" value="1">
+        <label>Pulse width τ <span id="vTau" style="display:none">1.0 μs</span></label>
+        <div class="sr-row">
+          <input type="range" id="sTau" min="0.01" max="100" step="0.01" value="1">
+          <input type="number" class="si" id="iTau" value="1.00">
+          <span class="si-unit">μs</span>
+        </div>
         <div class="hints"><span>10 ns</span><span>100 μs</span></div>
       </div>
       <div class="sr">
-        <label>Chirp BW <span id="vBWpc">10 MHz</span></label>
-        <input type="range" id="sBWpc" min="0.1" max="1000" step="0.5" value="10">
+        <label>Chirp BW <span id="vBWpc" style="display:none">10 MHz</span></label>
+        <div class="sr-row">
+          <input type="range" id="sBWpc" min="0.1" max="1000" step="0.5" value="10">
+          <input type="number" class="si" id="iBWpc" value="10.0">
+          <span class="si-unit">MHz</span>
+        </div>
         <div class="hints"><span>0.1 MHz</span><span>1 GHz</span></div>
       </div>
     </div>
@@ -372,10 +413,92 @@ function update(){
     'Long range — comparable to long-range surveillance or weather radar.'}`;
 }
 
-[document.getElementById('sPt'),document.getElementById('sGt'),document.getElementById('sF'),
- document.getElementById('sRCS'),document.getElementById('sL'),document.getElementById('sSmin'),
- document.getElementById('sTau'),document.getElementById('sBWpc')
-].forEach(s=>s.addEventListener('input',update));
+// ── Slider ↔ text-input wiring ──
+function linkSliderInput(sliderId, inputId, decimals, onUpdate, min, max) {
+  const slider = document.getElementById(sliderId);
+  const inp = document.getElementById(inputId);
+  function sync() { inp.value = (+slider.value).toFixed(decimals); inp.classList.remove('err'); }
+  slider.addEventListener('input', () => { sync(); onUpdate(); });
+  inp.addEventListener('input', () => {
+    const v = parseFloat(inp.value);
+    if (isNaN(v) || v < min || v > max) { inp.classList.add('err'); return; }
+    inp.classList.remove('err'); slider.value = v; onUpdate();
+  });
+  inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) { const c = Math.max(min, Math.min(max, v)); inp.value = c.toFixed(decimals); inp.classList.remove('err'); slider.value = c; onUpdate(); }
+  });
+  sync();
+}
+
+// Tx Power W/kW toggle (slider = log10(W), range 0-4)
+let ptUnit = 'W';
+function syncPtInput() {
+  const w = Math.pow(10, +document.getElementById('sPt').value);
+  const inp = document.getElementById('iPt');
+  inp.value = ptUnit === 'W' ? w.toFixed(0) : (w / 1000).toFixed(3);
+  inp.classList.remove('err');
+}
+function togglePtUnit() {
+  ptUnit = ptUnit === 'W' ? 'kW' : 'W';
+  document.getElementById('uPt').textContent = ptUnit;
+  syncPtInput();
+}
+document.getElementById('sPt').addEventListener('input', () => { syncPtInput(); update(); });
+document.getElementById('iPt').addEventListener('input', () => {
+  const raw = parseFloat(document.getElementById('iPt').value);
+  const inp = document.getElementById('iPt');
+  if (isNaN(raw) || raw <= 0) { inp.classList.add('err'); return; }
+  const w = ptUnit === 'W' ? raw : raw * 1000;
+  if (w < 1 || w > 10000) { inp.classList.add('err'); return; }
+  inp.classList.remove('err'); document.getElementById('sPt').value = Math.log10(w); update();
+});
+document.getElementById('iPt').addEventListener('change', () => {
+  const raw = parseFloat(document.getElementById('iPt').value);
+  if (!isNaN(raw) && raw > 0) {
+    const w = Math.max(1, Math.min(10000, ptUnit === 'W' ? raw : raw * 1000));
+    document.getElementById('sPt').value = Math.log10(w); syncPtInput(); update();
+  }
+});
+
+// Frequency unit toggle (slider native = GHz)
+let fUnit = 'GHz';
+function syncFInput() {
+  const v = +document.getElementById('sF').value;
+  const inp = document.getElementById('iF');
+  inp.value = fUnit === 'GHz' ? v.toFixed(3) : (v * 1000).toFixed(0);
+  inp.classList.remove('err');
+}
+function toggleFUnit() {
+  fUnit = fUnit === 'GHz' ? 'MHz' : 'GHz';
+  document.getElementById('uF').textContent = fUnit;
+  syncFInput();
+}
+document.getElementById('sF').addEventListener('input', () => { syncFInput(); update(); });
+document.getElementById('iF').addEventListener('input', () => {
+  const raw = parseFloat(document.getElementById('iF').value);
+  const inp = document.getElementById('iF');
+  if (isNaN(raw)) { inp.classList.add('err'); return; }
+  const ghz = fUnit === 'GHz' ? raw : raw / 1000;
+  if (ghz < 0.1 || ghz > 100) { inp.classList.add('err'); return; }
+  inp.classList.remove('err'); document.getElementById('sF').value = ghz; update();
+});
+document.getElementById('iF').addEventListener('change', () => {
+  const raw = parseFloat(document.getElementById('iF').value);
+  if (!isNaN(raw)) {
+    const ghz = Math.max(0.1, Math.min(100, fUnit === 'GHz' ? raw : raw / 1000));
+    document.getElementById('sF').value = ghz; syncFInput(); update();
+  }
+});
+
+linkSliderInput('sGt',   'iGt',   1, update, 0, 50);
+linkSliderInput('sRCS',  'iRCS',  1, update, -30, 40);
+linkSliderInput('sL',    'iL',    2, update, 0, 20);
+linkSliderInput('sSmin', 'iSmin', 1, update, -130, -60);
+linkSliderInput('sTau',  'iTau',  2, update, 0.01, 100);
+linkSliderInput('sBWpc', 'iBWpc', 1, update, 0.1, 1000);
+syncPtInput();
+syncFInput();
 
 function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#8b949e';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`radar_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
 function exportCSV() {
@@ -486,7 +609,16 @@ update();
   if (p.has('rcs'))  document.getElementById('sRCS').value  = p.get('rcs');
   if (p.has('loss')) document.getElementById('sL').value    = p.get('loss');
   if (p.has('smin')) document.getElementById('sSmin').value = p.get('smin');
-  if ([...p.keys()].length > 0) update();
+  if ([...p.keys()].length > 0) {
+    update();
+    syncPtInput(); syncFInput();
+    document.getElementById('iGt').value   = (+document.getElementById('sGt').value).toFixed(1);
+    document.getElementById('iRCS').value  = (+document.getElementById('sRCS').value).toFixed(1);
+    document.getElementById('iL').value    = (+document.getElementById('sL').value).toFixed(2);
+    document.getElementById('iSmin').value = (+document.getElementById('sSmin').value).toFixed(1);
+    document.getElementById('iTau').value  = (+document.getElementById('sTau').value).toFixed(2);
+    document.getElementById('iBWpc').value = (+document.getElementById('sBWpc').value).toFixed(1);
+  }
 })();
 </script>
 </body>
