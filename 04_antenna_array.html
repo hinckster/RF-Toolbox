@@ -84,11 +84,20 @@ select.sel{width:100%;background:var(--deep);border:1px solid var(--bdr);color:v
 .preset-select{width:100%;background:var(--deep);border:1px solid var(--bdr);color:var(--t2);border-radius:6px;padding:6px 8px;font-size:.78rem;font-family:'Segoe UI',system-ui,sans-serif;cursor:pointer}
 .preset-select:focus{outline:none;border-color:#b5895a}
 .preset-select option{background:var(--deep)}
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.help-overlay.open{display:flex}
+.help-box{background:#fff;border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;max-height:80vh;overflow-y:auto}
+.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+.help-try li::marker{color:#b5895a}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
   <button class="tbtn" onclick="takeScreenshot('Antenna Array Factor')">📷 Screenshot</button>
   <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
@@ -613,6 +622,55 @@ update();
     document.getElementById('iTheta').value = (+document.getElementById('sTheta').value).toFixed(0);
   }
 })();
+
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 </script>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">ULA Array Factor — Help</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Computes the normalized far-field pattern of a Uniform Linear Array (ULA) using the Array Factor formula AF(θ) = Σ aₙ · e^(jnψ), where ψ = kd·sinθ + β (Balanis Eq. 6-10). The total radiated pattern is the product of the element pattern (isotropic, cosine, or patch cos²θ) and the AF — the pattern multiplication principle. Directivity is approximated as D ≈ 2Nd/λ for broadside ULAs with isotropic elements.</div>
+
+    <div class="help-section">Sliders &amp; inputs</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Elements N</strong> — number of array elements (2–64). More elements narrow the main beam and increase directivity by ~3 dB per doubling.</li>
+        <li><strong>Spacing d/λ</strong> — element spacing normalized to wavelength (0.1λ–2.0λ). Half-wavelength (0.5λ) is the standard; exceeding 1/(1+|sinθ₀|) causes grating lobes.</li>
+        <li><strong>Steer angle θ₀</strong> — progressive phase shift β = −kd·sinθ₀ steers the main beam from −60° to +60° off broadside.</li>
+        <li><strong>Element Pattern</strong> — isotropic (unity), cosine |cosθ|, or patch cos²θ. Non-isotropic patterns suppress end-fire lobes via pattern multiplication.</li>
+        <li><strong>Amplitude Taper (Array A)</strong> — windowing function applied to element weights: Uniform (−13 dB SLL, narrowest beam), Hamming (−43 dB SLL), Hann (−31 dB SLL), Chebyshev equiripple (−40 dB SLL), or Taylor −35 dB.</li>
+        <li><strong>Array B controls</strong> — independent element count, spacing, and taper for the dashed-purple comparison overlay.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">How to read the chart</div>
+    <div class="help-body">The Cartesian view plots normalized pattern magnitude in dB (−60 to 0 dB) vs. angle θ from −90° to +90°. The solid blue line is Array A; the dashed purple line is Array B. Vertical dashed red lines mark grating lobe positions where d/λ causes additional main-beam-strength lobes at arcsin(sinθ₀ ± mλ/d). The Polar tab renders the same data on a 360° radar chart with 0 dB at the rim and −60 dB at center.</div>
+
+    <div class="help-section">Key results</div>
+    <div class="help-body">
+      <ul>
+        <li><strong>Directivity</strong> — approximated as 10·log₁₀(2Nd/λ) dBi, valid for broadside ULA with isotropic elements.</li>
+        <li><strong>HPBW</strong> — half-power beamwidth (−3 dB points) of the main lobe in degrees; narrows as N·d grows.</li>
+        <li><strong>1st SLL</strong> — peak sidelobe level in dBc relative to main beam peak; determined by taper window.</li>
+        <li><strong>Grating Lobes</strong> — lists angles (degrees) where full-strength grating lobes appear, or "None" if d/λ is small enough to prevent them.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">Things to try</div>
+    <ul class="help-try">
+      <li>Set N=16, d/λ=0.5, steer to 30° — watch grating lobes appear at the red dashed lines as you increase d/λ past 0.87λ (the grating-lobe threshold at 30° scan).</li>
+      <li>Compare Array A (Uniform) vs. Array B (Hamming) with N=32 — observe the 30 dB SLL reduction at the cost of ~1.5× beam broadening.</li>
+      <li>Switch element pattern from Isotropic to Patch (cos²θ) with large steer angle — note how the element pattern suppresses sidelobes near ±90° that the AF would otherwise show.</li>
+    </ul>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">C. A. Balanis, <em>Antenna Theory: Analysis and Design</em>, 4th ed. Hoboken, NJ: Wiley, 2016, Ch. 6 (Arrays) and Ch. 7 (Planar Arrays).</div>
+  </div>
+</div>
 </body>
 </html>
