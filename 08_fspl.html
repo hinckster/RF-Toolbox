@@ -8,9 +8,9 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#16181d;--card:#1e2128;--deep:#0d1117;
-  --bdr:#30363d;--t1:#e6edf3;--t2:#c9d1d9;--tm:#8b949e;
-  --blue:#58a6ff;--grn:#3fb950;--org:#f0883e;--red:#f85149;--yel:#e6c547;--pur:#bc8cff;
+  --bg:#ffffff;--card:#f4f5f7;--deep:#eaecef;
+  --bdr:#d0d4da;--t1:#1a1d23;--t2:#4a5568;--tm:#718096;
+  --blue:#2563eb;--grn:#16a34a;--org:#d97706;--red:#dc2626;--yel:#e6c547;--pur:#7c3aed;
 }
 body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
 
@@ -46,18 +46,18 @@ header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 
 .sr{margin-bottom:.9rem}
 .sr label{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem}
-.sr label span{color:var(--blue);font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
-input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
+.sr label span{color:#b5895a;font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
+input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 .hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
 .sr-row{display:flex;align-items:center;gap:6px}
 .sr-row input[type=range]{flex:1;width:auto;min-width:0}
-.si{width:72px;background:#0d1117;border:1px solid var(--bdr);border-radius:4px;color:var(--blue);font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;text-align:right;transition:border-color .15s;-moz-appearance:textfield;appearance:textfield}
+.si{width:72px;background:var(--deep);border:1px solid var(--bdr);border-radius:4px;color:#b5895a;font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;text-align:right;transition:border-color .15s;-moz-appearance:textfield;appearance:textfield}
 .si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.si:focus{outline:none;border-color:var(--blue)}
+.si:focus{outline:none;border-color:#b5895a}
 .si.err{border-color:var(--red);color:var(--red)}
 .si-unit{font-size:.75rem;color:var(--tm);white-space:nowrap}
 .si-unit.tog{cursor:pointer;user-select:none}
-.si-unit.tog:hover{color:var(--blue);text-decoration:underline}
+.si-unit.tog:hover{color:#b5895a;text-decoration:underline}
 
 .band-grid{display:grid;grid-template-columns:1fr;gap:.4rem;margin-bottom:.9rem}
 .band-row{display:flex;align-items:center;gap:.5rem;padding:.3rem .5rem;border-radius:6px;background:var(--deep);border:1px solid var(--bdr)}
@@ -86,9 +86,9 @@ input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 .ovl-btn.on{border-color:var(--org);color:var(--org);background:rgba(240,136,62,.1)}
 .preset-row{margin-bottom:1rem}
 .preset-row label{font-size:.76rem;color:#8b949e;display:block;margin-bottom:.3rem}
-.preset-select{width:100%;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;border-radius:6px;padding:6px 8px;font-size:.78rem;font-family:'Segoe UI',system-ui,sans-serif;cursor:pointer}
-.preset-select:focus{outline:none;border-color:#58a6ff}
-.preset-select option{background:#0d1117}
+.preset-select{width:100%;background:var(--deep);border:1px solid var(--bdr);color:var(--t2);border-radius:6px;padding:6px 8px;font-size:.78rem;font-family:'Segoe UI',system-ui,sans-serif;cursor:pointer}
+.preset-select:focus{outline:none;border-color:#b5895a}
+.preset-select option{background:var(--deep)}
 </style>
 </head>
 <body>
@@ -279,10 +279,10 @@ const chartFSPL=new Chart(ctxFSPL,{
   data:{datasets:[]},
   options:{
     animation:{duration:0},responsive:true,
-    plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+    plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:12}}},
     scales:{
-      x:{type:'logarithmic',grid:{color:'#252830'},ticks:{color:'#8b949e',maxTicksLimit:8},title:{display:true,color:'#8b949e',text:'Distance (km)'}},
-      y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Total Path Loss (dB)'}}
+      x:{type:'logarithmic',grid:{color:'#e2e5ea'},ticks:{color:'#718096',maxTicksLimit:8},title:{display:true,color:'#718096',text:'Distance (km)'}},
+      y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Total Path Loss (dB)'}}
     }
   }
 });
@@ -295,10 +295,10 @@ const chartAtm=new Chart(ctxAtm,{
   ]},
   options:{
     animation:{duration:0},responsive:true,
-    plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},
+    plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:12}}},
     scales:{
-      x:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Frequency band'}},
-      y:{grid:{color:'#252830'},ticks:{color:'#8b949e'},title:{display:true,color:'#8b949e',text:'Additional Loss at d (dB)'},stacked:true}
+      x:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Frequency band'}},
+      y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Additional Loss at d (dB)'},stacked:true}
     }
   }
 });
@@ -475,7 +475,7 @@ linkSliderInput('sRain', 'iRain', 0, update, 1, 100);
 syncDmaxInput();
 syncDInput();
 
-function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#8b949e';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`path_loss_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
+function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#718096';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`path_loss_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
 function exportCSV() {
   var g = function(id){ var el = document.getElementById(id); return el ? el.textContent.trim() : ''; };
   var dmax_km = Math.pow(10, parseFloat(document.getElementById('sDmax').value));
