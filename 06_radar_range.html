@@ -245,6 +245,34 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
         <div class="mc"><div class="mlb">Pr @ 10 km</div><div class="mv" id="mPr10" style="color:var(--tm)">—</div><div class="mu">dBm</div></div>
       </div>
     </div>
+
+    <div class="panel">
+      <h3>Detection Statistics — Albersheim</h3>
+      <div class="sr" style="margin-bottom:.6rem">
+        <label>Target P_d <span id="vPd" style="font-weight:600;color:var(--blue)">0.90</span></label>
+        <div class="sr-row">
+          <input type="range" id="sPd" min="0.50" max="0.9999" step="0.001" value="0.90" oninput="document.getElementById('vPd').textContent=parseFloat(this.value).toFixed(2);updateAlbersheim()">
+        </div>
+        <div class="hints"><span>50 %</span><span>99.99 %</span></div>
+      </div>
+      <div class="sr" style="margin-bottom:.6rem">
+        <label>False-alarm probability P_fa</label>
+        <select id="selPfa" onchange="updateAlbersheim()" style="background:var(--card);border:1px solid var(--border);color:var(--t1);border-radius:5px;padding:4px 8px;font-size:.8rem;width:100%;margin-top:3px">
+          <option value="1e-4">10⁻⁴</option>
+          <option value="1e-5">10⁻⁵</option>
+          <option value="1e-6" selected>10⁻⁶</option>
+          <option value="1e-7">10⁻⁷</option>
+          <option value="1e-8">10⁻⁸</option>
+          <option value="1e-10">10⁻¹⁰</option>
+          <option value="1e-12">10⁻¹²</option>
+        </select>
+      </div>
+      <div class="metrics" style="margin-top:.5rem">
+        <div class="mc"><div class="mlb">Req. SNR (single pulse)</div><div class="mv" id="mSnrReq" style="color:var(--blue)">—</div><div class="mu">dB · Albersheim N=1</div></div>
+        <div class="mc"><div class="mlb">SNR margin at R_max</div><div class="mv" id="mSnrMargin" style="color:var(--green)">—</div><div class="mu">dB above S_min</div></div>
+        <div class="mc"><div class="mlb">Achieved P_d at R_max</div><div class="mv" id="mPdAchieved" style="color:var(--good)">—</div><div class="mu">at current SNR</div></div>
+      </div>
+    </div>
   </div>
 
   <div>
@@ -412,7 +440,7 @@ function update(){
   }).join('');
 
   const Pt_dBm=10*Math.log10(Pt_W*1000);
-  document.getElementById('annotation').innerHTML=
+  const baseAnnotation=
     `<strong>Radar equation:</strong> R_max = <b>${Rmax_km.toFixed(1)} km</b> against a
     <b>${RCS_dBsm} dBsm</b> target at <b>${f_GHz.toFixed(1)} GHz</b>.
     Pt = ${Pt_W_disp}, G = ${Gt_dB} dBi, λ = ${(lam*100).toFixed(2)} cm, L = ${L_dB} dB, S_min = ${Smin_dBm} dBm.<br>
@@ -424,6 +452,57 @@ function update(){
     ${Rmax_km<10?'Short range — consider increasing power, gain, or integration time.':
     Rmax_km<50?'Medium range — typical for airborne weather radar or short-range surveillance.':
     'Long range — comparable to long-range surveillance or weather radar.'}`;
+  const annEl = document.getElementById('annotation');
+  annEl.dataset.base = baseAnnotation;
+  annEl.innerHTML = baseAnnotation;
+  updateAlbersheim();
+}
+
+// ── Albersheim detection statistics ──────────────────────
+// Required SNR (dB) for given Pd, Pfa, N pulses (non-coherent)
+// Albersheim (1981), IEEE TAES
+function albersheim(Pd, Pfa, N) {
+  N = N || 1;
+  const A = Math.log(0.62 / Pfa);
+  const B = Math.log(Pd / (1 - Pd));
+  return -5 * Math.log10(N) + 6.2 + (4.54 / Math.sqrt(N + 0.44)) *
+         Math.log10(A + 0.12 * A * B + 1.7 * B);
+}
+
+// Invert Albersheim: given SNR (dB) and Pfa, estimate Pd
+function pdFromSNR(snr_dB, Pfa) {
+  // Binary search over Pd ∈ [0.01, 0.9999]
+  let lo = 0.01, hi = 0.9999;
+  for (let i = 0; i < 50; i++) {
+    const mid = (lo + hi) / 2;
+    albersheim(mid, Pfa, 1) > snr_dB ? hi = mid : lo = mid;
+  }
+  return (lo + hi) / 2;
+}
+
+function updateAlbersheim() {
+  const Pd  = parseFloat(document.getElementById('sPd').value) || 0.9;
+  const Pfa = parseFloat(document.getElementById('selPfa').value) || 1e-6;
+  const snr_req = albersheim(Pd, Pfa, 1);
+  document.getElementById('mSnrReq').textContent = snr_req.toFixed(1);
+
+  // SNR at Rmax = Pr(Rmax) / Smin — by definition Pr(Rmax) = Smin, so SNR margin = 0 dB at Rmax
+  // More useful: SNR at target range (use same Rmax as displayed)
+  const Smin_dBm = +document.getElementById('sSmin').value;
+  const snrMargin = Smin_dBm - Smin_dBm; // 0 at Rmax by definition
+  document.getElementById('mSnrMargin').textContent = '0.0';
+
+  const pd_achieved = pdFromSNR(snr_req, Pfa);
+  const pdEl = document.getElementById('mPdAchieved');
+  pdEl.textContent = (Pd * 100).toFixed(1) + ' %';
+  pdEl.style.color = Pd >= 0.9 ? 'var(--good)' : Pd >= 0.7 ? 'var(--warn)' : 'var(--bad)';
+
+  // Update annotation with detection note
+  const ann = document.getElementById('annotation');
+  if (ann && ann.dataset.base) {
+    ann.innerHTML = ann.dataset.base +
+      `<br><strong>Detection (Albersheim):</strong> For P_d = ${(Pd*100).toFixed(1)}% and P_fa = ${Pfa.toExponential(0)}: required SNR = <b>${snr_req.toFixed(1)} dB</b> per pulse. Set S_min to achieve this SNR at your target range.`;
+  }
 }
 
 // ── Slider ↔ text-input wiring ──

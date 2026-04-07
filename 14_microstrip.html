@@ -151,11 +151,11 @@
     <div class="preset-row">
       <label>Substrate presets</label>
       <div class="presets">
-        <button class="pbtn" onclick="loadSubstrate(4.5,  0.800,'FR4')">FR4</button>
-        <button class="pbtn" onclick="loadSubstrate(3.55, 0.508,'RO4003C')">RO4003C</button>
-        <button class="pbtn" onclick="loadSubstrate(2.2,  0.787,'RT5880')">RT/duroid 5880</button>
-        <button class="pbtn" onclick="loadSubstrate(9.9,  0.635,'Alumina')">Alumina</button>
-        <button class="pbtn" onclick="loadSubstrate(1.0,  1.000,'Air')">Air</button>
+        <button class="pbtn" onclick="loadSubstrate(4.5,  0.800, 0.020, 'FR4')">FR4</button>
+        <button class="pbtn" onclick="loadSubstrate(3.55, 0.508, 0.0027,'RO4003C')">RO4003C</button>
+        <button class="pbtn" onclick="loadSubstrate(2.2,  0.787, 0.0009,'RT5880')">RT/duroid 5880</button>
+        <button class="pbtn" onclick="loadSubstrate(9.9,  0.635, 0.0003,'Alumina')">Alumina</button>
+        <button class="pbtn" onclick="loadSubstrate(1.0,  1.000, 0.0,   'Air')">Air</button>
       </div>
     </div>
 
@@ -195,6 +195,17 @@
         <span class="si-unit">mm</span>
       </div>
       <div class="hints"><span>½ oz Cu</span><span>7 oz Cu</span></div>
+    </div>
+
+    <div class="slider-row">
+      <label>tan δ — loss tangent<span id="v-tand">0.0200</span></label>
+      <div class="sr-row">
+        <input type="range" id="sl-tand" min="0" max="0.05" step="0.0001" value="0.02"
+               oninput="syncSI('sl-tand','si-tand',4);update()">
+        <input type="number" class="si" id="si-tand" value="0.0200" min="0" max="0.05" step="0.0001"
+               oninput="syncSlider('si-tand','sl-tand');update()">
+      </div>
+      <div class="hints"><span>0 (lossless)</span><span>0.05</span></div>
     </div>
 
     <hr class="divider">
@@ -276,6 +287,21 @@
         <div class="mlabel">λ_g / 4</div>
         <div class="mval v-green" id="m-qw">—</div>
         <div class="munit">mm (quarter-wave stub)</div>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel">α_c — conductor loss</div>
+        <div class="mval v-orange" id="m-ac">—</div>
+        <div class="munit">dB / 100 mm</div>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel">α_d — dielectric loss</div>
+        <div class="mval v-orange" id="m-ad">—</div>
+        <div class="munit">dB / 100 mm</div>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel">Total loss</div>
+        <div class="mval" id="m-atot" style="color:var(--red)">—</div>
+        <div class="munit">dB / 100 mm (α_c + α_d)</div>
       </div>
     </div>
 
@@ -364,15 +390,16 @@ function setMode(m) {
 }
 
 // ── Substrate presets ────────────────────────────────────
-function loadSubstrate(er, H) {
+function loadSubstrate(er, H, tand) {
   const set = (sl, si, v, dec) => {
     document.getElementById(sl).value = v;
     document.getElementById(si).value = v.toFixed(dec);
     const sp = document.getElementById(sl.replace('sl-', 'v-'));
     if (sp) sp.textContent = v.toFixed(dec);
   };
-  set('sl-er', 'si-er', er, 2);
-  set('sl-H',  'si-H',  H,  3);
+  set('sl-er',   'si-er',   er,   2);
+  set('sl-H',    'si-H',    H,    3);
+  set('sl-tand', 'si-tand', tand, 4);
   update();
 }
 
@@ -423,10 +450,36 @@ function analyze(W, H, T, er) {
   return mode === 'ms' ? calcMS(W, H, er) : calcSL(W, H, T, er);
 }
 
+// ── Loss calculations ────────────────────────────────────
+// Conductor loss for microstrip (Wheeler 1977, dB/m)
+// α_c = 8.686 × Rs / (2 × Z0 × W_eff)
+function conductorLoss_ms(Z0, W_mm, H_mm, T_mm, f_GHz) {
+  const mu0 = 4 * Math.PI * 1e-7;
+  const sigma_cu = 5.8e7;                                    // copper S/m
+  const Rs = Math.sqrt(Math.PI * f_GHz * 1e9 * mu0 / sigma_cu); // Ω/sq
+  const W = W_mm * 1e-3;
+  const H = H_mm * 1e-3;
+  const T = Math.max(T_mm, 0.001) * 1e-3;
+  // Effective width (Schneider conductor-thickness correction)
+  const dW = (T / Math.PI) * (1 + Math.log(2 * H / T));
+  const W_eff = W + dW;
+  return 8.686 * Rs / (2 * Z0 * W_eff);                     // dB/m
+}
+
+// Dielectric loss for microstrip (Pozar eq. 3.199, dB/m)
+function dielectricLoss_ms(er, er_eff, f_GHz, tand) {
+  const c = 3e8;
+  // α_d = (k₀ * er * (er_eff - 1) * tan_δ) / (2 * √er_eff * (er - 1)) Np/m
+  const k0 = 2 * Math.PI * f_GHz * 1e9 / c;
+  const alpha_Npm = k0 * er * (er_eff - 1) * tand / (2 * Math.sqrt(er_eff) * (er - 1));
+  return alpha_Npm * 8.686; // dB/m
+}
+
 // ── Main update ─────────────────────────────────────────
 function update() {
   const er = gv('si-er'), H = gv('si-H'), T = gv('si-T'),
         W  = gv('si-W'),  f = gv('si-f');
+  const tand = parseFloat(document.getElementById('si-tand').value) || 0;
   if (!er || !H || !W || !f) return;
 
   const { Z0, er_eff, u } = analyze(W, H, T, er);
@@ -440,6 +493,17 @@ function update() {
   document.getElementById('m-lam').textContent = lam_mm.toFixed(2);
   document.getElementById('m-qw').textContent  = (lam_mm / 4).toFixed(2);
 
+  // Insertion loss (microstrip only; stripline uses same conductor formula)
+  const ac_dBm = conductorLoss_ms(Z0, W, H, T, f); // same formula for ms and stripline approx
+  const ad_dBm = er > 1.01
+    ? dielectricLoss_ms(er, er_eff, f, tand)
+    : 0;
+  const at_dBm = ac_dBm + ad_dBm;
+  // Display in dB/100mm (engineers size traces in mm)
+  document.getElementById('m-ac').textContent   = (ac_dBm * 0.1).toFixed(4);
+  document.getElementById('m-ad').textContent   = (ad_dBm * 0.1).toFixed(4);
+  document.getElementById('m-atot').textContent = (at_dBm * 0.1).toFixed(4);
+
   const qual = Z0 < 30
     ? 'low-impedance line — wide trace, high current capacity; monitor surface-wave onset at mmWave'
     : Z0 > 120
@@ -449,6 +513,8 @@ function update() {
     `<strong>Z₀ = ${Z0.toFixed(2)} Ω</strong>, ε_eff = <strong>${er_eff.toFixed(3)}</strong>, W/${mode==='ms'?'H':'B'} = <strong>${u.toFixed(3)}</strong>. ` +
     `Phase velocity v_p = c/√ε_eff = <strong>${(vp_ratio*100).toFixed(2)}% of c</strong>. ` +
     `At ${f.toFixed(1)} GHz: λ_g = <strong>${lam_mm.toFixed(2)} mm</strong>, λ/4 = <strong>${(lam_mm/4).toFixed(2)} mm</strong>. ` +
+    `Insertion loss: α_c = <strong>${(ac_dBm*0.1).toFixed(4)} dB/100mm</strong>` +
+    (tand > 0 ? `, α_d = <strong>${(ad_dBm*0.1).toFixed(4)} dB/100mm</strong>, total = <strong>${(at_dBm*0.1).toFixed(4)} dB/100mm</strong>` : ' (lossless substrate)') + `. ` +
     `This is a ${qual}.`;
 
   updateChart(er, H, T, W, u, Z0);

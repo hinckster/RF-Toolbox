@@ -177,6 +177,11 @@
       <input type="number" id="iZ0" value="50" min="1" max="400" step="1">
       <span style="color:var(--muted)">Ω</span>
     </div>
+    <div class="z0-row" style="margin-top:.45rem">
+      <label>f =</label>
+      <input type="number" id="iFreq" value="1.0" min="0.01" max="100" step="0.1" oninput="update()" style="width:70px">
+      <span style="color:var(--muted)">GHz &nbsp;<span style="font-size:.72rem">(for L/C values)</span></span>
+    </div>
 
     <div class="slider-row">
       <label>Resistance R <span id="lR" style="display:none">75 Ω</span></label>
@@ -223,6 +228,20 @@
     <h3>L-Match Network Synthesis</h3>
     <div style="font-size:.76rem;color:var(--muted);margin-bottom:.6rem">Both solutions (±Q) with circuit diagrams</div>
     <div id="lMatchBox"></div>
+
+    <hr class="divider">
+    <h3>Pi / T Network Synthesis</h3>
+    <div style="font-size:.76rem;color:var(--muted);margin-bottom:.55rem">Q-controlled 3-element matching. Q must be ≥ Q<sub>min</sub> = √(R<sub>max</sub>/R<sub>min</sub>−1).</div>
+    <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;flex-wrap:wrap">
+      <label style="font-size:.78rem;color:var(--muted);white-space:nowrap">Design Q</label>
+      <input type="range" id="slQ" min="0.1" max="20" step="0.05" value="3"
+             oninput="document.getElementById('vQ').textContent=parseFloat(this.value).toFixed(2);update()"
+             style="flex:1;min-width:80px;accent-color:#b5895a">
+      <span id="vQ" style="font-family:'Courier New',monospace;font-size:.82rem;color:#b5895a;min-width:2.5rem">3.00</span>
+      <span id="qMinNote" style="font-size:.72rem;color:var(--muted)"></span>
+    </div>
+    <div id="piNetBox"></div>
+    <div id="tNetBox"></div>
 
     <hr class="divider">
     <h3>Quick Presets</h3>
@@ -388,6 +407,188 @@ function makeLNetSVG(serComp, shComp, serLabel, shLabel, shAtLoad) {
 }
 function _fmtX(v) { return (v>=0?'+j':'−j') + Math.abs(v).toFixed(1) + 'Ω'; }
 
+// ── 3-element SVG helpers ─────────────────────────────────
+// Pi-net: Z0─[sh1]─[ser]─[sh2]─ZL  (shunts hang to GND)
+function makePiNetSVG(sh1C, serC, sh2C, sh1L, serL, sh2L) {
+  const W=260, H=108, wy=34;
+  const w=(x1,y1,x2,y2)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="currentColor" stroke-width="1.5"/>`;
+  const dot=(x,y)=>`<circle cx="${x}" cy="${y}" r="2.5" fill="currentColor"/>`;
+  const lbl=(x,y,s,c,a)=>`<text x="${x}" y="${y}" font-size="8" font-family="Courier New,monospace" fill="${c}" text-anchor="${a}">${s}</text>`;
+  const mut='#718096', acc='#b5895a', pur='#7c3aed';
+  const j1x=52, j2x=208; // junction x positions
+  const sx=j1x+6; // series element start
+  let p=[];
+  p.push(lbl(2,wy+4,'Z₀',mut,'start'));
+  p.push(w(18,wy,j1x,wy), dot(j1x,wy));
+  // series element (middle)
+  p.push(w(j1x,wy,sx,wy), serC==='L'?_svgIndH(sx,wy):_svgCapH(sx,wy), w(sx+36+6,wy,j2x,wy));
+  p.push(dot(j2x,wy), w(j2x,wy,248,wy));
+  p.push(lbl(250,wy+4,'Z_L',acc,'start'));
+  // shunt 1 (left)
+  p.push(w(j1x,wy+2,j1x,wy+14), sh1C==='L'?_svgIndV(j1x,wy+14):_svgCapV(j1x,wy+14));
+  p.push(w(j1x,wy+50,j1x,wy+58), _svgGnd(j1x,wy+58));
+  // shunt 2 (right)
+  p.push(w(j2x,wy+2,j2x,wy+14), sh2C==='L'?_svgIndV(j2x,wy+14):_svgCapV(j2x,wy+14));
+  p.push(w(j2x,wy+50,j2x,wy+58), _svgGnd(j2x,wy+58));
+  // labels
+  p.push(lbl(j1x-14,wy+32,sh1L,pur,'middle'));
+  p.push(lbl(j1x+sx/2+22,14,serL,pur,'middle'));
+  p.push(lbl(j2x+14,wy+32,sh2L,pur,'start'));
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;color:#1a1d23">${p.join('')}</svg>`;
+}
+
+// T-net: Z0─[ser1]─┬─[ser2]─ZL  (shunt hangs from middle node)
+function makeTNetSVG(ser1C, shC, ser2C, ser1L, shL, ser2L) {
+  const W=260, H=108, wy=34;
+  const w=(x1,y1,x2,y2)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="currentColor" stroke-width="1.5"/>`;
+  const dot=(x,y)=>`<circle cx="${x}" cy="${y}" r="2.5" fill="currentColor"/>`;
+  const lbl=(x,y,s,c,a)=>`<text x="${x}" y="${y}" font-size="8" font-family="Courier New,monospace" fill="${c}" text-anchor="${a}">${s}</text>`;
+  const mut='#718096', acc='#b5895a', pur='#7c3aed';
+  const jx=130; // middle junction
+  let p=[];
+  p.push(lbl(2,wy+4,'Z₀',mut,'start'));
+  // series 1 (left)
+  p.push(w(18,wy,22,wy), ser1C==='L'?_svgIndH(22,wy):_svgCapH(22,wy), w(58,wy,jx,wy));
+  p.push(dot(jx,wy));
+  // series 2 (right)
+  p.push(w(jx,wy,jx+6,wy), ser2C==='L'?_svgIndH(jx+6,wy):_svgCapH(jx+6,wy), w(jx+42,wy,248,wy));
+  p.push(lbl(250,wy+4,'Z_L',acc,'start'));
+  // shunt (middle)
+  p.push(w(jx,wy+2,jx,wy+14), shC==='L'?_svgIndV(jx,wy+14):_svgCapV(jx,wy+14));
+  p.push(w(jx,wy+50,jx,wy+58), _svgGnd(jx,wy+58));
+  // labels
+  p.push(lbl(40,14,ser1L,pur,'middle'));
+  p.push(lbl(jx+14,wy+32,shL,pur,'start'));
+  p.push(lbl(jx+24,14,ser2L,pur,'middle'));
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;color:#1a1d23">${p.join('')}</svg>`;
+}
+
+function _fmtLC(X_ohm, f_GHz) {
+  if (!f_GHz || f_GHz <= 0 || !isFinite(X_ohm)) return '';
+  const w = 2 * Math.PI * f_GHz * 1e9;
+  if (X_ohm > 0) { // inductor
+    const L_nH = X_ohm / w * 1e9;
+    return ` (${L_nH.toFixed(2)} nH)`;
+  } else { // capacitor
+    const C_pF = -1 / (w * X_ohm) * 1e12;
+    return ` (${C_pF.toFixed(2)} pF)`;
+  }
+}
+
+// Pi-network synthesis (both solutions: CLC and LCL)
+function synthPiNet(Rs, Rl, Q_design, f_GHz) {
+  const R_h = Math.max(Rs, Rl), R_l = Math.min(Rs, Rl);
+  const Q_min = Math.sqrt(R_h / R_l - 1);
+  const piBox = document.getElementById('piNetBox');
+  document.getElementById('qMinNote').textContent = `Q_min = ${Q_min.toFixed(2)}`;
+  if (Q_design < Q_min - 0.01) {
+    piBox.innerHTML = `<div class="lm-note" style="color:var(--red)">Pi-net: Q = ${Q_design.toFixed(2)} &lt; Q_min = ${Q_min.toFixed(2)} — increase Q slider.</div>`;
+    return;
+  }
+  const Q = Math.max(Q_design, Q_min);
+  const Rv = R_h / (1 + Q * Q);
+  const Qr = Math.sqrt(R_l / Rv - 1);
+
+  // CLC: shunt-C (R_h side), series-L, shunt-C (R_l side)
+  const X_sh_h_C  = -R_h / Q;           // cap (negative)
+  const X_ser_L   = +Rv * (Q + Qr);     // inductor (positive)
+  const X_sh_l_C  = -R_l / Qr;          // cap (negative)
+
+  // LCL: shunt-L (R_h side), series-C, shunt-L (R_l side)
+  const X_sh_h_L  = +R_h / Q;           // inductor (positive)
+  const X_ser_C   = -Rv * (Q + Qr);     // cap (negative)
+  const X_sh_l_L  = +R_l / Qr;          // inductor (positive)
+
+  // Orient: which shunt is at Z0, which at ZL?
+  const sh_Z0_CLC = Rs >= Rl ? X_sh_h_C : X_sh_l_C;
+  const sh_ZL_CLC = Rs >= Rl ? X_sh_l_C : X_sh_h_C;
+  const sh_Z0_LCL = Rs >= Rl ? X_sh_h_L : X_sh_l_L;
+  const sh_ZL_LCL = Rs >= Rl ? X_sh_l_L : X_sh_h_L;
+
+  const fmtV = (x) => _fmtX(x) + _fmtLC(x, f_GHz);
+
+  piBox.innerHTML = `<div class="lm-wrap">
+    <div class="lm-sol">
+      <div class="lm-hdr a">Pi CLC &nbsp;·&nbsp; Q = ${Q.toFixed(2)}</div>
+      <div class="lm-body">
+        ${makePiNetSVG('C','L','C', _fmtX(sh_Z0_CLC), _fmtX(X_ser_L), _fmtX(sh_ZL_CLC))}
+        <div class="lm-vals">
+          <span>Sh Z₀: ${fmtV(sh_Z0_CLC)}</span>
+          <span>Series: ${fmtV(X_ser_L)}</span>
+          <span>Sh Z_L: ${fmtV(sh_ZL_CLC)}</span>
+        </div>
+      </div>
+    </div>
+    <div class="lm-sol">
+      <div class="lm-hdr b">Pi LCL &nbsp;·&nbsp; Q = ${Q.toFixed(2)}</div>
+      <div class="lm-body">
+        ${makePiNetSVG('L','C','L', _fmtX(sh_Z0_LCL), _fmtX(X_ser_C), _fmtX(sh_ZL_LCL))}
+        <div class="lm-vals">
+          <span>Sh Z₀: ${fmtV(sh_Z0_LCL)}</span>
+          <span>Series: ${fmtV(X_ser_C)}</span>
+          <span>Sh Z_L: ${fmtV(sh_ZL_LCL)}</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// T-network synthesis (LCL and CLC solutions)
+function synthTNet(Rs, Rl, Q_design, f_GHz) {
+  const R_h = Math.max(Rs, Rl), R_l = Math.min(Rs, Rl);
+  const Q_min = Math.sqrt(R_h / R_l - 1);
+  const tBox = document.getElementById('tNetBox');
+  if (Q_design < Q_min - 0.01) {
+    tBox.innerHTML = `<div class="lm-note" style="color:var(--red)">T-net: Q &lt; Q_min — increase Q slider.</div>`;
+    return;
+  }
+  const Q = Math.max(Q_design, Q_min);
+  const Rv = R_l * (1 + Q * Q);         // virtual R > R_h
+  const Qh = Math.sqrt(Rv / R_h - 1);
+
+  // Determine which port is R_l and which is R_h
+  const Q_src  = Rs <= Rl ? Q  : Qh;    // Q on source side
+  const Q_load = Rs <= Rl ? Qh : Q;     // Q on load side
+  const R_src  = Rs, R_ld = Rl;
+
+  // LCL: series-L (src), shunt-C (mid), series-L (load)
+  const X_ser1_L  = + Q_src  * R_src;
+  const X_sh_C    = -(Rv / (Q_src <= Q_load ? (Q + Qh) : (Qh + Q)));
+  const X_ser2_L  = + Q_load * R_ld;
+
+  // CLC: series-C (src), shunt-L (mid), series-C (load)
+  const X_ser1_C  = -Q_src  * R_src;
+  const X_sh_L    = -X_sh_C;            // flip sign
+  const X_ser2_C  = -Q_load * R_ld;
+
+  const fmtV = (x) => _fmtX(x) + _fmtLC(x, f_GHz);
+
+  tBox.innerHTML = `<div class="lm-wrap" style="margin-top:.4rem">
+    <div class="lm-sol">
+      <div class="lm-hdr a">T  LCL &nbsp;·&nbsp; Q = ${Q.toFixed(2)}</div>
+      <div class="lm-body">
+        ${makeTNetSVG('L','C','L', _fmtX(X_ser1_L), _fmtX(X_sh_C), _fmtX(X_ser2_L))}
+        <div class="lm-vals">
+          <span>Ser₁: ${fmtV(X_ser1_L)}</span>
+          <span>Shunt: ${fmtV(X_sh_C)}</span>
+          <span>Ser₂: ${fmtV(X_ser2_L)}</span>
+        </div>
+      </div>
+    </div>
+    <div class="lm-sol">
+      <div class="lm-hdr b">T  CLC &nbsp;·&nbsp; Q = ${Q.toFixed(2)}</div>
+      <div class="lm-body">
+        ${makeTNetSVG('C','L','C', _fmtX(X_ser1_C), _fmtX(X_sh_L), _fmtX(X_ser2_C))}
+        <div class="lm-vals">
+          <span>Ser₁: ${fmtV(X_ser1_C)}</span>
+          <span>Shunt: ${fmtV(X_sh_L)}</span>
+          <span>Ser₂: ${fmtV(X_ser2_C)}</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
 function update() {
   const Z0=get('iZ0'), R_=get('sR'), X_=get('sX');
   document.getElementById('lR').textContent = R_+' Ω';
@@ -479,6 +680,18 @@ function update() {
         </div>`;
     }
     lBox.innerHTML = `<div class="lm-wrap">${cancelNote}${solsHTML}</div>`;
+  }
+
+  // Pi / T synthesis
+  const Q_design = parseFloat(document.getElementById('slQ').value) || 3;
+  const f_GHz = parseFloat(document.getElementById('iFreq').value) || 1;
+  if (R_ > 0 && gmag > 0.02) {
+    synthPiNet(Z0, R_, Q_design, f_GHz);
+    synthTNet(Z0, R_, Q_design, f_GHz);
+  } else {
+    document.getElementById('piNetBox').innerHTML = '<div style="font-size:.78rem;color:var(--muted);padding:.3rem 0">R ≈ Z₀ or load ≈ matched — pi/T not needed.</div>';
+    document.getElementById('tNetBox').innerHTML = '';
+    document.getElementById('qMinNote').textContent = '';
   }
 
   drawSmith();

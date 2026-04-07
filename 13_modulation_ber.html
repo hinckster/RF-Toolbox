@@ -158,6 +158,18 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
       </div>
 
       <div class="panel-sep"></div>
+      <h3 style="margin-bottom:.5rem">FEC Coding Gain</h3>
+      <select id="selCoding" onchange="update()" style="background:var(--deep);border:1px solid var(--bdr);color:#b5895a;border-radius:5px;padding:.28rem .45rem;font-size:.82rem;width:100%;margin-bottom:.5rem">
+        <option value="0">Uncoded (0 dB)</option>
+        <option value="5.5">Conv. (K=7, rate 1/2) ≈ +5.5 dB</option>
+        <option value="7.0">Turbo code (rate 1/2) ≈ +7.0 dB</option>
+        <option value="8.0">LDPC (rate 1/2) ≈ +8.0 dB</option>
+        <option value="9.0">Polar (5G NR, rate 1/2) ≈ +9.0 dB</option>
+        <option value="6.0">Reed-Solomon (rate 7/8) ≈ +6.0 dB</option>
+      </select>
+      <div style="font-size:.73rem;color:var(--tm)">Coding gain shifts required Eb/N0 left by G_c dB.</div>
+
+      <div class="panel-sep"></div>
       <h3 style="margin-bottom:.6rem">Target BER</h3>
       <div class="ber-target-row">
         <span>BER =</span>
@@ -174,7 +186,7 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
       <div class="panel-sep"></div>
       <h3 style="margin-bottom:.5rem">Required Eb/N0 for Target BER</h3>
       <table class="results-table" id="resultsTable">
-        <thead><tr><th>Modulation</th><th>Eb/N0 req</th><th>SE (b/Hz)</th><th>BER @ op</th></tr></thead>
+        <thead><tr><th>Modulation</th><th>Uncoded req</th><th>Coded req</th><th>SE (b/Hz)</th><th>BER @ op</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -307,6 +319,7 @@ function update() {
   const EbN0_lin = Math.pow(10, EbN0_dB/10);
   const targetExp = +document.getElementById('selBERtarget').value;
   const targetBER = Math.pow(10, targetExp);
+  const codingGain_dB = parseFloat(document.getElementById('selCoding').value) || 0;
 
   document.getElementById('vEbN0').textContent = EbN0_dB.toFixed(1)+' dB';
 
@@ -342,6 +355,12 @@ function update() {
         pointRadius:5, borderWidth:0, fill:false, showLine:false
       });
     }
+  });
+
+  // Shannon minimum Eb/N0 limit (vertical line at -1.59 dB = absolute minimum)
+  berDatasets.push({
+    label:'Shannon limit (BPSK SE)', data:[{x:-1.59,y:1},{x:-1.59,y:1e-13}],
+    borderColor:'rgba(188,140,255,.55)',borderDash:[2,4],borderWidth:1.5,pointRadius:0,fill:false
   });
 
   // BER target horizontal line
@@ -385,9 +404,11 @@ function update() {
     const berOp = m.ber(EbN0_lin);
     const penalty = req !== null ? (req - shannonEbN0_dB(m.se)).toFixed(1) : '—';
     const tr = document.createElement('tr');
+    const reqCoded = req !== null ? (req - codingGain_dB).toFixed(1) + ' dB' : '—';
     tr.innerHTML = `
       <td style="color:${m.color}">${m.label}</td>
       <td>${req!==null?req.toFixed(1)+' dB':'—'}</td>
+      <td style="color:${codingGain_dB>0?'#3fb950':'var(--tm)'}">${reqCoded}</td>
       <td>${m.se}</td>
       <td>${berOp<1e-13?'<10⁻¹³':berOp.toExponential(1)}</td>`;
     tbody.appendChild(tr);
@@ -410,7 +431,8 @@ function update() {
     <b style="color:var(--red)">Above target BER:</b> ${failing.length?failing.join(', '):'none'}.<br>
     Shannon capacity at this SNR: <b>${shannonSE.toFixed(2)} bits/s/Hz</b>
     (theoretical maximum spectral efficiency; no practical modulation reaches this).
-    Shannon absolute minimum Eb/N0 = <b>−1.59 dB</b> (C/B → 0).<br>
+    Shannon absolute minimum Eb/N0 = <b>−1.59 dB</b> (C/B → 0). Purple vertical line marks this limit on the BER chart.<br>
+    ${codingGain_dB > 0 ? `<b style="color:#3fb950">FEC coding gain = ${codingGain_dB} dB</b> — coded required Eb/N0 = uncoded − ${codingGain_dB} dB. Brings all modulations closer to the Shannon limit.<br>` : ''}
     For target BER 10^${targetExp}: most efficient choice is <b style="color:${best.color}">${best.label}</b>
     (requires ${reqEbN0(best,targetBER)?.toFixed(1)} dB Eb/N0, SE = ${best.se} b/s/Hz).
     Higher-order QAM delivers more bits/s/Hz but needs more Eb/N0 — the fundamental modulation tradeoff.`;

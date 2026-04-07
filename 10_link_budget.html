@@ -513,6 +513,29 @@
     <div class="fspl-result" id="fspl-result-display">FSPL = — dB</div>
   </div>
 
+  <!-- DERIVED LOSS CALCULATORS -->
+  <div class="fspl-panel" id="derived-panel" style="flex-wrap:wrap;gap:14px;">
+    <div class="fpanel-title" style="flex-basis:100%;margin-bottom:0">Derived Loss Calculators <span style="font-weight:400;font-size:.78rem;color:var(--muted)">— values auto-fill the Rain &amp; Pointing rows above</span></div>
+
+    <!-- Rain -->
+    <div class="slider-group" style="min-width:220px;flex:1">
+      <div style="font-size:.73rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px">Rain Attenuation (ITU-R P.838)</div>
+      <div class="slider-label"><span>Rain rate</span><span class="slider-val" id="rain-rate-disp">5 mm/hr</span></div>
+      <input type="range" id="rain-rate-sl" min="0" max="100" step="1" value="5">
+      <div style="font-size:.73rem;color:var(--muted);margin-top:4px">Uses link frequency &amp; distance. 5 mm/hr = moderate, 50 mm/hr = heavy.</div>
+    </div>
+
+    <!-- Pointing -->
+    <div class="slider-group" style="min-width:220px;flex:1">
+      <div style="font-size:.73rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px">Pointing / Alignment Loss</div>
+      <div class="slider-label"><span>Pointing error</span><span class="slider-val" id="point-err-disp">0.0°</span></div>
+      <input type="range" id="point-err-sl" min="0" max="5" step="0.05" value="0">
+      <div class="slider-label" style="margin-top:6px"><span>Antenna HPBW</span><span class="slider-val" id="hpbw-disp">3.0°</span></div>
+      <input type="range" id="hpbw-sl" min="0.5" max="60" step="0.5" value="3">
+      <div style="font-size:.73rem;color:var(--muted);margin-top:4px">L = 12·(θ_err / θ_HPBW)² dB. 0° = perfectly bore-sighted.</div>
+    </div>
+  </div>
+
   <!-- BUDGET TABLE -->
   <div class="table-wrap">
     <table id="budget-table">
@@ -641,7 +664,9 @@ const rows = [
   { id: 'gt',   label: 'Tx Antenna Gain (Gt)',     value: 15,    unit: 'dBi', desc: 'Transmit antenna boresight gain',            type: 'add', editable: true  },
   { id: 'ltx',  label: 'Tx Cable/Connector Loss',  value: -1,    unit: 'dB',  desc: 'Coax and connector losses at transmitter',   type: 'sub', editable: true  },
   { id: 'fspl', label: 'Free-Space Path Loss',     value: 0,     unit: 'dB',  desc: 'FSPL — set via frequency & distance sliders', type: 'sub', editable: false },
-  { id: 'atm',  label: 'Atmospheric / Rain Loss',  value: -2,    unit: 'dB',  desc: 'Gaseous absorption, rain fade margin',       type: 'sub', editable: true  },
+  { id: 'atm',   label: 'Atmospheric Gas Loss',      value: -2,    unit: 'dB',  desc: 'O₂/H₂O absorption — relevant above 10 GHz', type: 'sub', editable: true  },
+  { id: 'rain',  label: 'Rain Attenuation',         value: 0,     unit: 'dB',  desc: 'ITU-R P.838 rain fade — set via calculator', type: 'sub', editable: true  },
+  { id: 'point', label: 'Pointing / Alignment Loss',value: 0,     unit: 'dB',  desc: 'Antenna misalignment — set via calculator',  type: 'sub', editable: true  },
   { id: 'gr',   label: 'Rx Antenna Gain (Gr)',     value: 15,    unit: 'dBi', desc: 'Receive antenna boresight gain',             type: 'add', editable: true  },
   { id: 'lrx',  label: 'Rx Cable/Connector Loss',  value: -1,    unit: 'dB',  desc: 'Coax and connector losses at receiver',      type: 'sub', editable: true  },
   { id: 'nf',   label: 'Noise Figure Margin (NF)', value: -5,    unit: 'dB',  desc: 'System noise figure and implementation loss', type: 'sub', editable: true  },
@@ -1000,6 +1025,14 @@ function recalc() {
     '<strong>' + freqGHz().toFixed(freqGHz() < 10 ? 3 : 2) + ' GHz</strong>. ' +
     'This is a <strong>' + qual + '</strong> margin. ' +
     'To gain 6 dB: double antenna gain on each end, halve distance, or double Pt.' +
+    (function(){
+      var rR = rows.find(function(r){return r.id==='rain';}),
+          pR = rows.find(function(r){return r.id==='point';});
+      var notes = [];
+      if (rR && rR.value !== 0) notes.push('Rain: <strong>' + rR.value.toFixed(1) + ' dB</strong>');
+      if (pR && pR.value !== 0) notes.push('Pointing: <strong>' + pR.value.toFixed(1) + ' dB</strong>');
+      return notes.length ? ' <span style="color:var(--orange)">(' + notes.join(', ') + ')</span>' : '';
+    })() +
     (lastPresetNote ? '<br><span style="color:#58a6ff;font-size:.82rem">Loaded: ' + lastPresetNote + '</span>' : '');
 
   // Chart
@@ -1016,11 +1049,13 @@ function buildChartData(pr, sensitivity, fspl) {
   const ptRow  = rows.find(r => r.id === 'pt');
   const gtRow  = rows.find(r => r.id === 'gt');
   const ltxRow = rows.find(r => r.id === 'ltx');
-  const atmRow = rows.find(r => r.id === 'atm');
-  const grRow  = rows.find(r => r.id === 'gr');
-  const lrxRow = rows.find(r => r.id === 'lrx');
-  const nfRow  = rows.find(r => r.id === 'nf');
-  const sensRow= rows.find(r => r.id === 'sens');
+  const atmRow   = rows.find(r => r.id === 'atm');
+  const rainRow  = rows.find(r => r.id === 'rain');
+  const pointRow = rows.find(r => r.id === 'point');
+  const grRow    = rows.find(r => r.id === 'gr');
+  const lrxRow   = rows.find(r => r.id === 'lrx');
+  const nfRow    = rows.find(r => r.id === 'nf');
+  const sensRow  = rows.find(r => r.id === 'sens');
 
   let cursor = 0;
 
@@ -1036,7 +1071,9 @@ function buildChartData(pr, sensitivity, fspl) {
   seg('Tx Ant. Gain', Math.abs(gtRow.value), true);
   seg('Tx Cable Loss', ltxRow.value, false);         // negative
   seg('FSPL', -fspl, false);                         // negative
-  seg('Atm. Loss', atmRow.value, false);             // negative
+  seg('Atm. Gas Loss', atmRow.value, false);
+  if (rainRow && rainRow.value !== 0)  seg('Rain Atten.', rainRow.value, false);
+  if (pointRow && pointRow.value !== 0) seg('Pointing Loss', pointRow.value, false);
   seg('Rx Ant. Gain', Math.abs(grRow.value), true);
   seg('Rx Cable Loss', lrxRow.value, false);         // negative
   seg('Noise Figure', nfRow.value, false);            // negative
@@ -1358,6 +1395,88 @@ function loadPreset(key) {
   lastPresetNote = p.note;
   recalc();
 }
+
+/* =========================================================
+   DERIVED LOSS CALCULATORS
+   ========================================================= */
+
+// ITU-R P.838-3 coefficients [f_GHz, k_H, alpha_H] (horizontal polarisation approx)
+const RAIN_TABLE = [
+  [1,  0.0000387, 0.912], [2,  0.000154, 0.963], [4, 0.000650, 1.121],
+  [6,  0.00175,   1.308], [8,  0.00454,  1.327], [10, 0.0101,  1.276],
+  [12, 0.0188,    1.217], [15, 0.0367,   1.154], [20, 0.0751,  1.099],
+  [25, 0.124,     1.061], [30, 0.187,    1.021], [40, 0.350,   0.939],
+  [50, 0.536,     0.873], [60, 0.707,    0.826], [80, 0.975,   0.769],
+  [100,1.06,      0.753]
+];
+
+function rainCoeffs(f_GHz) {
+  const t = RAIN_TABLE;
+  if (f_GHz <= t[0][0]) return [t[0][1], t[0][2]];
+  if (f_GHz >= t[t.length-1][0]) return [t[t.length-1][1], t[t.length-1][2]];
+  for (let i = 0; i < t.length - 1; i++) {
+    if (f_GHz >= t[i][0] && f_GHz <= t[i+1][0]) {
+      const frac = (Math.log10(f_GHz) - Math.log10(t[i][0])) /
+                   (Math.log10(t[i+1][0]) - Math.log10(t[i][0]));
+      const k = Math.pow(10, Math.log10(t[i][1]) + frac*(Math.log10(t[i+1][1])-Math.log10(t[i][1])));
+      const a = t[i][2] + frac*(t[i+1][2] - t[i][2]);
+      return [k, a];
+    }
+  }
+  return [t[t.length-1][1], t[t.length-1][2]];
+}
+
+function calcRainAtten() {
+  const R_mmhr = parseFloat(document.getElementById('rain-rate-sl').value) || 0;
+  document.getElementById('rain-rate-disp').textContent = R_mmhr + ' mm/hr';
+  if (R_mmhr === 0) {
+    setRowValue('rain', 0);
+    return;
+  }
+  const f = freqGHz();
+  const d = distKm();
+  const [k, alpha] = rainCoeffs(f);
+  const gamma_R = k * Math.pow(R_mmhr, alpha);           // dB/km
+  // Simplified effective path length (ITU-R P.530 horizontal reduction)
+  const d_eff = d / (1 + 0.0122 * d * gamma_R);          // rough effective path
+  const A = gamma_R * Math.min(d_eff, d);                 // dB
+  setRowValue('rain', -parseFloat(A.toFixed(2)));
+}
+
+function calcPointingLoss() {
+  const theta_err = parseFloat(document.getElementById('point-err-sl').value) || 0;
+  const theta_hpbw = parseFloat(document.getElementById('hpbw-sl').value) || 3;
+  document.getElementById('point-err-disp').textContent = theta_err.toFixed(1) + '°';
+  document.getElementById('hpbw-disp').textContent = theta_hpbw.toFixed(1) + '°';
+  const L = 12 * Math.pow(theta_err / theta_hpbw, 2);    // dB Gaussian approximation
+  setRowValue('point', -parseFloat(L.toFixed(2)));
+}
+
+function setRowValue(id, val) {
+  const row = rows.find(r => r.id === id);
+  if (!row) return;
+  row.value = val;
+  const inp = document.getElementById('inp-' + id);
+  if (inp) inp.value = val;
+  recalc();
+}
+
+// Wire up sliders
+['rain-rate-sl'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', calcRainAtten);
+});
+['point-err-sl','hpbw-sl'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', calcPointingLoss);
+});
+
+// Also recalculate rain when frequency/distance sliders move
+(function() {
+  var origFreq = document.getElementById('freq-slider').oninput;
+  document.getElementById('freq-slider').addEventListener('input', calcRainAtten);
+  document.getElementById('dist-slider').addEventListener('input', calcRainAtten);
+})();
 
 /* =========================================================
    INIT
