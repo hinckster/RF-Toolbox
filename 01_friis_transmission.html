@@ -210,6 +210,12 @@
       <div class="hints"><span>1 m</span><span>100 km</span></div>
     </div>
 
+    <div class="z0-row" style="margin-top:.5rem;margin-bottom:.8rem">
+      <label>T<sub>sys</sub> =</label>
+      <input type="number" id="iTsys" value="290" min="10" max="50000" step="10" oninput="update()" style="width:80px">
+      <span style="color:var(--muted);font-size:.8rem">K (Rx noise temp)</span>
+    </div>
+
     <div class="results">
       <div class="result-card">
         <div class="label">Received Power</div>
@@ -230,6 +236,16 @@
         <div class="label">Link Margin</div>
         <div class="value" id="rMargin">—</div>
         <div class="unit">dB vs −90 dBm</div>
+      </div>
+      <div class="result-card">
+        <div class="label">EIRP</div>
+        <div class="value" id="rEIRP" style="color:var(--orange)">—</div>
+        <div class="unit">dBm</div>
+      </div>
+      <div class="result-card">
+        <div class="label">G/T (Rx)</div>
+        <div class="value" id="rGT" style="color:var(--accent2)">—</div>
+        <div class="unit">dB/K</div>
       </div>
     </div>
   </div>
@@ -348,6 +364,12 @@ function updateResults() {
   document.getElementById('rLambda').textContent = (lambda * 1000).toFixed(1);
   document.getElementById('rMargin').textContent = margin.toFixed(1);
 
+  const eirp = v.Pt + v.Gt;
+  const Tsys = Math.max(10, parseFloat(document.getElementById('iTsys').value) || 290);
+  const gt = v.Gr - 10 * Math.log10(Tsys);
+  document.getElementById('rEIRP').textContent = eirp.toFixed(1);
+  document.getElementById('rGT').textContent   = gt.toFixed(2);
+
   // colour-code margin
   const mEl = document.getElementById('rMargin');
   mEl.style.color = margin > 20 ? 'var(--green)' : margin > 6 ? 'var(--orange)' : 'var(--red)';
@@ -362,12 +384,17 @@ function updateAnnotation(v, Pr, fspl, lambda, margin) {
     : margin > 0
       ? 'Margin is thin — try a higher-gain antenna or shorter hop.'
       : '<span style="color:#ff4d6d">Link is below sensitivity</span> — cut range, boost Pt, or add antenna gain.';
+  const eirpA = v.Pt + v.Gt;
+  const TsysA = Math.max(10, parseFloat(document.getElementById('iTsys').value) || 290);
+  const gtA   = v.Gr - 10 * Math.log10(TsysA);
   document.getElementById('annotation').innerHTML =
     `<strong>At ${formatDist(v.dM)}, ${formatFreq(v.fGHz)}:</strong> ` +
     `FSPL = <strong>${fspl.toFixed(1)} dB</strong>, ` +
     `Pr = <strong>${Pr.toFixed(1)} dBm</strong>, ` +
     `margin = <strong style="color:${mc}">${margin.toFixed(1)} dB</strong> above −90 dBm. ` +
-    `λ = ${(lambda*1000).toFixed(1)} mm. ${tip}`;
+    `λ = ${(lambda*1000).toFixed(1)} mm. ` +
+    `EIRP = <strong>${eirpA.toFixed(1)} dBm</strong> (Pt + Gt). ` +
+    `G/T = <strong>${gtA.toFixed(2)} dB/K</strong> (Gr − 10·log T<sub>sys</sub>). ${tip}`;
 }
 
 // Chart

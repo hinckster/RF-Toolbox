@@ -225,6 +225,8 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
         <div class="mc"><div class="ml">OIP3</div><div class="mv" id="mOIP3" style="color:var(--pur)">—</div><div class="mu">dBm</div></div>
         <div class="mc"><div class="ml">IIP3</div><div class="mv" id="mIIP3" style="color:var(--pur)">—</div><div class="mu">dBm</div></div>
         <div class="mc" style="grid-column:span 2"><div class="ml">Gain at operating point (with compression)</div><div class="mv" id="mGop">—</div><div class="mu">dB</div></div>
+        <div class="mc"><div class="ml">EVM (rms) at Pout</div><div class="mv" id="mEVM" style="color:var(--red)">—</div><div class="mu">%</div></div>
+        <div class="mc"><div class="ml">EVM at avg power</div><div class="mv" id="mEVMavg" style="color:var(--org)">—</div><div class="mu">%</div></div>
       </div>
     </div>
   </div>
@@ -240,6 +242,10 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
         <div class="chart-wrap"><canvas id="chartGain"></canvas></div>
       </div>
     </div>
+    <div style="border-top:1px solid var(--bdr);margin:.85rem 0"></div>
+    <h3 style="margin-bottom:.6rem">EVM vs Output Back-off — Modulation Quality</h3>
+    <div style="font-size:.75rem;color:var(--tm);margin-bottom:.5rem">3rd-order distortion model. EVM<sub>rms</sub> = √(2/3)·10<sup>(Pout−OIP3)/10</sup>·100%. EVM thresholds: LTE QPSK &lt;17.5%, 16-QAM &lt;12.5%, 64-QAM &lt;8%, 256-QAM &lt;3.5%.</div>
+    <div class="chart-wrap"><canvas id="chartEVM"></canvas></div>
     <div class="annotation" id="annotation">Computing…</div>
   </div>
 </div>
@@ -296,7 +302,7 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 
 <script>
 let paClass = 'A';
-let chartEta = null, chartGain = null;
+let chartEta = null, chartGain = null, chartEVM = null;
 
 function setClass(c) {
   paClass = c;
@@ -390,6 +396,25 @@ function initCharts() {
       }
     }
   });
+
+  const evmCtx = document.getElementById('chartEVM').getContext('2d');
+  chartEVM = new Chart(evmCtx, {
+    type: 'line',
+    data: { datasets: [
+      { label: 'EVM rms (%)', data: [], borderColor: '#dc2626', borderWidth: 2.5, pointRadius: 0, fill: false },
+      { label: '3GPP 64-QAM limit (8%)',  data: [], borderColor: '#7c3aed', borderWidth: 1.5, borderDash:[5,3], pointRadius: 0, fill: false },
+      { label: '3GPP 16-QAM limit (12.5%)', data: [], borderColor: '#d97706', borderWidth: 1.5, borderDash:[5,3], pointRadius: 0, fill: false },
+      { label: 'Operating point', data: [], borderColor: '#f0883e', backgroundColor: '#f0883e', pointRadius: 7, showLine: false },
+    ]},
+    options: {
+      animation:{duration:0},responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:12}}},
+      scales:{
+        x:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Output Back-off from P1dB (dB)'}},
+        y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096',callback:v=>v.toFixed(1)+'%'},title:{display:true,color:'#718096',text:'EVM rms (%)'},min:0}
+      }
+    }
+  });
 }
 
 function update() {
@@ -480,6 +505,24 @@ function update() {
   document.getElementById('mOIP3').textContent   = OIP3.toFixed(1);
   document.getElementById('mIIP3').textContent   = IIP3.toFixed(1);
   document.getElementById('mGop').textContent    = G_act.toFixed(2);
+
+  // EVM: 3rd-order model — EVM_rms(%) = √(2/3) × 10^((Pout-OIP3)/10) × 100
+  const evm_op  = Math.sqrt(2/3) * Math.pow(10, (popClamped - OIP3) / 10) * 100;
+  const evm_avg = Math.sqrt(2/3) * Math.pow(10, (Math.min(PopAvg_dBm, Psat_dBm) - OIP3) / 10) * 100;
+  document.getElementById('mEVM').textContent    = evm_op.toFixed(2);
+  document.getElementById('mEVMavg').textContent = evm_avg.toFixed(2);
+
+  // EVM vs back-off chart (x = back-off from P1dB, 0 to 20 dB)
+  const boRange = Array.from({length:150}, (_,i) => i * 20/149);
+  const evmLine = boRange.map(bo => ({ x: bo, y: Math.sqrt(2/3) * Math.pow(10, (P1dB_o - bo - OIP3)/10) * 100 }));
+  const opBO = Math.max(0, P1dB_o - popClamped);
+  chartEVM.data.datasets[0].data = evmLine;
+  chartEVM.data.datasets[1].data = [{x:0,y:8},{x:20,y:8}];
+  chartEVM.data.datasets[2].data = [{x:0,y:12.5},{x:20,y:12.5}];
+  chartEVM.data.datasets[3].data = [{x:opBO, y:evm_op}];
+  const evmMax = Math.min(50, Math.max(15, evmLine[0].y * 1.1));
+  chartEVM.options.scales.y.max = evmMax;
+  chartEVM.update();
 
   // Annotation
   const compNote = bo < 1 ? ' <b style="color:var(--red)">NEAR SATURATION — severe compression.</b>' :

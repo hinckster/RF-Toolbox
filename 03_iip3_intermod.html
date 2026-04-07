@@ -271,7 +271,10 @@ const interceptChart=new Chart(document.getElementById('chartIntercept').getCont
     {label:'IM3 asymptote',data:[],borderColor:'rgba(248,81,73,.3)',borderDash:[5,4],borderWidth:1.5,pointRadius:0,showLine:true,fill:false},
     {label:'IIP3/OIP3',data:[],borderColor:'#e6c547',backgroundColor:'#e6c547',pointRadius:7,showLine:false},
     {label:'P1dB point',data:[],borderColor:'#f0883e',backgroundColor:'#f0883e',pointStyle:'triangle',pointRadius:7,showLine:false},
-    {label:'Operating Pt',data:[],borderColor:'#3fb950',backgroundColor:'#3fb950',pointRadius:5,showLine:false}
+    {label:'Operating Pt',data:[],borderColor:'#3fb950',backgroundColor:'#3fb950',pointRadius:5,showLine:false},
+    {label:'IM2',data:[],borderColor:'#f0883e',borderWidth:2,pointRadius:0,showLine:true,fill:false},
+    {label:'IM2 asymptote',data:[],borderColor:'rgba(240,136,62,.3)',borderDash:[5,4],borderWidth:1.5,pointRadius:0,showLine:true,fill:false},
+    {label:'IIP2/OIP2',data:[],borderColor:'#f0883e',backgroundColor:'#f0883e',pointRadius:6,pointStyle:'rectRot',showLine:false}
   ]},
   options:{
     animation:{duration:0},responsive:true,
@@ -372,6 +375,12 @@ function update(){
   interceptChart.data.datasets[4].data=[{x:IIP3_dBm,y:OIP3_dBm}];
   interceptChart.data.datasets[5].data=[{x:P1dB_in,y:P1dB_in+Gain_dB-1}];
   interceptChart.data.datasets[6].data=[{x:Pin_dBm,y:fund_dBm}];
+  // IM2 on intercept diagram (only when a2 ≠ 0)
+  const OIP2_dBm = IIP2_dBm + Gain_dB;
+  const showIM2 = Math.abs(a2) > 1e-6;
+  interceptChart.data.datasets[7].data = showIM2 ? pinArr.map(p=>{const Av=dBmToV(p);const v=Math.abs(a2*Av*Av);return{x:p,y:v>1e-15?vTodBm(v):-200};}) : [];
+  interceptChart.data.datasets[8].data = showIM2 ? pinArr.map(p=>({x:p,y:2*p-IIP2_dBm+Gain_dB})) : [];
+  interceptChart.data.datasets[9].data = showIM2 ? [{x:IIP2_dBm,y:OIP2_dBm}] : [];
   interceptChart.options.scales.x.min=PinMin;
   interceptChart.options.scales.x.max=PinMax;
   interceptChart.update();

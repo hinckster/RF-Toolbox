@@ -184,6 +184,12 @@
       <span style="color:var(--muted)">&#937;</span>
     </div>
 
+    <div class="z0-row" style="margin-top:.5rem">
+      <label>f₀ =</label>
+      <input type="number" id="iF0" value="1.0" min="0.01" max="100" step="0.1" oninput="update()" style="width:70px">
+      <span style="color:var(--muted)">GHz</span>
+    </div>
+
     <div class="slider-row">
       <label>Line length <span id="lLen" style="display:none">0.50λ</span></label>
       <div class="sr-row">
@@ -219,6 +225,14 @@
     </div>
 
     <div class="annotation" id="annotation">Updating&#8230;</div>
+
+    <hr class="divider">
+    <div class="smith-inset-label">VSWR vs Frequency — Bandwidth Sweep</div>
+    <div style="font-size:.75rem;color:var(--muted);margin-bottom:.5rem">Reactive load model: inductive X&#8733;f, capacitive X&#8733;1/f. Set f&#8320; above to choose center frequency.</div>
+    <div class="chart-wrap">
+      <canvas id="vsfrCanvas"></canvas>
+    </div>
+    <div class="annotation" id="vsfrAnnotation">Updating&#8230;</div>
   </div>
 </div>
 
@@ -312,6 +326,119 @@ function buildStandingWaveData(R, X, Z0, lineLenLambda) {
     data.push(+mag.toFixed(6));
   }
   return { labels, data, gmag, phi };
+}
+
+// ── VSWR vs Frequency chart ───────────────────────────────────────────────────
+let vsfrChartInst = null;
+
+function initVSWRChart() {
+  const ctx = document.getElementById('vsfrCanvas').getContext('2d');
+  vsfrChartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: 'VSWR',
+          data: [],
+          borderColor: '#7c3aed',
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: false,
+          tension: 0.3
+        },
+        {
+          label: 'VSWR = 2:1 limit',
+          data: [],
+          borderColor: '#dc2626',
+          borderWidth: 1.5,
+          borderDash: [6, 3],
+          pointRadius: 0,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      animation: { duration: 0 },
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { labels: { color: '#718096', font: { size: 11 } } },
+        tooltip: {
+          backgroundColor: '#1e1e24', titleColor: '#e2e2e8',
+          bodyColor: '#718096', borderColor: '#e2e5ea', borderWidth: 1
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: '#e2e5ea' },
+          ticks: { color: '#718096', maxTicksLimit: 9 },
+          title: { display: true, text: 'Frequency (GHz)', color: '#718096', font: { size: 11 } }
+        },
+        y: {
+          grid: { color: '#e2e5ea' },
+          ticks: { color: '#718096' },
+          title: { display: true, text: 'VSWR', color: '#718096', font: { size: 11 } },
+          min: 1
+        }
+      }
+    }
+  });
+}
+
+function updateVSWRChart(R, X, Z0, f0_GHz) {
+  const N = 200;
+  const fMin = 0.5 * f0_GHz, fMax = 1.5 * f0_GHz;
+  const labels = [], vsData = [];
+
+  for (let i = 0; i <= N; i++) {
+    const f = fMin + (fMax - fMin) * i / N;
+    let Xf;
+    if (Math.abs(X) < 0.5) {
+      Xf = 0; // purely resistive — stays flat
+    } else if (X > 0) {
+      Xf = X * (f / f0_GHz); // inductive: X ∝ f
+    } else {
+      Xf = X * (f0_GHz / f); // capacitive: X ∝ 1/f
+    }
+    const { gr, gi } = gammaFromZ(R, Xf, Z0);
+    const gmag = Math.sqrt(gr * gr + gi * gi);
+    const vswr = gmag < 0.9999 ? (1 + gmag) / (1 - gmag) : 99;
+    labels.push(f.toFixed(4));
+    vsData.push(Math.min(+vswr.toFixed(4), 20));
+  }
+
+  vsfrChartInst.data.labels = labels;
+  vsfrChartInst.data.datasets[0].data = vsData;
+  vsfrChartInst.data.datasets[1].data = new Array(N + 1).fill(2);
+
+  const yMax = Math.min(20, Math.max(3, Math.ceil(Math.max(...vsData) * 1.15)));
+  vsfrChartInst.options.scales.y.max = yMax;
+  vsfrChartInst.update('none');
+
+  // Compute bandwidth where VSWR < 2:1
+  const inBand = vsData.filter(v => v < 2).length;
+  const bwFrac = inBand / (N + 1);
+  const bwGHz  = bwFrac * (fMax - fMin);
+  const bwPct  = (bwFrac * 100).toFixed(0);
+
+  // Find center-frequency VSWR (index closest to f0)
+  const centerIdx = Math.round(N / 2);
+  const vswr0 = vsData[centerIdx];
+
+  let bwStr;
+  if (Math.abs(X) < 0.5) {
+    bwStr = 'Purely resistive load — VSWR is flat across frequency.';
+  } else if (inBand === 0) {
+    bwStr = `VSWR > 2:1 across the entire ±50% sweep. Mismatch is broadband; consider matching network.`;
+  } else {
+    bwStr = `VSWR &lt; 2:1 bandwidth: <strong>${bwPct}%</strong> of center frequency (${bwGHz.toFixed(3)} GHz). ` +
+            `VSWR at f&#8320; = <strong>${vswr0.toFixed(2)}</strong>.`;
+  }
+
+  document.getElementById('vsfrAnnotation').innerHTML =
+    `<strong>Frequency sweep: ${fMin.toFixed(3)}&ndash;${fMax.toFixed(3)} GHz around f&#8320; = ${f0_GHz} GHz</strong> &mdash; ` + bwStr;
 }
 
 function initChart() {
@@ -536,8 +663,10 @@ function update() {
   setText('rVmaxPos', vmaxD.toFixed(3) + '\u03BB');
   setText('rZin',    zin  === Infinity ? '\u221E' : zin.toFixed(1));
 
-  // Chart
+  // Charts
   updateChart(R, X, Z0, lineLenLambda);
+  const f0_GHz = parseFloat(document.getElementById('iF0').value) || 1.0;
+  updateVSWRChart(R, X, Z0, f0_GHz);
 
   // Mini Smith chart
   drawSmithInset(gr, gi, gmag);
@@ -615,6 +744,7 @@ syncLenInput();
 document.getElementById('iZ0').addEventListener('input', update);
 
 initChart();
+initVSWRChart();
 update();
 
 // ── Toolbar ───────────────────────────────────────────────────────────────────

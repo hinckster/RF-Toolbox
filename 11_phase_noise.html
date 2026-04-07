@@ -228,6 +228,20 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
       </div>
     </div>
 
+    <div class="panel" style="margin-bottom:1rem">
+      <h3>Reciprocal Mixing</h3>
+      <div style="font-size:.76rem;color:var(--tm);margin-bottom:.6rem">Uses integration band: Δf_adj = f₁ (channel spacing), B_ch = f₂ (channel BW).</div>
+      <div class="sr" style="margin-bottom:.5rem">
+        <label>Interferer power P_int <span id="vPint">−30 dBm</span></label>
+        <input type="range" id="sPint" min="-100" max="0" step="1" value="-30" oninput="document.getElementById('vPint').textContent=this.value+' dBm';update()">
+        <div class="hints"><span>−100 dBm</span><span>0 dBm</span></div>
+      </div>
+      <div class="metrics">
+        <div class="mc"><div class="ml">RMP noise floor</div><div class="mv" id="mRMP" style="color:var(--red)">—</div><div class="mu">dBm</div></div>
+        <div class="mc"><div class="ml">Above thermal</div><div class="mv" id="mRMPdelta" style="color:var(--org)">—</div><div class="mu">dB</div></div>
+      </div>
+    </div>
+
     <div class="panel">
       <h3>Results</h3>
       <div class="metrics">
@@ -465,6 +479,16 @@ function update() {
   chart.data.datasets[0].data = dfs.map((df, i) => ({ x: df, y: pn[i] }));
   chart.data.datasets[1].data = intData;
 
+  // Reciprocal mixing penalty
+  const P_int = +document.getElementById('sPint').value;
+  const L_adj = leeson(fi1, f0, QL, Ps, F, fc); // phase noise at adjacent channel spacing
+  const rmp_floor = P_int + L_adj + 10 * Math.log10(fi2); // dBm
+  const thermal_floor = -174 + 10 * Math.log10(fi2) + F; // kTBF noise floor, dBm
+  const rmp_delta = rmp_floor - thermal_floor; // dB above thermal
+  document.getElementById('mRMP').textContent      = rmp_floor.toFixed(1);
+  document.getElementById('mRMPdelta').textContent = (rmp_delta > 0 ? '+' : '') + rmp_delta.toFixed(1);
+  document.getElementById('mRMPdelta').style.color = rmp_delta > 3 ? 'var(--red)' : rmp_delta > 0 ? 'var(--org)' : 'var(--grn)';
+
   // Annotation
   const qual = ipn_dBc < -60 ? 'Excellent' : ipn_dBc < -40 ? 'Good' : ipn_dBc < -20 ? 'Moderate' : 'Poor';
   const evm_pct = (phi_rms * 180 / Math.PI).toFixed(2);
@@ -473,7 +497,10 @@ function update() {
     Thermal noise floor: <b>${floor.toFixed(1)} dBc/Hz</b>. Leeson half-bandwidth: <b>${fmtHz(leeson_bw)}</b>
     (offsets inside this boundary see the 1/f² rise; outside is the flat floor).<br>
     Integrated phase noise (${fmtHz(fi1)}–${fmtHz(fi2)}): <b>${ipn_dBc.toFixed(1)} dBc</b> → φ_rms = <b>${phi_rms < 0.01 ? phi_rms.toExponential(2) : phi_rms.toFixed(4)} rad</b> → jitter = <b>${jitter_fs < 1 ? (jitter_s*1e18).toFixed(1)+' as' : jitter_fs.toFixed(1)+' fs'}</b> rms. ${qual} oscillator.<br>
-    Phase error ≈ <b>${evm_pct}°</b> rms — in a 16QAM system, EVM &lt; 3° is typically required for acceptable BER.
+    Phase error ≈ <b>${evm_pct}°</b> rms — in a 16QAM system, EVM &lt; 3° is typically required for acceptable BER.<br>
+    <strong>Reciprocal mixing (P_int = ${P_int} dBm, adj. offset = ${fmtHz(fi1)}, BW = ${fmtHz(fi2)}):</strong>
+    L(Δf) = <b>${L_adj.toFixed(1)} dBc/Hz</b> → RMP noise floor = <b>${rmp_floor.toFixed(1)} dBm</b>
+    (${rmp_delta > 0 ? '<span style="color:var(--red)">+' + rmp_delta.toFixed(1) + ' dB above thermal — phase noise is the sensitivity limit</span>' : rmp_delta.toFixed(1) + ' dB below thermal — noise figure dominates'}).
     ${fc > leeson_bw ? '<b style="color:var(--org)">Note: flicker corner exceeds Leeson BW — 1/f³ dominates much of the useful range. Reduce fc or increase Q.</b>' : ''}`;
 
   chart.update();

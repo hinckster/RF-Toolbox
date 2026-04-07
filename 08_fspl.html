@@ -223,6 +223,12 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
       <h3>Breakeven Summary</h3>
       <div style="font-size:.8rem;color:var(--tm);line-height:1.8" id="breakevenSummary">—</div>
     </div>
+
+    <div class="panel" style="margin-top:1rem">
+      <h3>1st Fresnel Zone Radius — at operating distance</h3>
+      <div style="font-size:.73rem;color:var(--tm);margin-bottom:.6rem">R₁ = ½·√(λ·d) at midpoint. Keep ≥60% clearance (0.6·R₁) to avoid diffraction loss.</div>
+      <div class="band-grid" id="fresnelGrid"></div>
+    </div>
   </div>
 
   <div>
@@ -404,6 +410,21 @@ function update(){
       <span class="band-name">${b.name}</span>
       <span class="band-freq">${b.f_MHz>=1000?(b.f_MHz/1000).toFixed(1)+'GHz':b.f_MHz+'MHz'}</span>
       <span class="band-fspl" style="color:${col}">${loss.toFixed(1)} dB</span>
+    </div>`;
+  }).join('');
+
+  // Fresnel zone radii
+  const fresnelGrid = document.getElementById('fresnelGrid');
+  fresnelGrid.innerHTML = BANDS.map(b => {
+    const lambda_m = C / (b.f_MHz * 1e6);
+    const R1_m = 0.5 * Math.sqrt(lambda_m * d_km * 1e3);
+    const clearance_m = 0.6 * R1_m;
+    const fmt = v => v >= 1 ? v.toFixed(1) + ' m' : (v * 100).toFixed(1) + ' cm';
+    return `<div class="band-row">
+      <div class="band-dot" style="background:${b.col}"></div>
+      <span class="band-name">${b.name}</span>
+      <span class="band-fspl" style="color:${b.col}">R₁ = ${fmt(R1_m)}</span>
+      <span class="band-freq" style="color:var(--tm)">min. clearance ${fmt(clearance_m)}</span>
     </div>`;
   }).join('');
 

@@ -294,6 +294,35 @@
       </div>
     </div>
 
+    <!-- Tolerance analysis -->
+    <div class="metrics" style="margin-top:.5rem" id="tol-section">
+      <div class="metric-card" style="grid-column:span 2;display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem">
+        <span style="font-size:.75rem;color:var(--muted)">Resistor tolerance:</span>
+        <select id="sel-tol" onchange="update()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:.78rem;cursor:pointer">
+          <option value="0.1">0.1% (precision)</option>
+          <option value="0.5">0.5%</option>
+          <option value="1" selected>1% (E96)</option>
+          <option value="2">2%</option>
+          <option value="5">5% (E24)</option>
+        </select>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel">Min atten (worst)</div>
+        <div class="mval" id="m-tol-min" style="color:var(--orange)">—</div>
+        <div class="munit">dB</div>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel">Max atten (worst)</div>
+        <div class="mval" id="m-tol-max" style="color:var(--orange)">—</div>
+        <div class="munit">dB</div>
+      </div>
+      <div class="metric-card" style="grid-column:span 2">
+        <div class="mlabel">Attenuation error spread (±)</div>
+        <div class="mval" id="m-tol-spread" style="color:var(--red)">—</div>
+        <div class="munit">dB peak-to-peak</div>
+      </div>
+    </div>
+
     <!-- Circuit diagram -->
     <div class="circuit-card">
       <h3 id="circuit-title">π-pad Circuit</h3>
@@ -525,6 +554,35 @@ function makePadSVG(topo, R1, R2, R3) {
   return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;height:auto;color:${col}">${p.join('')}</svg>`;
 }
 
+// ── Tolerance analysis ──────────────────────────────────
+function attenFromR(r1, r2, r3, Z0, m) {
+  // Returns insertion loss (dB) from resistor values for matched Z0 terminations
+  // Uses ABCD matrix → S21
+  let A, B, C, D;
+  if (m === 'pi') {
+    // R1/R3 = shunt, R2 = series
+    A = 1 + r2/r3; B = r2; C = 1/r1 + 1/r3 + r2/(r1*r3); D = 1 + r2/r1;
+  } else {
+    // R1/R3 = series, R2 = shunt
+    A = 1 + r1/r2; B = r1 + r3 + r1*r3/r2; C = 1/r2; D = 1 + r3/r2;
+  }
+  const mag = Math.abs(A + B/Z0 + C*Z0 + D) / 2;
+  return mag > 0 ? 20 * Math.log10(mag) : 0;
+}
+
+function tolAnalysis(R1, R2, R3, Z0, tol_pct, m) {
+  if (m === 'l') return null; // L-pad has only 2 resistors, skip
+  const t = tol_pct / 100;
+  const vs = [1 - t, 1 + t];
+  let minA = Infinity, maxA = -Infinity;
+  for (const s1 of vs) for (const s2 of vs) for (const s3 of vs) {
+    const a = attenFromR(R1*s1, R2*s2, R3*s3, Z0, m);
+    if (a < minA) minA = a;
+    if (a > maxA) maxA = a;
+  }
+  return { minA, maxA, spread: maxA - minA };
+}
+
 // ── Main update ─────────────────────────────────────────
 function update() {
   let R1, R2, R3=null, A_dB, Z0_eff, Pin_mW;
@@ -567,13 +625,24 @@ function update() {
       document.getElementById('lbl-R3').textContent = 'R3 — series (output)';
     }
 
+    // Tolerance analysis
+    const tol_pct = parseFloat(document.getElementById('sel-tol').value) || 1;
+    const tol = tolAnalysis(R1, R2, R3, Z0, tol_pct, mode);
+    if (tol) {
+      document.getElementById('m-tol-min').textContent    = tol.minA.toFixed(2);
+      document.getElementById('m-tol-max').textContent    = tol.maxA.toFixed(2);
+      document.getElementById('m-tol-spread').textContent = tol.spread.toFixed(3);
+      document.getElementById('tol-section').style.display = '';
+    }
+
     document.getElementById('annotation').innerHTML =
       `<strong>${mode==='pi'?'π':'T'}-pad, Z₀=${Z0} Ω, A=${A_dB} dB</strong> — ` +
       `R_${mode==='pi'?'shunt':'series'} = <strong>${fmtR(R1)}</strong>, ` +
       `R_${mode==='pi'?'series':'shunt'} = <strong>${fmtR(R2)}</strong>. ` +
       `At P_in=${Pin_mW} mW: P_out = <strong>${pw.Pout.toFixed(1)} mW</strong>, P_diss = <strong>${Pdiss.toFixed(1)} mW</strong>. ` +
       `V_in = ${pw.V_in.toFixed(3)} V, I_series = ${pw.I_ser.toFixed(2)} mA. ` +
-      `Nearest E96 series R: ${nearestE96(R1).str} / ${nearestE96(R2).str}.`;
+      `Nearest E96 series R: ${nearestE96(R1).str} / ${nearestE96(R2).str}.` +
+      (tol ? ` With ${tol_pct}% resistor tolerance: atten error = <strong>±${(tol.spread/2).toFixed(3)} dB</strong> (${tol.minA.toFixed(2)}–${tol.maxA.toFixed(2)} dB worst-case).` : '');
 
     document.getElementById('chart-title').textContent = `R values vs Attenuation — ${Z0} Ω ${mode==='pi'?'π':'T'}-pad`;
 
@@ -607,6 +676,8 @@ function update() {
     document.getElementById('lbl-R1').textContent = 'R1 — series (Z_s side)';
     document.getElementById('lbl-R2').textContent = 'R2 — shunt (Z_L side)';
     document.getElementById('lbl-z-metric').textContent = 'Z_source';
+
+    document.getElementById('tol-section').style.display = 'none';
 
     document.getElementById('annotation').innerHTML =
       `<strong>L-pad ${Zs} Ω → ${Zl} Ω</strong> — ` +
