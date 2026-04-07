@@ -25,6 +25,9 @@ const PAGES = [
   '11_phase_noise.html',
   '12_pa_efficiency.html',
   '13_modulation_ber.html',
+  '14_microstrip.html',
+  '15_attenuator.html',
+  '16_mixer.html',
 ];
 
 const VIEWPORTS = [

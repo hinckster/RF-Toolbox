@@ -572,7 +572,7 @@ function update() {
       `R_${mode==='pi'?'shunt':'series'} = <strong>${fmtR(R1)}</strong>, ` +
       `R_${mode==='pi'?'series':'shunt'} = <strong>${fmtR(R2)}</strong>. ` +
       `At P_in=${Pin_mW} mW: P_out = <strong>${pw.Pout.toFixed(1)} mW</strong>, P_diss = <strong>${Pdiss.toFixed(1)} mW</strong>. ` +
-      `V_in = ${Vin_V.toFixed(3)} V, I_series = ${Iser_mA.toFixed(2)} mA. ` +
+      `V_in = ${pw.V_in.toFixed(3)} V, I_series = ${pw.I_ser.toFixed(2)} mA. ` +
       `Nearest E96 series R: ${nearestE96(R1).str} / ${nearestE96(R2).str}.`;
 
     document.getElementById('chart-title').textContent = `R values vs Attenuation — ${Z0} Ω ${mode==='pi'?'π':'T'}-pad`;
