@@ -93,6 +93,10 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 
 .all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
 .all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
+details.try-it{margin-top:12px;border-top:1px solid var(--bdr);padding-top:10px}
+details.try-it summary{color:#b5895a;font-size:0.78rem;cursor:pointer;user-select:none;list-style:none}
+details.try-it summary::-webkit-details-marker{display:none}
+details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(--tm);line-height:1.7}
 </style>
 </head>
 <body>
@@ -276,6 +280,15 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
         <div class="mc"><div class="mlb">Achieved P_d at R_max</div><div class="mv" id="mPdAchieved" style="color:var(--good)">—</div><div class="mu">at current SNR</div></div>
       </div>
     </div>
+
+    <details class="try-it">
+      <summary>&#9658; Things to Try</summary>
+      <ul>
+        <li>Load the <em>Automotive 77 GHz FMCW</em> preset, then increase chirp BW to 500 MHz — watch how pulse compression alone extends range without increasing transmit power.</li>
+        <li>Set RCS to −30 dBsm (insect-size target) and observe how range collapses compared to an airliner at +20 dBsm — a 50 dBsm difference yields only 10× range change because of the fourth-power law.</li>
+        <li>With the <em>Weather Radar</em> preset loaded, reduce S_min from −110 to −120 dBm to simulate a lower-noise receiver — note that every 6 dB improvement in S_min yields only ~1.6× range improvement (fourth-root law).</li>
+      </ul>
+    </details>
   </div>
 
   <div>
@@ -758,15 +771,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
         <li><strong>R_max (compressed)</strong> — Effective detection range after pulse compression: R_uncompressed × TBP^(1/4).</li>
         <li><strong>EIRP</strong> — Equivalent isotropically radiated power (P_t + G_t) in dBm. The transmit figure of merit.</li>
         <li><strong>Pr @ 10 km</strong> — Received power from the selected RCS target at exactly 10 km, useful as a sanity-check reference level.</li>
-      </ul>
-    </div>
-
-    <div class="help-section">Things to try</div>
-    <div class="help-body">
-      <ul class="help-try">
-        <li>Load the <em>Automotive 77 GHz FMCW</em> preset, then increase chirp BW to 500 MHz — watch how pulse compression alone extends range without increasing transmit power.</li>
-        <li>Set RCS to −30 dBsm (insect-size target) and observe how range collapses compared to an airliner at +20 dBsm — a 50 dBsm difference yields only 10× range change because of the fourth-power law.</li>
-        <li>With the <em>Weather Radar</em> preset loaded, reduce S_min from −110 to −120 dBm to simulate a lower-noise receiver — note that every 6 dB improvement in S_min yields only ~1.6× range improvement (fourth-root law).</li>
       </ul>
     </div>
 
