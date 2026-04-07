@@ -93,6 +93,13 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 
 .all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
 .all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
+.ds-toggle-row{display:flex;gap:.5rem;margin-bottom:.9rem}
+.ds-mode-btn{background:var(--card);border:1px solid var(--bdr);color:var(--tm);border-radius:14px;padding:.25rem .85rem;font-size:.77rem;cursor:pointer;transition:.15s;white-space:nowrap}
+.ds-mode-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+.ds-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;font-size:.85rem}
+.ds-num{background:var(--deep);border:1px solid var(--bdr);border-radius:4px;color:#b5895a;font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;width:78px;text-align:right;-moz-appearance:textfield;appearance:textfield}
+.ds-num::-webkit-outer-spin-button,.ds-num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.ds-num:focus{outline:none;border-color:#b5895a}
 </style>
 </head>
 <body>
@@ -149,6 +156,10 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
   <div>
     <div class="panel" style="margin-bottom:1rem">
       <h3>Device Polynomial Coefficients</h3>
+      <div class="ds-toggle-row">
+        <button class="ds-mode-btn active" id="btnPoly" onclick="setInputMode('poly')">Polynomial mode</button>
+        <button class="ds-mode-btn" id="btnDS" onclick="setInputMode('ds')">Datasheet mode</button>
+      </div>
       <div class="preset-row">
         <label>Load Scenario</label>
         <select class="preset-select" id="presetSel" onchange="loadPreset(this.value)">
@@ -159,32 +170,51 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
         </select>
       </div>
       <a href="02_noise_figure.html" onclick="sendToReceiverChain(); return false;" style="display:block;text-align:right;color:#58a6ff;font-size:.75rem;text-decoration:none;margin-top:.2rem;margin-bottom:.6rem">→ Open in Receiver Chain</a>
-      <div class="sr">
-        <label>a₁ — linear gain <span id="vA1" style="display:none">5.0</span></label>
-        <div class="sr-row">
-          <input type="range" id="sA1" min="0.1" max="20" step="0.1" value="5">
-          <input type="number" class="si" id="iA1" value="5.0">
-          <span class="si-unit">V/V</span>
+      <div id="polyGroup">
+        <div class="sr">
+          <label>a₁ — linear gain <span id="vA1" style="display:none">5.0</span></label>
+          <div class="sr-row">
+            <input type="range" id="sA1" min="0.1" max="20" step="0.1" value="5">
+            <input type="number" class="si" id="iA1" value="5.0">
+            <span class="si-unit">V/V</span>
+          </div>
+          <div class="hints"><span>0.1</span><span>20 V/V</span></div>
         </div>
-        <div class="hints"><span>0.1</span><span>20 V/V</span></div>
+        <div class="sr">
+          <label>a₂ — 2nd-order coeff <span id="vA2" style="display:none">1.0</span></label>
+          <div class="sr-row">
+            <input type="range" id="sA2" min="0" max="10" step="0.1" value="1">
+            <input type="number" class="si" id="iA2" value="1.0">
+            <span class="si-unit">V/V²</span>
+          </div>
+          <div class="hints"><span>0</span><span>10 V/V²</span></div>
+        </div>
+        <div class="sr">
+          <label>a₃ — 3rd-order coeff <span id="vA3" style="display:none">-0.50</span></label>
+          <div class="sr-row">
+            <input type="range" id="sA3" min="-5" max="-0.01" step="0.01" value="-0.5">
+            <input type="number" class="si" id="iA3" value="-0.50">
+            <span class="si-unit">V/V³</span>
+          </div>
+          <div class="hints"><span>−5</span><span>−0.01 V/V³</span></div>
+        </div>
       </div>
-      <div class="sr">
-        <label>a₂ — 2nd-order coeff <span id="vA2" style="display:none">1.0</span></label>
-        <div class="sr-row">
-          <input type="range" id="sA2" min="0" max="10" step="0.1" value="1">
-          <input type="number" class="si" id="iA2" value="1.0">
-          <span class="si-unit">V/V²</span>
+      <div id="dsGroup" style="display:none">
+        <div class="ds-row">
+          <label>IIP3 (dBm)</label>
+          <span><input type="number" class="ds-num" id="iDS_iip3" min="-20" max="50" step="1" value="10"> <span class="si-unit">dBm</span></span>
         </div>
-        <div class="hints"><span>0</span><span>10 V/V²</span></div>
-      </div>
-      <div class="sr">
-        <label>a₃ — 3rd-order coeff <span id="vA3" style="display:none">-0.50</span></label>
-        <div class="sr-row">
-          <input type="range" id="sA3" min="-5" max="-0.01" step="0.01" value="-0.5">
-          <input type="number" class="si" id="iA3" value="-0.50">
-          <span class="si-unit">V/V³</span>
+        <div class="hints" style="margin-bottom:.5rem"><span>−20 dBm</span><span>+50 dBm</span></div>
+        <div class="ds-row">
+          <label>Gain (dB)</label>
+          <span><input type="number" class="ds-num" id="iDS_gain" min="0" max="30" step="0.5" value="15"> <span class="si-unit">dB</span></span>
         </div>
-        <div class="hints"><span>−5</span><span>−0.01 V/V³</span></div>
+        <div class="hints" style="margin-bottom:.5rem"><span>0 dB</span><span>30 dB</span></div>
+        <div class="ds-row">
+          <label>a₂ (V/V²)</label>
+          <span><input type="number" class="ds-num" id="iDS_a2" min="0" max="10" step="0.1" value="1"> <span class="si-unit">V/V²</span></span>
+        </div>
+        <div class="hints" style="margin-bottom:.5rem"><span>0</span><span>10 V/V²</span></div>
       </div>
       <div class="panel-sep"></div>
       <h3 style="margin-bottom:.7rem">Two-Tone Test Signal</h3>
@@ -250,6 +280,16 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 const Z0=50;
 function vTodBm(v){return v<=0?-200:10*Math.log10((v*v)/(2*Z0)*1000)}
 function dBmToV(p){return Math.sqrt(Math.pow(10,(p/10))*2*Z0/1000)}
+
+let inputMode='poly';
+function setInputMode(mode){
+  inputMode=mode;
+  document.getElementById('polyGroup').style.display=mode==='poly'?'':'none';
+  document.getElementById('dsGroup').style.display=mode==='ds'?'':'none';
+  document.getElementById('btnPoly').classList.toggle('active',mode==='poly');
+  document.getElementById('btnDS').classList.toggle('active',mode==='ds');
+  update();
+}
 function hexRGB(h){return `${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)}`}
 
 const specChart=new Chart(document.getElementById('chartSpectrum').getContext('2d'),{
@@ -290,6 +330,18 @@ const interceptChart=new Chart(document.getElementById('chartIntercept').getCont
 });
 
 function update(){
+  // Datasheet mode: back-calculate a₁, a₂, a₃ from IIP3/Gain/a₂ inputs
+  if(inputMode==='ds'){
+    const ds_iip3=parseFloat(document.getElementById('iDS_iip3').value)||10;
+    const ds_gain=parseFloat(document.getElementById('iDS_gain').value)||15;
+    const ds_a2  =parseFloat(document.getElementById('iDS_a2').value)||1;
+    const a1c=Math.pow(10,ds_gain/20);
+    const iip3v=Math.sqrt(2*Z0*Math.pow(10,(ds_iip3-30)/10));
+    const a3c=-(4*a1c)/(3*iip3v*iip3v);
+    document.getElementById('sA1').value=Math.min(20,Math.max(0.1,a1c));
+    document.getElementById('sA2').value=Math.min(10,Math.max(0,ds_a2));
+    document.getElementById('sA3').value=Math.max(-5,Math.min(-0.01,a3c));
+  }
   const a1=+document.getElementById('sA1').value;
   const a2=+document.getElementById('sA2').value;
   const a3=+document.getElementById('sA3').value;
@@ -461,6 +513,9 @@ linkSliderInput('sA3',  'iA3',  2, update, -5, -0.01);
 linkSliderInput('sPin', 'iPin', 1, update, -60, 20);
 linkSliderInput('sDf',  'iDf',  1, update, 0.1, 50);
 syncF0Input();
+['iDS_iip3','iDS_gain','iDS_a2'].forEach(function(id){
+  document.getElementById(id).addEventListener('input',update);
+});
 
 function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#718096';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`iip3_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
 function exportCSV() {
