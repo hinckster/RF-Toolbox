@@ -115,6 +115,10 @@
 
 .all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
 .all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
+details.try-it{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
+details.try-it summary{color:var(--accent);font-size:0.78rem;cursor:pointer;user-select:none;list-style:none}
+details.try-it summary::-webkit-details-marker{display:none}
+details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(--muted);line-height:1.7}
 </style>
 </head>
 <body>
@@ -257,6 +261,17 @@
       </div>
     </div>
 
+    <details class="try-it">
+      <summary>&#9658; Things to Try</summary>
+      <ul>
+        <li>Load the WiFi 2.4 GHz preset and increase max order — watch how the spur grid fills in and the in-band count may rise.</li>
+        <li>Adjust the IF bandwidth slider to see which products cross the in-band threshold as BW widens.</li>
+        <li>Try LO Synthesis: set IF = 70 MHz and click "LO low" — verify the desired IF card reads 70 MHz.</li>
+        <li>For the 28 GHz 5G preset, note the image is at 25.8 GHz — only 200 MHz separation, requiring a very selective pre-selector.</li>
+        <li>Set a very small BW (0.1 MHz) to see only the tightest in-band spurs — useful for narrowband receiver design.</li>
+      </ul>
+    </details>
+
     <!-- IF Spectrum Chart -->
     <div class="chart-card">
       <h3>IF Output Spectrum</h3>
@@ -317,15 +332,6 @@
 
     <div class="help-section">Spur grid</div>
     <div class="help-body">Each cell (m, n) is colored by how close |m·f_RF − n·f_LO| is to the desired IF: blue = desired, red = in-band spur, orange = within 10× BW, white = far. Cell (1,1) is always the desired product.</div>
-
-    <div class="help-section">Things to try</div>
-    <ul class="help-try">
-      <li>Load the WiFi 2.4 GHz preset and increase max order — watch how the spur grid fills in and the in-band count may rise.</li>
-      <li>Adjust the IF bandwidth slider to see which products cross the in-band threshold as BW widens.</li>
-      <li>Try LO Synthesis: set IF = 70 MHz and click "LO low" — verify the desired IF card reads 70 MHz.</li>
-      <li>For the 28 GHz 5G preset, note the image is at 25.8 GHz — only 200 MHz separation, requiring a very selective pre-selector.</li>
-      <li>Set a very small BW (0.1 MHz) to see only the tightest in-band spurs — useful for narrowband receiver design.</li>
-    </ul>
   </div>
 </div>
 
