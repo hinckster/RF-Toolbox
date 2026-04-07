@@ -440,6 +440,10 @@
 
 .all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
 .all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
+details.try-it{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
+details.try-it summary{color:var(--accent);font-size:0.78rem;cursor:pointer;user-select:none;list-style:none}
+details.try-it summary::-webkit-details-marker{display:none}
+details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(--muted);line-height:1.7}
 </style>
 </head>
 <body>
@@ -587,6 +591,15 @@
     </div>
   </div>
 
+    <details class="try-it">
+      <summary>&#9658; Things to Try</summary>
+      <ul>
+        <li>Load the "LEO Satellite" preset — notice how 550 km of FSPL at 12 GHz dominates all other terms, and a 40 dBi dish is needed to close the link.</li>
+        <li>With any scenario, double the distance (slide right by ~0.3 on the log scale): link margin drops by exactly 6 dB, confirming the inverse-square law.</li>
+        <li>Try the "5G mmWave" preset then reduce Tx antenna gain from 25 to 3 dBi (omnidirectional): margin goes negative — showing why mmWave requires beam-steering.</li>
+      </ul>
+    </details>
+
   <!-- ANNOTATION -->
   <div class="annotation-box" id="annotation-box">
     Computing…
@@ -635,15 +648,6 @@
         <li><strong>Received Power Pr:</strong> Total signal power at the receiver input after all gains and losses.</li>
         <li><strong>Sensitivity:</strong> The required minimum power for reliable detection (user-set).</li>
         <li><strong>Link Margin:</strong> Pr − Sensitivity in dB. Green ≥ 6 dB (healthy), orange 0–6 dB (thin), red &lt; 0 dB (link fails).</li>
-      </ul>
-    </div>
-
-    <div class="help-section">Things to try</div>
-    <div class="help-body">
-      <ul class="help-try">
-        <li>Load the "LEO Satellite" preset — notice how 550 km of FSPL at 12 GHz dominates all other terms, and a 40 dBi dish is needed to close the link.</li>
-        <li>With any scenario, double the distance (slide right by ~0.3 on the log scale): link margin drops by exactly 6 dB, confirming the inverse-square law.</li>
-        <li>Try the "5G mmWave" preset then reduce Tx antenna gain from 25 to 3 dBi (omnidirectional): margin goes negative — showing why mmWave requires beam-steering.</li>
       </ul>
     </div>
 
