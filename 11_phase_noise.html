@@ -231,10 +231,14 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
     <div class="panel">
       <h3>Results</h3>
       <div class="metrics">
+        <div class="mc"><div class="ml">L @ 1 Hz</div><div class="mv" id="mL1">—</div><div class="mu">dBc/Hz</div></div>
+        <div class="mc"><div class="ml">L @ 10 Hz</div><div class="mv" id="mL10">—</div><div class="mu">dBc/Hz</div></div>
+        <div class="mc"><div class="ml">L @ 100 Hz</div><div class="mv" id="mL100">—</div><div class="mu">dBc/Hz</div></div>
         <div class="mc"><div class="ml">L @ 1 kHz</div><div class="mv" id="mL1k">—</div><div class="mu">dBc/Hz</div></div>
         <div class="mc"><div class="ml">L @ 10 kHz</div><div class="mv" id="mL10k">—</div><div class="mu">dBc/Hz</div></div>
         <div class="mc"><div class="ml">L @ 100 kHz</div><div class="mv" id="mL100k">—</div><div class="mu">dBc/Hz</div></div>
         <div class="mc"><div class="ml">L @ 1 MHz</div><div class="mv" id="mL1M">—</div><div class="mu">dBc/Hz</div></div>
+        <div class="mc"><div class="ml">L @ 10 MHz</div><div class="mv" id="mL10M">—</div><div class="mu">dBc/Hz</div></div>
         <div class="mc"><div class="ml">Noise floor</div><div class="mv" id="mFloor">—</div><div class="mu">dBc/Hz</div></div>
         <div class="mc"><div class="ml">Leeson BW</div><div class="mv" id="mLeeson">—</div><div class="mu">Hz</div></div>
         <div class="mc" style="grid-column:span 2"><div class="ml">Integrated phase noise (φ_rms)</div><div class="mv" id="mIPN" style="color:var(--org)">—</div><div class="mu">dBc &nbsp;·&nbsp; <span id="mIPN_rad">—</span> rad rms</div></div>
@@ -284,7 +288,7 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
     <div class="help-section">Key results</div>
     <div class="help-body">
       <ul>
-        <li><strong>L @ 1 kHz / 10 kHz / 100 kHz / 1 MHz:</strong> Spot phase noise values at standard offset frequencies, in dBc/Hz.</li>
+        <li><strong>L @ 1 Hz / 10 Hz / 100 Hz / 1 kHz / 10 kHz / 100 kHz / 1 MHz / 10 MHz:</strong> Spot phase noise values at all standard offset frequencies, in dBc/Hz. Close-in offsets (1–100 Hz) are typically dominated by the 1/f³ region and can be very high (even positive dBc/Hz).</li>
         <li><strong>Noise floor:</strong> Far-from-carrier thermal limit = 10·log(2FkT/P<sub>s</sub>) dBc/Hz.</li>
         <li><strong>Leeson BW:</strong> Half-bandwidth f₀/(2Q<sub>L</sub>) — offsets inside this see the 1/f² rise.</li>
         <li><strong>Integrated phase noise (φ<sub>rms</sub>):</strong> RMS phase error in dBc and radians over the integration band.</li>
@@ -406,10 +410,14 @@ function update() {
   const pn  = dfs.map(df => leeson(df, f0, QL, Ps, F, fc));
 
   // Phase noise at spot frequencies
-  const L1k   = leeson(1e3, f0, QL, Ps, F, fc);
-  const L10k  = leeson(1e4, f0, QL, Ps, F, fc);
-  const L100k = leeson(1e5, f0, QL, Ps, F, fc);
-  const L1M   = leeson(1e6, f0, QL, Ps, F, fc);
+  const L1    = leeson(1,    f0, QL, Ps, F, fc);
+  const L10   = leeson(10,   f0, QL, Ps, F, fc);
+  const L100  = leeson(100,  f0, QL, Ps, F, fc);
+  const L1k   = leeson(1e3,  f0, QL, Ps, F, fc);
+  const L10k  = leeson(1e4,  f0, QL, Ps, F, fc);
+  const L100k = leeson(1e5,  f0, QL, Ps, F, fc);
+  const L1M   = leeson(1e6,  f0, QL, Ps, F, fc);
+  const L10M  = leeson(1e7,  f0, QL, Ps, F, fc);
 
   // Thermal floor = 10*log10(2FkT/Ps_W)
   const Ps_W   = Math.pow(10, (Ps - 30) / 10);
@@ -432,10 +440,14 @@ function update() {
   const jitter_s = phi_rms / (2 * Math.PI * f0);
   const jitter_fs = jitter_s * 1e15;
 
+  document.getElementById('mL1').textContent    = L1.toFixed(1);
+  document.getElementById('mL10').textContent   = L10.toFixed(1);
+  document.getElementById('mL100').textContent  = L100.toFixed(1);
   document.getElementById('mL1k').textContent   = L1k.toFixed(1);
   document.getElementById('mL10k').textContent  = L10k.toFixed(1);
   document.getElementById('mL100k').textContent = L100k.toFixed(1);
   document.getElementById('mL1M').textContent   = L1M.toFixed(1);
+  document.getElementById('mL10M').textContent  = L10M.toFixed(1);
   document.getElementById('mFloor').textContent = floor.toFixed(1);
   document.getElementById('mLeeson').textContent = fmtHz(leeson_bw);
   document.getElementById('mIPN').textContent    = ipn_dBc.toFixed(1);
@@ -503,6 +515,9 @@ function exportCSV() {
     'Integration from,'+fmtHz(fi1),
     'Integration to,'+fmtHz(fi2),
     '','SPOT PHASE NOISE','Offset,L(Δf) dBc/Hz',
+    '1 Hz,'+leeson(1,f0,QL,Ps,F,fc).toFixed(2),
+    '10 Hz,'+leeson(10,f0,QL,Ps,F,fc).toFixed(2),
+    '100 Hz,'+leeson(100,f0,QL,Ps,F,fc).toFixed(2),
     '1 kHz,'+leeson(1e3,f0,QL,Ps,F,fc).toFixed(2),
     '10 kHz,'+leeson(1e4,f0,QL,Ps,F,fc).toFixed(2),
     '100 kHz,'+leeson(1e5,f0,QL,Ps,F,fc).toFixed(2),

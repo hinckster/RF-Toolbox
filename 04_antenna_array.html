@@ -389,7 +389,7 @@ function phiToTheta(phi){
   return phi-360;
 }
 
-function drawPolarCanvas(patA_dB, patB_dB, thFull){
+function drawPolarCanvas(patA_dB, patB_dB, thFull, glStrs){
   const canvas=document.getElementById('chartMain');
   const wrap=canvas.parentElement;
   const size=Math.min(wrap.offsetWidth||440,440);
@@ -487,6 +487,34 @@ function drawPolarCanvas(patA_dB, patB_dB, thFull){
   ctx.beginPath();ctx.moveTo(cx+28,H-16);ctx.lineTo(cx+48,H-16);ctx.stroke();
   ctx.setLineDash([]);
   ctx.fillText('Array B',cx+52,H-16);
+
+  // Grating lobe radial markers (drawn after pattern, outside clip)
+  if(glStrs && glStrs.length){
+    const glAngles=glStrs.map(s=>parseFloat(s));
+    ctx.strokeStyle='rgba(248,81,73,.9)';
+    ctx.lineWidth=1.5;
+    ctx.setLineDash([4,3]);
+    glAngles.forEach(ang=>{
+      const phi=ang>=0?ang:360+ang;
+      const rad=(phi-90)*Math.PI/180;
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.lineTo(cx+R*Math.cos(rad),cy+R*Math.sin(rad));
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle='#f85149';
+      ctx.font='bold 9px Segoe UI,system-ui,sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('GL',cx+(R+10)*Math.cos(rad),cy+(R+10)*Math.sin(rad));
+      ctx.setLineDash([4,3]);
+    });
+    ctx.setLineDash([]);
+    // Legend entry
+    ctx.strokeStyle='rgba(248,81,73,.9)';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(cx-50,H-34);ctx.lineTo(cx-30,H-34);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#718096';ctx.font='10px Segoe UI,system-ui,sans-serif';
+    ctx.textAlign='left';ctx.fillText('Grating Lobe',cx-26,H-32);
+  }
 }
 
 function initChart(){
@@ -575,7 +603,7 @@ function update(){
   } else {
     // Polar: custom canvas renderer
     if(mainChart){mainChart.destroy();mainChart=null;}
-    drawPolarCanvas(patA_dB, patB_dB, thFull);
+    drawPolarCanvas(patA_dB, patB_dB, thFull, gl);
   }
 
   const taperNames={uniform:'Uniform (−13 dB SLL)',hamming:'Hamming (−43 dB SLL)',hann:'Hann (−31 dB SLL)',cheby:'Chebyshev (−40 dB SLL)',taylor:'Taylor −35 dB'};

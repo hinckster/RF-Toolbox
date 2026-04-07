@@ -210,20 +210,21 @@ function erfc(x) {
 }
 
 // BER functions (Eb/N0 is linear)
+// dash: borderDash pattern for colorblind/print accessibility
 const MODS = [
-  { key:'bpsk',   label:'BPSK',    M:2,   color:'#58a6ff', se:1,
+  { key:'bpsk',   label:'BPSK',    M:2,   color:'#58a6ff', dash:[],         se:1,
     ber: eb => Q(Math.sqrt(2*eb)) },
-  { key:'qpsk',   label:'QPSK',    M:4,   color:'#00c8ff', se:2,
+  { key:'qpsk',   label:'QPSK',    M:4,   color:'#00c8ff', dash:[6,3],      se:2,
     ber: eb => Q(Math.sqrt(2*eb)) },
-  { key:'8psk',   label:'8-PSK',   M:8,   color:'#3fb950', se:3,
+  { key:'8psk',   label:'8-PSK',   M:8,   color:'#3fb950', dash:[10,4],     se:3,
     ber: eb => (2/3) * Q(Math.sqrt(2*3*eb) * Math.sin(Math.PI/8)) },
-  { key:'16qam',  label:'16-QAM',  M:16,  color:'#e6c547', se:4,
+  { key:'16qam',  label:'16-QAM',  M:16,  color:'#e6c547', dash:[2,3],      se:4,
     ber: eb => (3/8) * erfc(Math.sqrt(eb * 4 / 10)) },
-  { key:'64qam',  label:'64-QAM',  M:64,  color:'#f0883e', se:6,
+  { key:'64qam',  label:'64-QAM',  M:64,  color:'#f0883e', dash:[10,4,2,4], se:6,
     ber: eb => (7/24) * erfc(Math.sqrt(eb * 6 / 42)) },
-  { key:'256qam', label:'256-QAM', M:256, color:'#f85149', se:8,
+  { key:'256qam', label:'256-QAM', M:256, color:'#f85149', dash:[6,3,2,3],  se:8,
     ber: eb => (15/64) * erfc(Math.sqrt(eb * 8 / 170)) },
-  { key:'shannon', label:'Shannon limit', M:0, color:'#bc8cff', se:null,
+  { key:'shannon', label:'Shannon limit', M:0, color:'#bc8cff', dash:[4,4], se:null,
     ber: null },
 ];
 
@@ -330,8 +331,8 @@ function update() {
     // Operating point marker
     const berOp = m.ber(EbN0_lin);
     berDatasets.push({
-      label: m.label, data, borderColor: m.color, borderWidth: 2, pointRadius: 0, fill:false, tension:0,
-      spanGaps: false,
+      label: m.label, data, borderColor: m.color, borderWidth: 2, borderDash: m.dash,
+      pointRadius: 0, fill:false, tension:0, spanGaps: false,
     });
     // Operating point dot
     if (berOp > 1e-13) {
@@ -361,7 +362,7 @@ function update() {
   const seDatasets = [];
   if (activeKeys.has('shannon')) {
     seDatasets.push({
-      label:'Shannon bound',data:shannonPts,borderColor:'#bc8cff',borderWidth:2,pointRadius:0,fill:false,tension:0
+      label:'Shannon bound',data:shannonPts,borderColor:'#bc8cff',borderWidth:2,borderDash:[4,4],pointRadius:0,fill:false,tension:0
     });
   }
   MODS.filter(m=>m.se&&activeKeys.has(m.key)).forEach(m=>{
