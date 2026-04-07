@@ -117,6 +117,10 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 
 .all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
 .all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
+details.try-it{margin-top:12px;border-top:1px solid var(--bdr);padding-top:10px}
+details.try-it summary{color:#b5895a;font-size:0.78rem;cursor:pointer;user-select:none;list-style:none}
+details.try-it summary::-webkit-details-marker{display:none}
+details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(--tm);line-height:1.7}
 </style>
 </head>
 <body>
@@ -232,6 +236,15 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
       <div style="font-size:.73rem;color:var(--tm);margin-bottom:.6rem">R₁ = ½·√(λ·d) at midpoint. Keep ≥60% clearance (0.6·R₁) to avoid diffraction loss.</div>
       <div class="band-grid" id="fresnelGrid"></div>
     </div>
+
+    <details class="try-it">
+      <summary>&#9658; Things to Try</summary>
+      <ul>
+        <li>Load the <em>mmWave backhaul</em> preset, then enable both overlays and ramp Rain rate up to 100 mm/hr — see how 28 GHz accumulates ~8 dB of rain loss per km while 900 MHz is virtually unaffected, explaining why Sub-6 GHz is preferred for robust outdoor links.</li>
+        <li>Enable atmospheric absorption and set operating distance to 0.5 km — the 60 GHz bar towers over all other bands (~5 dB) due to the O₂ resonance at 60 GHz. This is intentionally exploited in 802.11ad WiGig for license-free short-range isolation.</li>
+        <li>Load the <em>Satellite to ground</em> preset (1000 km) and compare 900 MHz vs 28 GHz — the 30 dB FSPL difference shows why satellite links demand large antennas or high EIRP at Ka-band, yet Ka-band still enables smaller ground dishes than L-band.</li>
+      </ul>
+    </details>
   </div>
 
   <div>
@@ -717,15 +730,6 @@ function updateLBC(){
       <ul>
         <li><strong>Band FSPL table</strong> — Shows FSPL (dB) for each of the six bands at the selected operating distance. Color-coded to match the chart lines. The rightmost column shows total loss including overlays.</li>
         <li><strong>Breakeven Summary</strong> — Text annotations describing the crossover distances where rain or atmospheric loss becomes comparable to FSPL, and which bands are viable for the configured range.</li>
-      </ul>
-    </div>
-
-    <div class="help-section">Things to try</div>
-    <div class="help-body">
-      <ul class="help-try">
-        <li>Load the <em>mmWave backhaul</em> preset, then enable both overlays and ramp Rain rate up to 100 mm/hr — see how 28 GHz accumulates ~8 dB of rain loss per km while 900 MHz is virtually unaffected, explaining why Sub-6 GHz is preferred for robust outdoor links.</li>
-        <li>Enable atmospheric absorption and set operating distance to 0.5 km — the 60 GHz bar towers over all other bands (~5 dB) due to the O₂ resonance at 60 GHz. This is intentionally exploited in 802.11ad WiGig for license-free short-range isolation.</li>
-        <li>Load the <em>Satellite to ground</em> preset (1000 km) and compare 900 MHz vs 28 GHz — the 30 dB FSPL difference shows why satellite links demand large antennas or high EIRP at Ka-band, yet Ka-band still enables smaller ground dishes than L-band.</li>
       </ul>
     </div>
 
