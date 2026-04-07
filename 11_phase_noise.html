@@ -92,6 +92,10 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 
 .all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
 .all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
+details.try-it{margin-top:12px;border-top:1px solid var(--bdr);padding-top:10px}
+details.try-it summary{color:#b5895a;font-size:0.78rem;cursor:pointer;user-select:none;list-style:none}
+details.try-it summary::-webkit-details-marker{display:none}
+details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(--tm);line-height:1.7}
 </style>
 </head>
 <body>
@@ -262,6 +266,15 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
         <div class="mc" style="grid-column:span 2"><div class="ml">Timing jitter (at f₀)</div><div class="mv" id="mJitter" style="color:var(--red)">—</div><div class="mu">fs rms</div></div>
       </div>
     </div>
+
+    <details class="try-it">
+      <summary>&#9658; Things to Try</summary>
+      <ul>
+        <li>Load the "Sapphire oscillator" preset (Q = 500k): observe the floor drops below −175 dBc/Hz and jitter falls to attosecond levels — the gold standard for metrology.</li>
+        <li>With any preset, increase the flicker corner f<sub>c</sub> above the Leeson half-bandwidth: the −30 dB/decade region fills the entire useful offset range, dramatically worsening close-in noise.</li>
+        <li>Set integration band from 1 kHz to 10 MHz and compare the TCXO vs VCO presets — the VCO has ~30 dB worse integrated noise, showing why PLLs reference-lock VCOs to clean XOs.</li>
+      </ul>
+    </details>
   </div>
 
   <div class="chart-panel">
@@ -310,15 +323,6 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
         <li><strong>Leeson BW:</strong> Half-bandwidth f₀/(2Q<sub>L</sub>) — offsets inside this see the 1/f² rise.</li>
         <li><strong>Integrated phase noise (φ<sub>rms</sub>):</strong> RMS phase error in dBc and radians over the integration band.</li>
         <li><strong>Timing jitter:</strong> Clock jitter in femtoseconds (or attoseconds), critical for ADC SNR and serial data eye diagrams.</li>
-      </ul>
-    </div>
-
-    <div class="help-section">Things to try</div>
-    <div class="help-body">
-      <ul class="help-try">
-        <li>Load the "Sapphire oscillator" preset (Q = 500k): observe the floor drops below −175 dBc/Hz and jitter falls to attosecond levels — the gold standard for metrology.</li>
-        <li>With any preset, increase the flicker corner f<sub>c</sub> above the Leeson half-bandwidth: the −30 dB/decade region fills the entire useful offset range, dramatically worsening close-in noise.</li>
-        <li>Set integration band from 1 kHz to 10 MHz and compare the TCXO vs VCO presets — the VCO has ~30 dB worse integrated noise, showing why PLLs reference-lock VCOs to clean XOs.</li>
       </ul>
     </div>
 
