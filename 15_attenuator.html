@@ -104,6 +104,9 @@
   .help-try { font-size: .88rem; color: #4a5568; line-height: 1.8; padding-left: 1.2rem; }
   .help-try li { margin-bottom: .4rem; }
   .help-try li::marker { color: #b5895a; }
+
+.all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
+.all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
 </style>
 </head>
 <body>
@@ -842,5 +845,7 @@ document.getElementById('helpOverlay').addEventListener('click', e=>{
 
 update();
 </script>
+
+<a href="index.html" class="all-tools-btn">&#8862; All Tools</a>
 </body>
 </html>
