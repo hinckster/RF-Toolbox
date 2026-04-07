@@ -360,9 +360,41 @@ footer a{color:#b5895a}
   </div>
 </div>
 
+<!-- Network Analysis Section -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="sh-line"></div>
+    <div class="sh-label">Network Analysis &amp; Passive Design</div>
+    <span class="sh-badge new">S-Parameters · Filters · Resonators</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="grid">
+    <a class="card" href="17_sparam.html">
+      <div class="card-top"><div class="card-icon">⚡</div><div class="card-arrow">›</div></div>
+      <div>
+        <div class="card-num"><span class="new-badge">New</span></div>
+        <h2>S-Parameter Cascade / Converter</h2>
+      </div>
+      <div class="card-desc">Convert 2-port S-parameters to Z, Y, and ABCD matrices. Cascade two networks via T-matrix multiplication (exact mismatch interaction). Compute Rollett stability factor K, |Δ|, MSG, and MAG.</div>
+      <div class="card-eq">S→ABCD: A = [(1+S11)(1−S22)+S12S21]/2S21 · K = (1−|S11|²−|S22|²+|Δ|²)/(2|S12||S21|)</div>
+    </a>
+
+    <a class="card" href="18_filter.html">
+      <div class="card-top"><div class="card-icon">〰</div><div class="card-arrow">›</div></div>
+      <div>
+        <div class="card-num"><span class="new-badge">New</span></div>
+        <h2>Filter Design &amp; Resonance</h2>
+      </div>
+      <div class="card-desc">Series and parallel RLC resonator analysis (f₀, Q, BW, |Zin| sweep). Butterworth and Chebyshev LC ladder synthesis — low-pass and high-pass up to 7th order. Exact |S21| frequency response from ABCD cascade.</div>
+      <div class="card-eq">f₀ = 1/(2π√LC) · Q = ω₀L/R · g_k = 2·sin[(2k−1)π/2n] (Butterworth)</div>
+    </a>
+  </div>
+</div>
+
 <footer>
   Part of <a href="https://www.noahhinckley.com/home">Noah Hinckley's Engineering Portfolio</a> · noahhinckley.com
-  &nbsp;·&nbsp; 16 self-contained tools, no server, no build step
+  &nbsp;·&nbsp; 18 self-contained tools, no server, no build step
   &nbsp;·&nbsp; <a href="https://github.com/hinckster/RF-Toolbox">github.com/hinckster/RF-Toolbox</a>
 </footer>
 

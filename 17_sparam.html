@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S-Parameter Cascade | RF Toolbox</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--surface:#f4f5f7;--card:#f4f5f7;--border:#d0d4da;
+  --accent:#b5895a;--accent2:#7c3aed;--text:#1a1d23;--muted:#718096;
+  --green:#16a34a;--orange:#d97706;--red:#dc2626;--blue:#2563eb;
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+
+.toolbar{position:fixed;top:14px;right:16px;display:flex;gap:6px;z-index:100}
+.tbtn{background:var(--card);border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:5px 10px;font-size:.75rem;cursor:pointer;transition:border-color .15s,color .15s}
+.tbtn:hover{border-color:#b5895a;color:#b5895a}
+
+nav{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem}
+nav a{color:#b5895a;text-decoration:none;font-size:.88rem}
+nav a:hover{text-decoration:underline}
+nav span{color:var(--muted)}
+header{padding:2rem 1.5rem 1.5rem;max-width:1200px;margin:0 auto}
+header .tag{font-size:.72rem;font-weight:600;color:#b5895a;letter-spacing:2px;text-transform:uppercase;margin-bottom:.4rem}
+header h1{font-size:2rem;font-weight:700}
+header p{color:var(--muted);margin-top:.4rem}
+
+.equation-box{max-width:1200px;margin:0 auto 1.5rem;padding:0 1.5rem}
+.eq-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.5rem;display:flex;flex-wrap:wrap;gap:2rem;align-items:flex-start}
+.eq-primary{font-family:'Courier New',monospace;font-size:.95rem;color:var(--accent);margin-bottom:.3rem}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.82rem;color:var(--accent2);margin-bottom:.15rem}
+.eq-note{font-size:.79rem;color:var(--muted);margin-top:.3rem}
+
+.layout{display:grid;grid-template-columns:300px 1fr;gap:1.4rem;max-width:1200px;margin:0 auto;padding:0 1.5rem 2rem}
+@media(max-width:860px){.layout{grid-template-columns:1fr}}
+
+.panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.4rem;display:flex;flex-direction:column;gap:0}
+.panel h3{font-size:.78rem;font-weight:600;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.9rem}
+.divider{border:none;border-top:1px solid var(--border);margin:.9rem 0}
+
+.mode-row{display:flex;gap:6px;margin-bottom:1rem}
+.mode-btn{flex:1;padding:.35rem 0;background:var(--surface);border:1px solid var(--border);border-radius:5px;font-size:.78rem;cursor:pointer;color:var(--muted);transition:.15s;text-align:center}
+.mode-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(181,137,90,.08)}
+
+.z0-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.9rem;font-size:.86rem}
+.z0-row input{width:70px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:4px 7px;font-size:.86rem}
+.z0-row input:focus{outline:none;border-color:var(--accent)}
+
+.preset-row{margin-bottom:.9rem}
+.preset-row label{font-size:.76rem;color:var(--muted);display:block;margin-bottom:.3rem}
+.preset-select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 8px;font-size:.78rem;cursor:pointer}
+.preset-select:focus{outline:none;border-color:var(--accent)}
+
+.block-head{font-size:.72rem;font-weight:700;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.6rem}
+.sp-row{display:flex;align-items:center;gap:5px;margin-bottom:.45rem}
+.sp-row label{width:30px;font-size:.82rem;font-family:'Courier New',monospace;color:var(--accent2);flex-shrink:0}
+.sp-num{width:62px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--accent);font-family:'Courier New',monospace;font-size:.82rem;padding:3px 5px;text-align:right;-moz-appearance:textfield;appearance:textfield}
+.sp-num::-webkit-outer-spin-button,.sp-num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.sp-num:focus{outline:none;border-color:var(--accent)}
+.sp-unit{font-size:.7rem;color:var(--muted);width:22px}
+
+.chart-panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.4rem;display:flex;flex-direction:column;gap:1rem}
+.chart-panel h3{font-size:.78rem;font-weight:600;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase}
+
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:.2rem}
+@media(max-width:1100px){.metrics{grid-template-columns:repeat(2,1fr)}}
+.mc{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.5rem .7rem}
+.mc .ml{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+.mc .mv{font-family:'Courier New',monospace;font-size:.95rem;font-weight:700;margin-top:.1rem}
+.mc .mu{font-size:.63rem;color:var(--muted)}
+
+.matrix-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
+@media(max-width:1000px){.matrix-grid{grid-template-columns:1fr 1fr}}
+.matrix-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem}
+.matrix-card h4{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:.6rem}
+.m2x2{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.mcell{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:.35rem .5rem;font-family:'Courier New',monospace;font-size:.74rem}
+.mcell .cm{color:var(--orange);font-weight:600}
+.mcell .ca{color:var(--muted);font-size:.68rem}
+.mcell .ci{color:var(--muted)}
+.mcell .crv{color:var(--accent2);font-weight:600}
+
+.stab-row{display:flex;gap:.6rem;flex-wrap:wrap}
+.stab-pill{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:.3rem .7rem;font-size:.8rem}
+.stab-pill b{font-family:'Courier New',monospace;font-size:.85rem}
+
+.chart-wrap{position:relative;height:280px}
+
+.annotation{border-left:3px solid #b5895a;background:var(--surface);padding:10px 14px;border-radius:0 8px 8px 0;font-size:.83rem;color:var(--muted);line-height:1.65}
+.annotation strong{color:var(--text)}
+
+.smith-wrap{display:flex;justify-content:center;margin-top:.3rem}
+.smith-lbl{font-size:.72rem;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:.4rem;text-align:center}
+
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.help-overlay.open{display:flex}
+.help-box{background:#fff;border-radius:12px;max-width:580px;width:90%;padding:32px;position:relative;max-height:82vh;overflow-y:auto}
+.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+
+.all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
+.all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
+details.try-it{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
+details.try-it summary{color:var(--accent);font-size:.78rem;cursor:pointer;user-select:none;list-style:none}
+details.try-it summary::-webkit-details-marker{display:none}
+details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:.8rem;color:var(--muted);line-height:1.7}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
+  <button class="tbtn" onclick="takeScreenshot()">&#128247; Screenshot</button>
+  <button class="tbtn" onclick="exportCSV()">&#11015; Export CSV</button>
+  <button class="tbtn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">&#8856; Copy Link</button>
+</div>
+
+<nav>
+  <a href="https://www.noahhinckley.com/home">noahhinckley.com</a>
+  <span>›</span>
+  <a href="index.html">RF Toolbox</a>
+  <span>›</span>
+  <span>S-Parameter Cascade</span>
+</nav>
+
+<header>
+  <div class="tag">Tool 17 · Network Analysis</div>
+  <h1>S-Parameter Cascade / Converter</h1>
+  <p>Convert S-parameters to Z, Y, and ABCD matrices. Cascade two 2-port networks. Compute gain, stability factors, and matching metrics.</p>
+</header>
+
+<div class="equation-box">
+  <div class="eq-card">
+    <div>
+      <div class="eq-primary">S → ABCD: A = [(1+S11)(1−S22)+S12S21] / 2S21</div>
+      <div class="eq-secondary">Cascade: [T&#8322;] = [T&#8321;]·[T&#8322;],  then T → S</div>
+      <div class="eq-note">T-matrix (ABCD) cascade preserves mismatch interactions between stages</div>
+    </div>
+    <div>
+      <div class="eq-secondary">S → Z: Z&#8321;&#8321; = Z&#8320;[(1+S11)(1−S22)+S12S21] / D&#7824;</div>
+      <div class="eq-secondary">S → Y: Y&#8321;&#8321; = [(1−S11)(1+S22)+S12S21] / Z&#8320;D&#8347;</div>
+      <div class="eq-note">D&#7824; = (1−S11)(1−S22)−S12S21 &nbsp;&nbsp; D&#8347; = (1+S11)(1+S22)−S12S21</div>
+    </div>
+    <div>
+      <div class="eq-secondary">Stability: K = (1−|S11|²−|S22|²+|Δ|²) / (2|S12||S21|)</div>
+      <div class="eq-secondary">Δ = S11·S22 − S12·S21 &nbsp; MSG = |S21|/|S12| [dB]</div>
+      <div class="eq-note">K &gt; 1 and |Δ| &lt; 1: unconditionally stable. K &lt; 1: potentially unstable.</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="panel">
+    <h3>Mode</h3>
+    <div class="mode-row">
+      <button class="mode-btn active" id="btnSingle" onclick="setMode('single')">Single Block</button>
+      <button class="mode-btn" id="btnCasc" onclick="setMode('casc')">Cascade A → B</button>
+    </div>
+
+    <div class="z0-row">
+      <label>Z&#8320; =</label>
+      <input type="number" id="iZ0" value="50" min="1" max="500" step="1" oninput="update()">
+      <span style="color:var(--muted)">&#937;</span>
+    </div>
+
+    <div class="preset-row">
+      <label>Preset</label>
+      <select class="preset-select" id="presetSel" onchange="loadPreset(this.value)">
+        <option value="">— Select preset —</option>
+        <optgroup label="Single Block">
+          <option value="lna">Typical LNA</option>
+          <option value="pa">PA stage</option>
+          <option value="att6">6 dB attenuator</option>
+          <option value="bpf">Bandpass filter</option>
+          <option value="through">Ideal through</option>
+        </optgroup>
+        <optgroup label="Cascade Pairs">
+          <option value="lna_bpf">LNA + BPF (image reject)</option>
+          <option value="bpf_lna">BPF + LNA (pre-select)</option>
+          <option value="pa_att">PA + 6 dB pad</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <hr class="divider">
+    <div class="block-head" id="blkAHead">Block A</div>
+
+    <div class="sp-row"><label>S11</label>
+      <input type="number" class="sp-num" id="aS11d" value="-15" step="0.5"> <span class="sp-unit">dB</span>
+      <input type="number" class="sp-num" id="aS11a" value="0" step="5"> <span class="sp-unit">°</span>
+    </div>
+    <div class="sp-row"><label>S21</label>
+      <input type="number" class="sp-num" id="aS21d" value="12" step="0.5"> <span class="sp-unit">dB</span>
+      <input type="number" class="sp-num" id="aS21a" value="-90" step="5"> <span class="sp-unit">°</span>
+    </div>
+    <div class="sp-row"><label>S12</label>
+      <input type="number" class="sp-num" id="aS12d" value="-25" step="0.5"> <span class="sp-unit">dB</span>
+      <input type="number" class="sp-num" id="aS12a" value="90" step="5"> <span class="sp-unit">°</span>
+    </div>
+    <div class="sp-row"><label>S22</label>
+      <input type="number" class="sp-num" id="aS22d" value="-18" step="0.5"> <span class="sp-unit">dB</span>
+      <input type="number" class="sp-num" id="aS22a" value="0" step="5"> <span class="sp-unit">°</span>
+    </div>
+
+    <div id="blockBGroup" style="display:none">
+      <hr class="divider">
+      <div class="block-head">Block B</div>
+      <div class="sp-row"><label>S11</label>
+        <input type="number" class="sp-num" id="bS11d" value="-20" step="0.5"> <span class="sp-unit">dB</span>
+        <input type="number" class="sp-num" id="bS11a" value="180" step="5"> <span class="sp-unit">°</span>
+      </div>
+      <div class="sp-row"><label>S21</label>
+        <input type="number" class="sp-num" id="bS21d" value="-1" step="0.5"> <span class="sp-unit">dB</span>
+        <input type="number" class="sp-num" id="bS21a" value="-45" step="5"> <span class="sp-unit">°</span>
+      </div>
+      <div class="sp-row"><label>S12</label>
+        <input type="number" class="sp-num" id="bS12d" value="-1" step="0.5"> <span class="sp-unit">dB</span>
+        <input type="number" class="sp-num" id="bS12a" value="-45" step="5"> <span class="sp-unit">°</span>
+      </div>
+      <div class="sp-row"><label>S22</label>
+        <input type="number" class="sp-num" id="bS22d" value="-20" step="0.5"> <span class="sp-unit">dB</span>
+        <input type="number" class="sp-num" id="bS22a" value="180" step="5"> <span class="sp-unit">°</span>
+      </div>
+    </div>
+
+    <details class="try-it">
+      <summary>&#9658; Things to Try</summary>
+      <ul>
+        <li>Load <strong>LNA + BPF (cascade)</strong>: compare Block A S21 = 12 dB + Block B S21 = −1 dB. The cascaded result differs from the simple sum (11 dB) due to mismatch interactions at the A–B interface.</li>
+        <li>Set Block A S12 = −60 dB (unilateral LNA): the cascaded S21 collapses to S21_A × S21_B exactly. Raise S12 to −15 dB and watch the error grow.</li>
+        <li>Check the stability factor K for the <strong>PA stage</strong> preset. Reduce the PA's S22 from −15 to −5 dB and observe how K drops toward 1 — the onset of conditional instability.</li>
+      </ul>
+    </details>
+  </div>
+
+  <!-- Chart panel -->
+  <div class="chart-panel">
+    <h3 id="resultHead">Block A — Key Metrics</h3>
+    <div class="metrics">
+      <div class="mc"><div class="ml">|S21| (gain)</div><div class="mv" id="mS21" style="color:var(--green)">—</div><div class="mu">dB</div></div>
+      <div class="mc"><div class="ml">|S11| (input RL)</div><div class="mv" id="mS11" style="color:var(--orange)">—</div><div class="mu">dB</div></div>
+      <div class="mc"><div class="ml">|S22| (output RL)</div><div class="mv" id="mS22" style="color:var(--orange)">—</div><div class="mu">dB</div></div>
+      <div class="mc"><div class="ml">|S12| (isolation)</div><div class="mv" id="mS12" style="color:var(--muted)">—</div><div class="mu">dB</div></div>
+    </div>
+
+    <div class="stab-row" id="stabRow">
+      <div class="stab-pill">K = <b id="stabK">—</b></div>
+      <div class="stab-pill">|Δ| = <b id="stabD">—</b></div>
+      <div class="stab-pill">MSG = <b id="stabMSG">—</b> dB</div>
+      <div class="stab-pill">MAG = <b id="stabMAG">—</b> dB</div>
+      <div class="stab-pill" id="stabPill">—</div>
+    </div>
+
+    <hr class="divider" style="margin:.5rem 0">
+
+    <div class="matrix-grid">
+      <div class="matrix-card">
+        <h4>S-Parameters (dB ∠ °)</h4>
+        <div class="m2x2">
+          <div class="mcell"><div class="ca">S11</div><div class="cm" id="dS11">—</div><div class="ca" id="dS11a">—</div></div>
+          <div class="mcell"><div class="ca">S12</div><div class="cm" id="dS12">—</div><div class="ca" id="dS12a">—</div></div>
+          <div class="mcell"><div class="ca">S21</div><div class="cm" id="dS21">—</div><div class="ca" id="dS21a">—</div></div>
+          <div class="mcell"><div class="ca">S22</div><div class="cm" id="dS22">—</div><div class="ca" id="dS22a">—</div></div>
+        </div>
+      </div>
+      <div class="matrix-card">
+        <h4>Z-Matrix (Ω, rect.)</h4>
+        <div class="m2x2">
+          <div class="mcell"><div class="ca">Z11</div><div class="crv" id="dZ11">—</div></div>
+          <div class="mcell"><div class="ca">Z12</div><div class="crv" id="dZ12">—</div></div>
+          <div class="mcell"><div class="ca">Z21</div><div class="crv" id="dZ21">—</div></div>
+          <div class="mcell"><div class="ca">Z22</div><div class="crv" id="dZ22">—</div></div>
+        </div>
+      </div>
+      <div class="matrix-card">
+        <h4>Y-Matrix (mS, rect.)</h4>
+        <div class="m2x2">
+          <div class="mcell"><div class="ca">Y11</div><div class="crv" id="dY11">—</div></div>
+          <div class="mcell"><div class="ca">Y12</div><div class="crv" id="dY12">—</div></div>
+          <div class="mcell"><div class="ca">Y21</div><div class="crv" id="dY21">—</div></div>
+          <div class="mcell"><div class="ca">Y22</div><div class="crv" id="dY22">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="matrix-card" style="margin-top:.1rem">
+      <h4>ABCD Matrix (A,D dimensionless · B in Ω · C in mS)</h4>
+      <div class="m2x2">
+        <div class="mcell"><div class="ca">A</div><div class="crv" id="dA">—</div></div>
+        <div class="mcell"><div class="ca">B (Ω)</div><div class="crv" id="dB">—</div></div>
+        <div class="mcell"><div class="ca">C (mS)</div><div class="crv" id="dC">—</div></div>
+        <div class="mcell"><div class="ca">D</div><div class="crv" id="dD">—</div></div>
+      </div>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:.5rem">S-Parameter Magnitudes — Comparison</h3>
+      <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+    </div>
+
+    <div class="smith-lbl">Input (S11) &amp; Output (S22) Reflection — Smith Chart</div>
+    <div class="smith-wrap"><canvas id="smithCanvas" width="220" height="220"></canvas></div>
+
+    <div class="annotation" id="annotation">Computing…</div>
+  </div>
+</div>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">S-Parameter Cascade / Converter — Help</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Accepts S-parameters for one or two 2-port networks (entered as magnitude in dB and phase in degrees at a single frequency) and computes: (1) Equivalent Z, Y, and ABCD (T-matrix) representations. (2) For cascade mode, the combined S-parameters using T-matrix multiplication — [T<sub>total</sub>] = [T<sub>A</sub>]·[T<sub>B</sub>] — which correctly accounts for mismatch reflections at the A–B interface. (3) Stability factors K (Rollett), |Δ|, MSG, and MAG for the active or cascaded network.</div>
+
+    <div class="help-section">Inputs</div>
+    <div class="help-body">Each S-parameter is entered as dB magnitude + angle in degrees. Convention: S21 gain of 12 dB → enter 12 in the dB field. Reflection S11 of −15 dB return loss → enter −15. Angles follow the standard microwave convention (negative for phase delay through the device).</div>
+
+    <div class="help-section">Key results</div>
+    <div class="help-body"><ul>
+      <li><strong>K factor:</strong> Rollett stability factor. K &gt; 1 and |Δ| &lt; 1 → unconditionally stable. K &lt; 1 → potentially unstable (may oscillate with certain source/load impedances).</li>
+      <li><strong>MSG:</strong> Maximum stable gain = |S21/S12| in dB. Upper bound on gain when K &lt; 1.</li>
+      <li><strong>MAG:</strong> Maximum available gain (only defined when K &gt; 1). This is the gain achievable with conjugate matching at both ports.</li>
+      <li><strong>Z-matrix:</strong> Open-circuit impedance parameters. Useful for series-element modeling and port coupling analysis.</li>
+      <li><strong>Y-matrix:</strong> Short-circuit admittance parameters. Natural for parallel-element analysis and FET models.</li>
+      <li><strong>ABCD:</strong> Chain (transmission) matrix. A and D are dimensionless transfer ratios; B is in Ω (transimpedance); C is in S (transadmittance). Cascade by matrix multiplication.</li>
+    </ul></div>
+
+    <div class="help-section">Cascade accuracy</div>
+    <div class="help-body">Simple multiplication S21_total ≈ S21_A × S21_B only holds when both stages are perfectly matched (|S11|, |S22| ≪ 1). The T-matrix approach used here is exact for arbitrary mismatch and captures the forward/backward reflections between stages.</div>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">Pozar, D. M. <em>Microwave Engineering</em>, 4th ed. Wiley, 2012. Chapter 4: Microwave Network Analysis — S, Z, Y, ABCD parameters and two-port stability.</div>
+  </div>
+</div>
+
+<a href="index.html" class="all-tools-btn">&#8592; All Tools</a>
+
+<script>
+// ── Complex number library ────────────────────────────────────────────────────
+function C(r,i=0){return{r,i}}
+function cadd(a,b){return C(a.r+b.r,a.i+b.i)}
+function csub(a,b){return C(a.r-b.r,a.i-b.i)}
+function cmul(a,b){return C(a.r*b.r-a.i*b.i,a.r*b.i+a.i*b.r)}
+function cdiv(a,b){const d=b.r*b.r+b.i*b.i;return C((a.r*b.r+a.i*b.i)/d,(a.i*b.r-a.r*b.i)/d)}
+function cabs(a){return Math.hypot(a.r,a.i)}
+function cang(a){return Math.atan2(a.i,a.r)*180/Math.PI}
+function cpolar(m,deg){const r=deg*Math.PI/180;return C(m*Math.cos(r),m*Math.sin(r))}
+function cdb(a){return 20*Math.log10(Math.max(1e-15,cabs(a)))}
+
+// ── Read S-params from inputs ─────────────────────────────────────────────────
+function readBlock(pfx){
+  function s(n){
+    const db=parseFloat(document.getElementById(pfx+'S'+n+'d').value)||0;
+    const ang=parseFloat(document.getElementById(pfx+'S'+n+'a').value)||0;
+    return cpolar(Math.pow(10,db/20),ang);
+  }
+  return{s11:s('11'),s21:s('21'),s12:s('12'),s22:s('22')};
+}
+
+// ── S → ABCD ──────────────────────────────────────────────────────────────────
+function sToABCD({s11,s21,s12,s22},Z0){
+  const one=C(1),two=C(2),z=C(Z0);
+  const denom=cmul(two,s21);
+  const A=cdiv(cadd(cmul(cadd(one,s11),csub(one,s22)),cmul(s12,s21)),denom);
+  const B=cdiv(cmul(z,csub(cmul(cadd(one,s11),cadd(one,s22)),cmul(s12,s21))),denom);
+  const Cv=cdiv(csub(cmul(csub(one,s11),csub(one,s22)),cmul(s12,s21)),cmul(denom,z));
+  const D=cdiv(cadd(cmul(csub(one,s11),cadd(one,s22)),cmul(s12,s21)),denom);
+  return{A,B,C:Cv,D};
+}
+
+// ── Cascade two ABCD matrices ────────────────────────────────────────────────
+function cascABCD(t1,t2){
+  return{
+    A:cadd(cmul(t1.A,t2.A),cmul(t1.B,t2.C)),
+    B:cadd(cmul(t1.A,t2.B),cmul(t1.B,t2.D)),
+    C:cadd(cmul(t1.C,t2.A),cmul(t1.D,t2.C)),
+    D:cadd(cmul(t1.C,t2.B),cmul(t1.D,t2.D))
+  };
+}
+
+// ── ABCD → S ──────────────────────────────────────────────────────────────────
+function abcdToS({A,B,C,D},Z0){
+  const z=C(Z0);
+  const BZ=cdiv(B,z),CZ=cmul(C,z);
+  const denom=cadd(cadd(cadd(A,BZ),CZ),D);
+  const s11=cdiv(csub(csub(cadd(A,BZ),CZ),D),denom);
+  const s21=cdiv(C(2),denom);
+  const det=csub(cmul(A,D),cmul(B,C));
+  const s12=cdiv(cmul(C(2),det),denom);
+  const s22=cdiv(csub(cadd(csub(D,A),BZ),CZ),denom);
+  return{s11,s21,s12,s22};
+}
+
+// ── S → Z ─────────────────────────────────────────────────────────────────────
+function sToZ({s11,s21,s12,s22},Z0){
+  const one=C(1),z=C(Z0);
+  const dZ=csub(cmul(csub(one,s11),csub(one,s22)),cmul(s12,s21));
+  return{
+    z11:cdiv(cmul(z,cadd(cmul(cadd(one,s11),csub(one,s22)),cmul(s12,s21))),dZ),
+    z12:cdiv(cmul(cmul(C(2),z),s12),dZ),
+    z21:cdiv(cmul(cmul(C(2),z),s21),dZ),
+    z22:cdiv(cmul(z,cadd(cmul(csub(one,s11),cadd(one,s22)),cmul(s12,s21))),dZ)
+  };
+}
+
+// ── S → Y (via Z inverse) ────────────────────────────────────────────────────
+function sToY(sp,Z0){
+  const{z11,z12,z21,z22}=sToZ(sp,Z0);
+  const det=csub(cmul(z11,z22),cmul(z12,z21));
+  return{
+    y11:cdiv(z22,det),
+    y12:cdiv(cmul(C(-1),z12),det),
+    y21:cdiv(cmul(C(-1),z21),det),
+    y22:cdiv(z11,det)
+  };
+}
+
+// ── Stability ─────────────────────────────────────────────────────────────────
+function stabFactors({s11,s21,s12,s22}){
+  const delta=csub(cmul(s11,s22),cmul(s12,s21));
+  const absD=cabs(delta);
+  const aS11=cabs(s11),aS22=cabs(s22),aS21=cabs(s21),aS12=cabs(s12);
+  const K=(aS12*aS21>1e-15)
+    ?(1-aS11*aS11-aS22*aS22+absD*absD)/(2*aS12*aS21)
+    :Infinity;
+  const MSG_dB=(aS12>1e-15)?cdb(s21)-cdb(s12):-Infinity;
+  const MAG_dB=(K>1&&aS12>1e-15)?MSG_dB-20*Math.log10(K+Math.sqrt(K*K-1)):NaN;
+  return{K,absD,MSG_dB,MAG_dB};
+}
+
+// ── Format helpers ─────────────────────────────────────────────────────────────
+function fmtR(v,dec=2){
+  const a=Math.abs(v);
+  if(a>=1e6)return(v/1e6).toFixed(1)+'M';
+  if(a>=1e3)return(v/1e3).toFixed(1)+'k';
+  return v.toFixed(dec);
+}
+function fmtCplx(c,scale=1,dec=2){
+  const r=c.r*scale,i=c.i*scale;
+  const sign=i>=0?'+':'−';
+  return`${fmtR(r,dec)} ${sign} j${fmtR(Math.abs(i),dec)}`;
+}
+function fmtSdb(c){return cdb(c).toFixed(1)}
+function fmtSang(c){return cang(c).toFixed(1)+'°'}
+
+// ── Charts ────────────────────────────────────────────────────────────────────
+let barChartInst=null;
+
+function initBarChart(){
+  const ctx=document.getElementById('barChart').getContext('2d');
+  barChartInst=new Chart(ctx,{
+    type:'bar',
+    data:{labels:['S11','S21','S12','S22'],datasets:[]},
+    options:{
+      animation:{duration:0},responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:12}}},
+      scales:{
+        x:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'}},
+        y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096',callback:v=>v+' dB'},
+           title:{display:true,color:'#718096',text:'Magnitude (dB)'}}
+      }
+    }
+  });
+}
+
+function updateBarChart(spA,spB,spRes,mode){
+  const toDBs=sp=>[cdb(sp.s11),cdb(sp.s21),cdb(sp.s12),cdb(sp.s22)];
+  const ds=[];
+  if(mode==='casc'){
+    ds.push({label:'Block A',data:toDBs(spA),backgroundColor:'rgba(37,99,235,.7)',borderRadius:3});
+    ds.push({label:'Block B',data:toDBs(spB),backgroundColor:'rgba(22,163,74,.7)',borderRadius:3});
+    ds.push({label:'Cascade',data:toDBs(spRes),backgroundColor:'rgba(181,137,90,.85)',borderRadius:3});
+  } else {
+    ds.push({label:'Block A',data:toDBs(spA),backgroundColor:['rgba(217,119,6,.8)','rgba(22,163,74,.8)','rgba(113,128,150,.6)','rgba(217,119,6,.8)'],borderRadius:4});
+  }
+  barChartInst.data.datasets=ds;
+  barChartInst.update('none');
+}
+
+// ── Smith chart (mini) ────────────────────────────────────────────────────────
+function drawSmith(s11,s22){
+  const cv=document.getElementById('smithCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,cx=W/2,cy=H/2,R=Math.floor(W*0.44);
+  ctx.clearRect(0,0,W,H);
+
+  // Background
+  ctx.fillStyle='#f4f5f7';ctx.beginPath();ctx.arc(cx,cy,R+2,0,Math.PI*2);ctx.fill();
+
+  function drawCircle(re,clr,dash=[]){
+    const r_c=R*re/(re+1);
+    const cx2=cx+R-r_c;
+    ctx.strokeStyle=clr;ctx.lineWidth=.7;ctx.setLineDash(dash);
+    ctx.beginPath();ctx.arc(cx2,cy,r_c,0,Math.PI*2);ctx.stroke();
+  }
+  // VSWR circles
+  [2,3,5,10].forEach(v=>{
+    const g=(v-1)/(v+1);
+    const r_c=R*g;
+    ctx.strokeStyle='#d0d4da';ctx.lineWidth=.6;ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(cx,cy,r_c,0,Math.PI*2);ctx.stroke();
+  });
+  // Constant-r circles (r = 0,0.5,1,2,5)
+  [0,.5,1,2,5].forEach(re=>drawCircle(re,'#c8ccd2'));
+  ctx.setLineDash([]);
+  // Outer boundary
+  ctx.strokeStyle='#718096';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.stroke();
+  // Real axis
+  ctx.strokeStyle='#b0b8c4';ctx.lineWidth=.7;
+  ctx.beginPath();ctx.moveTo(cx-R,cy);ctx.lineTo(cx+R,cy);ctx.stroke();
+  // SC / OC labels
+  ctx.fillStyle='#718096';ctx.font='8px Segoe UI';ctx.textAlign='center';
+  ctx.fillText('SC',cx-R,cy-4);ctx.fillText('OC',cx+R,cy-4);
+
+  function plotGamma(g,clr,label){
+    const x=cx+g.r*R,y=cy-g.i*R;
+    // VSWR circle
+    const mag=cabs(g);
+    ctx.strokeStyle=clr+'80';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.arc(cx,cy,mag*R,0,Math.PI*2);ctx.stroke();
+    ctx.setLineDash([]);
+    // Point
+    ctx.fillStyle=clr;ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();
+    // Label
+    ctx.fillStyle=clr;ctx.font='bold 9px Segoe UI';ctx.textAlign='left';
+    const vswr=mag<.9999?(1+mag)/(1-mag):99;
+    ctx.fillText(`${label} VSWR=${vswr.toFixed(2)}`,x+7,y+4);
+  }
+
+  plotGamma(s11,'#2563eb','S11');
+  plotGamma(s22,'#dc2626','S22');
+}
+
+// ── Main update ────────────────────────────────────────────────────────────────
+let appMode='single';
+
+function update(){
+  const Z0=parseFloat(document.getElementById('iZ0').value)||50;
+  const spA=readBlock('a');
+  const spB=appMode==='casc'?readBlock('b'):null;
+
+  // Determine active S-params (result)
+  let spRes=spA;
+  if(appMode==='casc'){
+    const tA=sToABCD(spA,Z0);
+    const tB=sToABCD(spB,Z0);
+    const tC=cascABCD(tA,tB);
+    spRes=abcdToS(tC,Z0);
+  }
+
+  // Metric cards
+  document.getElementById('resultHead').textContent=
+    appMode==='casc'?'Cascade Result — Key Metrics':'Block A — Key Metrics';
+  document.getElementById('mS21').textContent=cdb(spRes.s21).toFixed(2);
+  document.getElementById('mS11').textContent=cdb(spRes.s11).toFixed(2);
+  document.getElementById('mS22').textContent=cdb(spRes.s22).toFixed(2);
+  document.getElementById('mS12').textContent=cdb(spRes.s12).toFixed(2);
+
+  // Stability
+  const{K,absD,MSG_dB,MAG_dB}=stabFactors(spRes);
+  document.getElementById('stabK').textContent=isFinite(K)?K.toFixed(3):'∞';
+  document.getElementById('stabD').textContent=absD.toFixed(4);
+  document.getElementById('stabMSG').textContent=isFinite(MSG_dB)?MSG_dB.toFixed(1):'—';
+  document.getElementById('stabMAG').textContent=isFinite(MAG_dB)&&!isNaN(MAG_dB)?MAG_dB.toFixed(1):'N/A';
+  const pill=document.getElementById('stabPill');
+  if(K>1&&absD<1){
+    pill.textContent='✓ Unconditionally stable';pill.style.color='var(--green)';
+  } else if(K<1){
+    pill.textContent='⚠ Potentially unstable (K < 1)';pill.style.color='var(--red)';
+  } else {
+    pill.textContent='Conditionally stable';pill.style.color='var(--orange)';
+  }
+
+  // S-param display
+  document.getElementById('dS11').textContent=fmtSdb(spRes.s11)+' dB';
+  document.getElementById('dS11a').textContent='∠ '+fmtSang(spRes.s11);
+  document.getElementById('dS12').textContent=fmtSdb(spRes.s12)+' dB';
+  document.getElementById('dS12a').textContent='∠ '+fmtSang(spRes.s12);
+  document.getElementById('dS21').textContent=fmtSdb(spRes.s21)+' dB';
+  document.getElementById('dS21a').textContent='∠ '+fmtSang(spRes.s21);
+  document.getElementById('dS22').textContent=fmtSdb(spRes.s22)+' dB';
+  document.getElementById('dS22a').textContent='∠ '+fmtSang(spRes.s22);
+
+  // Z matrix
+  try{
+    const z=sToZ(spRes,Z0);
+    document.getElementById('dZ11').textContent=fmtCplx(z.z11)+' Ω';
+    document.getElementById('dZ12').textContent=fmtCplx(z.z12)+' Ω';
+    document.getElementById('dZ21').textContent=fmtCplx(z.z21)+' Ω';
+    document.getElementById('dZ22').textContent=fmtCplx(z.z22)+' Ω';
+  }catch(e){['dZ11','dZ12','dZ21','dZ22'].forEach(id=>document.getElementById(id).textContent='N/A');}
+
+  // Y matrix (display in mS)
+  try{
+    const y=sToY(spRes,Z0);
+    document.getElementById('dY11').textContent=fmtCplx(y.y11,1000)+' mS';
+    document.getElementById('dY12').textContent=fmtCplx(y.y12,1000)+' mS';
+    document.getElementById('dY21').textContent=fmtCplx(y.y21,1000)+' mS';
+    document.getElementById('dY22').textContent=fmtCplx(y.y22,1000)+' mS';
+  }catch(e){['dY11','dY12','dY21','dY22'].forEach(id=>document.getElementById(id).textContent='N/A');}
+
+  // ABCD
+  try{
+    const t=sToABCD(spRes,Z0);
+    document.getElementById('dA').textContent=fmtCplx(t.A);
+    document.getElementById('dB').textContent=fmtCplx(t.B)+' Ω';
+    document.getElementById('dC').textContent=fmtCplx(t.C,1000,3)+' mS';
+    document.getElementById('dD').textContent=fmtCplx(t.D);
+  }catch(e){['dA','dB','dC','dD'].forEach(id=>document.getElementById(id).textContent='N/A');}
+
+  // Charts
+  updateBarChart(spA,spB,spRes,appMode);
+  drawSmith(spRes.s11,spRes.s22);
+
+  // Annotation
+  const gain=cdb(spRes.s21).toFixed(2);
+  const rl11=(-cdb(spRes.s11)).toFixed(1);
+  const rl22=(-cdb(spRes.s22)).toFixed(1);
+  const iso=(-cdb(spRes.s12)).toFixed(1);
+  let stabNote=K>1&&absD<1?`K = ${K.toFixed(3)} > 1 and |Δ| = ${absD.toFixed(4)} < 1 → <strong>unconditionally stable</strong>.`:
+    K<1?`<strong style="color:var(--red)">Potentially unstable</strong>: K = ${K.toFixed(3)} < 1. May oscillate with some source/load combinations. MSG = ${MSG_dB.toFixed(1)} dB.`:
+    `Conditionally stable (K = ${K.toFixed(3)}). Check load/source stability circles before designing matching network.`;
+  let cascNote='';
+  if(appMode==='casc'){
+    const simpleSum=cdb(spA.s21)+cdb(spB.s21);
+    const err=cdb(spRes.s21)-simpleSum;
+    cascNote=` Cascaded S21 = <strong>${gain} dB</strong> vs simple sum ${simpleSum.toFixed(2)} dB (mismatch error = <strong>${err>=0?'+':''}${err.toFixed(2)} dB</strong>).`;
+  }
+  document.getElementById('annotation').innerHTML=
+    `<strong>${appMode==='casc'?'Cascade Result':'Block A'}:</strong> S21 = <strong>${gain} dB</strong>, Input RL = <strong>${rl11} dB</strong>, Output RL = <strong>${rl22} dB</strong>, Isolation = <strong>${iso} dB</strong>.${cascNote} ${stabNote}`;
+}
+
+// ── Mode toggle ────────────────────────────────────────────────────────────────
+function setMode(m){
+  appMode=m;
+  document.getElementById('btnSingle').classList.toggle('active',m==='single');
+  document.getElementById('btnCasc').classList.toggle('active',m==='casc');
+  document.getElementById('blockBGroup').style.display=m==='casc'?'':'none';
+  document.getElementById('blkAHead').textContent=m==='casc'?'Block A':'Block A';
+  document.getElementById('presetSel').value='';
+  update();
+}
+
+// ── Presets ────────────────────────────────────────────────────────────────────
+const PRESETS={
+  lna:    {a:{s11d:-15,s11a:0, s21d:12, s21a:-90,s12d:-25,s12a:90, s22d:-18,s22a:0  }},
+  pa:     {a:{s11d:-12,s11a:0, s21d:20, s21a:-120,s12d:-28,s12a:120,s22d:-15,s22a:0  }},
+  att6:   {a:{s11d:-32,s11a:0, s21d:-6, s21a:0,  s12d:-6, s12a:0,  s22d:-32,s22a:0  }},
+  bpf:    {a:{s11d:-20,s11a:180,s21d:-1,s21a:-45,s12d:-1, s12a:-45,s22d:-20,s22a:180 }},
+  through:{a:{s11d:-60,s11a:0, s21d:0,  s21a:0,  s12d:0,  s12a:0,  s22d:-60,s22a:0  }},
+  lna_bpf:{
+    a:{s11d:-15,s11a:0, s21d:12, s21a:-90,s12d:-25,s12a:90, s22d:-18,s22a:0  },
+    b:{s11d:-20,s11a:180,s21d:-1,s21a:-45,s12d:-1, s12a:-45,s22d:-20,s22a:180}
+  },
+  bpf_lna:{
+    a:{s11d:-20,s11a:180,s21d:-1,s21a:-45,s12d:-1, s12a:-45,s22d:-20,s22a:180},
+    b:{s11d:-15,s11a:0, s21d:12, s21a:-90,s12d:-25,s12a:90, s22d:-18,s22a:0  }
+  },
+  pa_att:{
+    a:{s11d:-12,s11a:0, s21d:20, s21a:-120,s12d:-28,s12a:120,s22d:-15,s22a:0  },
+    b:{s11d:-32,s11a:0, s21d:-6, s21a:0,  s12d:-6, s12a:0,  s22d:-32,s22a:0  }
+  }
+};
+
+function loadPreset(key){
+  const p=PRESETS[key];if(!p)return;
+  function setBlock(pfx,blk){
+    if(!blk)return;
+    Object.entries(blk).forEach(([k,v])=>{
+      const el=document.getElementById(pfx+k.replace('s','S'));
+      if(el)el.value=v;
+    });
+  }
+  setBlock('a',p.a);
+  setBlock('b',p.b);
+  if(p.b&&appMode==='single'){setMode('casc');return;}
+  if(!p.b&&appMode==='casc'){setMode('single');return;}
+  update();
+}
+
+// ── Wire all inputs to update ─────────────────────────────────────────────────
+document.querySelectorAll('.sp-num, #iZ0').forEach(el=>{
+  el.addEventListener('input',update);
+});
+
+// ── Toolbar ────────────────────────────────────────────────────────────────────
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+function takeScreenshot(){}
+
+function exportCSV(){
+  const Z0=parseFloat(document.getElementById('iZ0').value)||50;
+  const spA=readBlock('a');
+  const lines=['S-Parameter Cascade / Converter','Parameter,Value'];
+  function blockLines(pfx,sp){
+    return[
+      pfx+'S11 dB,'+cdb(sp.s11).toFixed(3),
+      pfx+'S11 ang,'+cang(sp.s11).toFixed(2)+' deg',
+      pfx+'S21 dB,'+cdb(sp.s21).toFixed(3),
+      pfx+'S21 ang,'+cang(sp.s21).toFixed(2)+' deg',
+      pfx+'S12 dB,'+cdb(sp.s12).toFixed(3),
+      pfx+'S12 ang,'+cang(sp.s12).toFixed(2)+' deg',
+      pfx+'S22 dB,'+cdb(sp.s22).toFixed(3),
+      pfx+'S22 ang,'+cang(sp.s22).toFixed(2)+' deg',
+    ];
+  }
+  lines.push('','Block A');lines.push(...blockLines('A_',spA));
+  if(appMode==='casc'){
+    const spB=readBlock('b');
+    lines.push('','Block B');lines.push(...blockLines('B_',spB));
+    const tC=cascABCD(sToABCD(spA,Z0),sToABCD(spB,Z0));
+    const spR=abcdToS(tC,Z0);
+    lines.push('','Cascade Result');lines.push(...blockLines('R_',spR));
+  }
+  const blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='rf_toolbox_sparam_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+
+function copyLink(){
+  const spA=readBlock('a');
+  const p=new URLSearchParams({
+    a11d:document.getElementById('aS11d').value,a11a:document.getElementById('aS11a').value,
+    a21d:document.getElementById('aS21d').value,a21a:document.getElementById('aS21a').value,
+    a12d:document.getElementById('aS12d').value,a12a:document.getElementById('aS12a').value,
+    a22d:document.getElementById('aS22d').value,a22a:document.getElementById('aS22a').value,
+    z0:document.getElementById('iZ0').value,mode:appMode
+  });
+  navigator.clipboard.writeText(location.href.split('?')[0]+'?'+p.toString()).then(()=>{
+    const btn=document.getElementById('copyBtn');btn.textContent='✓ Copied';
+    setTimeout(()=>btn.textContent='⎘ Copy Link',1500);
+  });
+}
+
+// ── URL state restore ─────────────────────────────────────────────────────────
+(function(){
+  const p=new URLSearchParams(location.search);
+  const map={a11d:'aS11d',a11a:'aS11a',a21d:'aS21d',a21a:'aS21a',
+             a12d:'aS12d',a12a:'aS12a',a22d:'aS22d',a22a:'aS22a',z0:'iZ0'};
+  Object.entries(map).forEach(([k,id])=>{if(p.has(k))document.getElementById(id).value=p.get(k);});
+  if(p.get('mode')==='casc')setMode('casc');
+})();
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+initBarChart();
+update();
+</script>
+</body>
+</html>

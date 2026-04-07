@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Filter Design & Resonance | RF Toolbox</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--surface:#f4f5f7;--card:#f4f5f7;--border:#d0d4da;
+  --accent:#b5895a;--accent2:#7c3aed;--text:#1a1d23;--muted:#718096;
+  --green:#16a34a;--orange:#d97706;--red:#dc2626;--blue:#2563eb;--cyan:#0284c7;
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+
+.toolbar{position:fixed;top:14px;right:16px;display:flex;gap:6px;z-index:100}
+.tbtn{background:var(--card);border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:5px 10px;font-size:.75rem;cursor:pointer;transition:border-color .15s,color .15s}
+.tbtn:hover{border-color:#b5895a;color:#b5895a}
+
+nav{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem}
+nav a{color:#b5895a;text-decoration:none;font-size:.88rem}
+nav a:hover{text-decoration:underline}
+nav span{color:var(--muted)}
+header{padding:2rem 1.5rem 1.5rem;max-width:1200px;margin:0 auto}
+header .tag{font-size:.72rem;font-weight:600;color:#b5895a;letter-spacing:2px;text-transform:uppercase;margin-bottom:.4rem}
+header h1{font-size:2rem;font-weight:700}
+header p{color:var(--muted);margin-top:.4rem}
+
+.equation-box{max-width:1200px;margin:0 auto 1.5rem;padding:0 1.5rem}
+.eq-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.5rem;display:flex;flex-wrap:wrap;gap:2rem;align-items:flex-start}
+.eq-primary{font-family:'Courier New',monospace;font-size:.95rem;color:var(--accent);margin-bottom:.3rem}
+.eq-secondary{font-family:'Courier New',monospace;font-size:.82rem;color:var(--accent2);margin-bottom:.15rem}
+.eq-note{font-size:.79rem;color:var(--muted);margin-top:.3rem}
+
+.layout{display:grid;grid-template-columns:300px 1fr;gap:1.4rem;max-width:1200px;margin:0 auto;padding:0 1.5rem 2rem}
+@media(max-width:860px){.layout{grid-template-columns:1fr}}
+
+.panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.4rem;display:flex;flex-direction:column;gap:0}
+.panel h3{font-size:.78rem;font-weight:600;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.9rem}
+.divider{border:none;border-top:1px solid var(--border);margin:.9rem 0}
+
+.mode-row{display:flex;gap:6px;margin-bottom:1rem}
+.mode-btn{flex:1;padding:.38rem 0;background:var(--surface);border:1px solid var(--border);border-radius:5px;font-size:.78rem;cursor:pointer;color:var(--muted);transition:.15s;text-align:center}
+.mode-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(181,137,90,.08)}
+.sub-btn{flex:1;padding:.3rem 0;background:var(--surface);border:1px solid var(--border);border-radius:4px;font-size:.74rem;cursor:pointer;color:var(--muted);transition:.15s;text-align:center}
+.sub-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(124,58,237,.07)}
+
+.slider-row{margin-bottom:.9rem}
+.slider-row label{display:flex;justify-content:space-between;font-size:.88rem;margin-bottom:.25rem}
+.slider-row label span{color:var(--orange);font-family:'Courier New',monospace;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--accent);height:4px;cursor:pointer}
+.hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted);margin-top:.12rem}
+.sr-row{display:flex;align-items:center;gap:6px}
+.sr-row input[type=range]{flex:1;width:auto;min-width:0}
+.si{width:72px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--accent);font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;text-align:right;transition:border-color .15s;-moz-appearance:textfield;appearance:textfield}
+.si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.si:focus{outline:none;border-color:var(--accent)}
+.si-unit{font-size:.73rem;color:var(--muted);white-space:nowrap}
+
+.f0-display{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.5rem .8rem;font-size:.85rem;color:var(--text);margin-bottom:.9rem;text-align:center}
+.f0-display b{font-family:'Courier New',monospace;color:var(--accent)}
+
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:.5rem}
+@media(max-width:1100px){.metrics{grid-template-columns:repeat(2,1fr)}}
+.mc{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.5rem .7rem}
+.mc .ml{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+.mc .mv{font-family:'Courier New',monospace;font-size:.95rem;font-weight:700;margin-top:.1rem}
+.mc .mu{font-size:.63rem;color:var(--muted)}
+
+.chart-panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.4rem;display:flex;flex-direction:column;gap:1rem}
+.chart-panel h3{font-size:.78rem;font-weight:600;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase}
+.chart-wrap{position:relative;height:300px}
+
+.comp-table{width:100%;border-collapse:collapse;font-size:.83rem}
+.comp-table th{text-align:left;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:.3rem .5rem;border-bottom:1px solid var(--border)}
+.comp-table td{padding:.3rem .5rem;border-bottom:1px solid var(--border)}
+.comp-table td:last-child{font-family:'Courier New',monospace;color:var(--accent);font-weight:600}
+.comp-table tr:hover{background:var(--surface)}
+
+.annotation{border-left:3px solid #b5895a;background:var(--surface);padding:10px 14px;border-radius:0 8px 8px 0;font-size:.83rem;color:var(--muted);line-height:1.65}
+.annotation strong{color:var(--text)}
+
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.help-overlay.open{display:flex}
+.help-box{background:#fff;border-radius:12px;max-width:580px;width:90%;padding:32px;position:relative;max-height:82vh;overflow-y:auto}
+.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
+.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
+.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
+.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
+.help-body li{margin-bottom:.3rem}
+
+.all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
+.all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
+details.try-it{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
+details.try-it summary{color:var(--accent);font-size:.78rem;cursor:pointer;user-select:none;list-style:none}
+details.try-it summary::-webkit-details-marker{display:none}
+details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:.8rem;color:var(--muted);line-height:1.7}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
+  <button class="tbtn" onclick="takeScreenshot()">&#128247; Screenshot</button>
+  <button class="tbtn" onclick="exportCSV()">&#11015; Export CSV</button>
+  <button class="tbtn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">&#8856; Copy Link</button>
+</div>
+
+<nav>
+  <a href="https://www.noahhinckley.com/home">noahhinckley.com</a>
+  <span>›</span>
+  <a href="index.html">RF Toolbox</a>
+  <span>›</span>
+  <span>Filter Design &amp; Resonance</span>
+</nav>
+
+<header>
+  <div class="tag">Tool 18 · Passive Networks</div>
+  <h1>Filter Design &amp; Resonance Calculator</h1>
+  <p>RLC resonator analysis (series &amp; parallel). Butterworth and Chebyshev LC ladder synthesis for low-pass and high-pass filters up to 7th order.</p>
+</header>
+
+<div class="equation-box">
+  <div class="eq-card">
+    <div>
+      <div class="eq-primary">f&#8320; = 1 / (2&#960;&#8730;LC) &nbsp; Q&#8347; = &#969;&#8320;L/R &nbsp; Q&#8346; = R/&#969;&#8320;L</div>
+      <div class="eq-secondary">BW = f&#8320;/Q &nbsp; Z&#8345;(&#969;) = R + j(&#969;L&#8722;1/&#969;C) &nbsp; Z&#8346;(&#969;) = 1/(1/R+j&#969;C+1/j&#969;L)</div>
+      <div class="eq-note">Series resonance: minimum |Z|. Parallel resonance: maximum |Z|.</div>
+    </div>
+    <div>
+      <div class="eq-primary">Butterworth: g&#8342; = 2&#183;sin[(2k&#8722;1)&#960;/2n]</div>
+      <div class="eq-secondary">LPF: C&#8342; = g&#8342;/(Z&#8320;&#183;&#969;&#8338;) or L&#8342; = g&#8342;&#183;Z&#8320;/&#969;&#8338;</div>
+      <div class="eq-note">Maximally flat passband. &#8722;3 dB at f&#8338;.</div>
+    </div>
+    <div>
+      <div class="eq-primary">Chebyshev: equiripple passband</div>
+      <div class="eq-secondary">&#946; = ln[coth(&#949;&#183;ln10/40)] &nbsp; &#947; = sinh(&#946;/2n)</div>
+      <div class="eq-secondary">g&#8342; = 4a&#8342;&#8331;&#8321;&#183;a&#8342; / (b&#8342;&#8331;&#8321;&#183;g&#8342;&#8331;&#8321;)</div>
+      <div class="eq-note">Steeper rolloff vs Butterworth; ripple &#949; dB in passband.</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="panel">
+    <h3>Mode</h3>
+    <div class="mode-row">
+      <button class="mode-btn active" id="btnRes" onclick="setMode('res')">Resonator</button>
+      <button class="mode-btn" id="btnFilt" onclick="setMode('filt')">LC Filter</button>
+    </div>
+
+    <!-- ── Resonator inputs ───────────────────────────── -->
+    <div id="resGroup">
+      <div class="mode-row" style="margin-bottom:.7rem">
+        <button class="sub-btn active" id="btnSeries" onclick="setRes('series')">Series RLC</button>
+        <button class="sub-btn" id="btnParallel" onclick="setRes('parallel')">Parallel RLC</button>
+      </div>
+
+      <div class="slider-row">
+        <label>R <span id="lR">50 Ω</span></label>
+        <div class="sr-row">
+          <input type="range" id="sR" min="0" max="500" value="50" step="1">
+          <input type="number" class="si" id="iR" value="50"> <span class="si-unit">Ω</span>
+        </div>
+        <div class="hints"><span>0</span><span>500 Ω</span></div>
+      </div>
+      <div class="slider-row">
+        <label>L <span id="lL">10.0 nH</span></label>
+        <div class="sr-row">
+          <input type="range" id="sL" min="0.1" max="1000" value="10" step="0.1">
+          <input type="number" class="si" id="iL" value="10.0"> <span class="si-unit">nH</span>
+        </div>
+        <div class="hints"><span>0.1 nH</span><span>1 μH</span></div>
+      </div>
+      <div class="slider-row">
+        <label>C <span id="lC">10.0 pF</span></label>
+        <div class="sr-row">
+          <input type="range" id="sC" min="0.01" max="1000" value="10" step="0.01">
+          <input type="number" class="si" id="iC" value="10.0"> <span class="si-unit">pF</span>
+        </div>
+        <div class="hints"><span>0.01 pF</span><span>1 nF</span></div>
+      </div>
+
+      <div class="f0-display" id="resF0Display">f&#8320; = <b>—</b></div>
+    </div>
+
+    <!-- ── Filter inputs ──────────────────────────────── -->
+    <div id="filtGroup" style="display:none">
+      <div class="mode-row" style="margin-bottom:.7rem">
+        <button class="sub-btn active" id="btnBW"  onclick="setFiltType('butter')">Butterworth</button>
+        <button class="sub-btn" id="btnCheb" onclick="setFiltType('cheby')">Chebyshev</button>
+      </div>
+      <div class="mode-row" style="margin-bottom:.7rem">
+        <button class="sub-btn active" id="btnLP"  onclick="setFiltTopo('lp')">Low-pass</button>
+        <button class="sub-btn" id="btnHP" onclick="setFiltTopo('hp')">High-pass</button>
+      </div>
+
+      <div class="slider-row">
+        <label>Order n <span id="lOrder">5</span></label>
+        <div class="sr-row">
+          <input type="range" id="sOrder" min="1" max="7" value="5" step="1">
+          <input type="number" class="si" id="iOrder" value="5" min="1" max="7"> <span class="si-unit"></span>
+        </div>
+        <div class="hints"><span>1</span><span>7</span></div>
+      </div>
+
+      <div class="slider-row" id="rippleRow" style="display:none">
+        <label>Ripple <span id="lRipple">0.5 dB</span></label>
+        <div class="sr-row">
+          <input type="range" id="sRipple" min="0.05" max="3" value="0.5" step="0.05">
+          <input type="number" class="si" id="iRipple" value="0.5"> <span class="si-unit">dB</span>
+        </div>
+        <div class="hints"><span>0.05</span><span>3 dB</span></div>
+      </div>
+
+      <div class="slider-row">
+        <label>f&#8338; cutoff <span id="lFc">1000 MHz</span></label>
+        <div class="sr-row">
+          <input type="range" id="sFc" min="1" max="10000" value="1000" step="1">
+          <input type="number" class="si" id="iFc" value="1000"> <span class="si-unit">MHz</span>
+        </div>
+        <div class="hints"><span>1 MHz</span><span>10 GHz</span></div>
+      </div>
+
+      <div class="slider-row">
+        <label>Z&#8320; <span id="lFZ0">50 Ω</span></label>
+        <div class="sr-row">
+          <input type="range" id="sFZ0" min="10" max="300" value="50" step="1">
+          <input type="number" class="si" id="iFZ0" value="50"> <span class="si-unit">Ω</span>
+        </div>
+        <div class="hints"><span>10 Ω</span><span>300 Ω</span></div>
+      </div>
+    </div>
+
+    <details class="try-it">
+      <summary>&#9658; Things to Try</summary>
+      <ul>
+        <li><strong>Resonator:</strong> Set R = 1 Ω, L = 10 nH, C = 10 pF → Q ≈ 200. Increase R to 50 Ω and observe BW widen to ~100 MHz. Compare Series vs Parallel to see dual Q behavior.</li>
+        <li><strong>Filter order:</strong> Design a 3rd-order Butterworth LPF at 1 GHz in 50 Ω. Switch to 7th order — stopband attenuation at 2f<sub>c</sub> goes from 18 dB to 42 dB.</li>
+        <li><strong>Butterworth vs Chebyshev:</strong> With n=5, 1 GHz, compare both. Chebyshev 0.5 dB shows steeper rolloff at the cost of in-band ripple.</li>
+      </ul>
+    </details>
+  </div>
+
+  <!-- Chart panel -->
+  <div class="chart-panel">
+    <!-- ── Resonator outputs ──────────────────────────── -->
+    <div id="resOut">
+      <h3 id="resHead">Series RLC Resonator</h3>
+      <div class="metrics">
+        <div class="mc"><div class="ml">Resonant freq</div><div class="mv" id="mF0" style="color:var(--accent)">—</div><div class="mu" id="mF0u">MHz</div></div>
+        <div class="mc"><div class="ml">Q factor</div><div class="mv" id="mQ" style="color:var(--blue)">—</div><div class="mu">unitless</div></div>
+        <div class="mc"><div class="ml">3 dB bandwidth</div><div class="mv" id="mBW" style="color:var(--orange)">—</div><div class="mu" id="mBWu">MHz</div></div>
+        <div class="mc"><div class="ml">|Z| at resonance</div><div class="mv" id="mZres" style="color:var(--green)">—</div><div class="mu">Ω</div></div>
+      </div>
+      <div>
+        <h3 style="margin-bottom:.4rem">|Z<sub>in</sub>| vs Frequency</h3>
+        <div style="font-size:.74rem;color:var(--muted);margin-bottom:.4rem" id="resChartNote">Series: minimum |Z| at f₀ (ideal short at pure resonance). Dashed red = Z₀ = 50 Ω reference.</div>
+        <div class="chart-wrap"><canvas id="resChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ── Filter outputs ──────────────────────────────── -->
+    <div id="filtOut" style="display:none">
+      <h3 id="filtHead">5th-order Butterworth LPF — 1000 MHz, 50 Ω</h3>
+
+      <div style="overflow-x:auto">
+        <table class="comp-table" id="compTable">
+          <thead><tr><th>#</th><th>Element</th><th>Topology</th><th>Value</th></tr></thead>
+          <tbody id="compBody"></tbody>
+        </table>
+      </div>
+
+      <div>
+        <h3 style="margin-bottom:.4rem">|S<sub>21</sub>| Frequency Response</h3>
+        <div class="chart-wrap"><canvas id="filtChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="annotation" id="annotation">Computing…</div>
+  </div>
+</div>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Filter Design &amp; Resonance — Help</div>
+
+    <div class="help-section">Resonator mode</div>
+    <div class="help-body">Computes the resonant frequency f₀ = 1/(2π√LC), Q factor, and 3 dB bandwidth for a series or parallel RLC resonator. The impedance |Z<sub>in</sub>|(ω) is plotted over a ±2 decade sweep around f₀.
+    <br><br>For a <strong>series resonator</strong>: |Z| is minimum (= R) at f₀; Q = ω₀L/R = 1/(ω₀RC). High Q → narrow BW, sharp series resonance. Used as notch filters or trap circuits.
+    <br><br>For a <strong>parallel resonator</strong>: |Z| is maximum (≈ R) at f₀; Q = R/(ω₀L) = Rω₀C. High Q → high impedance peak. Used as bandpass tank circuits in oscillators and filters.</div>
+
+    <div class="help-section">LC Filter mode</div>
+    <div class="help-body"><ul>
+      <li><strong>Butterworth:</strong> Maximally flat magnitude response in passband. −3 dB exactly at f<sub>c</sub>. Rolloff = −20n dB/decade beyond cutoff.</li>
+      <li><strong>Chebyshev:</strong> Equal-ripple passband. Steeper rolloff than Butterworth for the same order at the cost of in-band ripple. Passband is 0–f<sub>c</sub>.</li>
+      <li><strong>Low-pass topology:</strong> Shunt capacitor → series inductor → shunt capacitor … (shunt-C first ladder). Alternate topology reverses the element order.</li>
+      <li><strong>High-pass topology:</strong> LP→HP frequency transformation replaces each shunt C with a shunt L, and each series L with a series C.</li>
+    </ul>
+    Component values are denormalized to the target cutoff frequency f<sub>c</sub> and reference impedance Z₀. The frequency response is computed exactly using ABCD (T-matrix) cascade, accounting for source and load Z₀.</div>
+
+    <div class="help-section">Prototype g-values</div>
+    <div class="help-body">The normalized LP prototype values g₁…g<sub>n</sub> are computed analytically. For Butterworth: g<sub>k</sub> = 2·sin[(2k−1)π/2n]. For Chebyshev with ε dB ripple: the g-values follow from the closed-form recurrence involving β = ln[coth(ε·ln10/40)] and γ = sinh(β/2n).</div>
+
+    <div class="help-section">Reference</div>
+    <div class="help-body">Matthaei, Young, Jones. <em>Microwave Filters, Impedance-Matching Networks, and Coupling Structures.</em> Artech House, 1980. Chapter 4. Also: Williams &amp; Taylor, <em>Electronic Filter Design Handbook</em>, 4th ed.</div>
+  </div>
+</div>
+
+<a href="index.html" class="all-tools-btn">&#8592; All Tools</a>
+
+<script>
+// ── Complex helpers (for filter response) ────────────────────────────────────
+function C(r,i=0){return{r,i}}
+function cadd(a,b){return C(a.r+b.r,a.i+b.i)}
+function cmul(a,b){return C(a.r*b.r-a.i*b.i,a.r*b.i+a.i*b.r)}
+function cdiv(a,b){const d=b.r*b.r+b.i*b.i;return C((a.r*b.r+a.i*b.i)/d,(a.i*b.r-a.r*b.i)/d)}
+function cabs(a){return Math.hypot(a.r,a.i)}
+
+function cascABCD(t1,t2){
+  return{
+    A:cadd(cmul(t1.A,t2.A),cmul(t1.B,t2.C)),
+    B:cadd(cmul(t1.A,t2.B),cmul(t1.B,t2.D)),
+    C:cadd(cmul(t1.C,t2.A),cmul(t1.D,t2.C)),
+    D:cadd(cmul(t1.C,t2.B),cmul(t1.D,t2.D))
+  };
+}
+
+// ── Format helpers ────────────────────────────────────────────────────────────
+function fmtF(f){
+  if(f<1e3)return f.toFixed(3)+' Hz';
+  if(f<1e6)return(f/1e3).toFixed(3)+' kHz';
+  if(f<1e9)return(f/1e6).toFixed(3)+' MHz';
+  return(f/1e9).toFixed(4)+' GHz';
+}
+function fmtH(v){
+  if(v<1e-12)return(v*1e15).toFixed(2)+' fH';
+  if(v<1e-9) return(v*1e12).toFixed(2)+' pH';
+  if(v<1e-6) return(v*1e9 ).toFixed(3)+' nH';
+  if(v<1e-3) return(v*1e6 ).toFixed(3)+' μH';
+  return(v*1e3).toFixed(3)+' mH';
+}
+function fmtF2(v){
+  if(v<1e-15)return(v*1e18).toFixed(2)+' aF';
+  if(v<1e-12)return(v*1e15).toFixed(2)+' fF';
+  if(v<1e-9) return(v*1e12).toFixed(3)+' pF';
+  if(v<1e-6) return(v*1e9 ).toFixed(3)+' nF';
+  return(v*1e6).toFixed(3)+' μF';
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let appMode='res', resMode='series', filtType='butter', filtTopo='lp';
+let resChartInst=null, filtChartInst=null;
+
+// ── Prototype g-values ────────────────────────────────────────────────────────
+function butterworthG(n){
+  const g=[];
+  for(let k=1;k<=n;k++) g.push(2*Math.sin((2*k-1)*Math.PI/(2*n)));
+  return g;
+}
+
+function chebyshevG(n, ripple_dB){
+  const beta=Math.log(1/Math.tanh(ripple_dB*Math.log(10)/40));
+  const gamma=Math.sinh(beta/(2*n));
+  const a=[], b=[];
+  for(let k=1;k<=n;k++){
+    a.push(Math.sin((2*k-1)*Math.PI/(2*n)));
+    b.push(gamma*gamma + Math.pow(Math.sin(k*Math.PI/n),2));
+  }
+  const g=[2*a[0]/gamma];
+  for(let k=2;k<=n;k++){
+    g.push(4*a[k-2]*a[k-1]/(b[k-2]*g[k-1]));
+  }
+  return g;
+}
+
+// ── Filter element generation ─────────────────────────────────────────────────
+// Returns array of {type, value, label, idx}
+// shunt-C first topology: odd k → shunt, even k → series
+function makeElements(g, Z0, wc, topo){
+  return g.map((gk,i)=>{
+    const k=i+1;
+    const isShunt=(k%2===1); // shunt-first
+    if(topo==='lp'){
+      if(isShunt){
+        return{idx:k,label:'C'+k,topology:'Shunt ∥',type:'shuntC',value:gk/(Z0*wc)};
+      } else {
+        return{idx:k,label:'L'+k,topology:'Series —',type:'seriesL',value:gk*Z0/wc};
+      }
+    } else { // hp: swap L↔C
+      if(isShunt){
+        return{idx:k,label:'L'+k,topology:'Shunt ∥',type:'shuntL',value:Z0/(gk*wc)};
+      } else {
+        return{idx:k,label:'C'+k,topology:'Series —',type:'seriesC',value:1/(gk*Z0*wc)};
+      }
+    }
+  });
+}
+
+// ── Filter frequency response ─────────────────────────────────────────────────
+function filterS21(elements, freqs, Z0){
+  return freqs.map(f=>{
+    const w=2*Math.PI*f;
+    let T={A:C(1),B:C(0),C:C(0),D:C(1)};
+    for(const el of elements){
+      let Tnew;
+      const w2=w*w;
+      if(el.type==='seriesL'){Tnew={A:C(1),B:C(0,w*el.value),C:C(0),D:C(1)};}
+      else if(el.type==='shuntC'){Tnew={A:C(1),B:C(0),C:C(0,w*el.value),D:C(1)};}
+      else if(el.type==='seriesC'){Tnew={A:C(1),B:C(0,-1/(w*el.value)),C:C(0),D:C(1)};}
+      else if(el.type==='shuntL'){Tnew={A:C(1),B:C(0),C:C(0,-1/(w*el.value)),D:C(1)};}
+      T=cascABCD(T,Tnew);
+    }
+    // S21 = 2/(A + B/Z0 + C*Z0 + D)
+    const z=C(Z0);
+    const denom=cadd(cadd(cadd(T.A,cdiv(T.B,z)),cmul(T.C,z)),T.D);
+    const s21mag=cabs(cdiv(C(2),denom));
+    return 20*Math.log10(Math.max(1e-15,s21mag));
+  });
+}
+
+// ── Resonator impedance ───────────────────────────────────────────────────────
+function seriesZ(R,L,C,f){
+  const w=2*Math.PI*f;
+  const Zimag=w*L-1/(w*C);
+  return Math.hypot(R,Zimag);
+}
+function parallelZ(R,L,C,f){
+  const w=2*Math.PI*f;
+  // Y = 1/R + jwC + 1/(jwL) = 1/R + j(wC - 1/wL)
+  const Yr=1/R, Yi=w*C-1/(w*L);
+  return 1/Math.hypot(Yr,Yi);
+}
+
+// ── Charts init ───────────────────────────────────────────────────────────────
+function initResChart(){
+  const ctx=document.getElementById('resChart').getContext('2d');
+  resChartInst=new Chart(ctx,{
+    type:'line',
+    data:{datasets:[
+      {label:'|Zin|',data:[],borderColor:'#7c3aed',borderWidth:2.5,pointRadius:0,fill:false},
+      {label:'Z₀ = 50 Ω',data:[],borderColor:'#dc262660',borderWidth:1.5,borderDash:[5,4],pointRadius:0,fill:false},
+      {label:'f₀',data:[],borderColor:'#b5895a',borderWidth:1.5,borderDash:[3,3],pointRadius:0,fill:false},
+    ]},
+    options:{
+      animation:{duration:0},responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:12}}},
+      scales:{
+        x:{type:'logarithmic',grid:{color:'#e2e5ea'},ticks:{color:'#718096',maxTicksLimit:8},
+           title:{display:true,color:'#718096',text:'Frequency (Hz)'}},
+        y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},
+           title:{display:true,color:'#718096',text:'|Zin| (Ω)'},min:0}
+      }
+    }
+  });
+}
+
+function initFiltChart(){
+  const ctx=document.getElementById('filtChart').getContext('2d');
+  filtChartInst=new Chart(ctx,{
+    type:'line',
+    data:{datasets:[
+      {label:'|S21| dB',data:[],borderColor:'#2563eb',borderWidth:2.5,pointRadius:0,fill:false},
+      {label:'−3 dB',data:[],borderColor:'#dc262670',borderWidth:1.5,borderDash:[5,4],pointRadius:0,fill:false},
+      {label:'Passband ripple',data:[],borderColor:'#d97706',borderWidth:1,borderDash:[3,3],pointRadius:0,fill:false,hidden:true},
+    ]},
+    options:{
+      animation:{duration:0},responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:12}}},
+      scales:{
+        x:{grid:{color:'#e2e5ea'},ticks:{color:'#718096',maxTicksLimit:10},
+           title:{display:true,color:'#718096',text:'Frequency (MHz)'}},
+        y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},
+           title:{display:true,color:'#718096',text:'|S21| (dB)'},max:2,min:-60}
+      }
+    }
+  });
+}
+
+// ── Update resonator ──────────────────────────────────────────────────────────
+function updateRes(){
+  const R=+document.getElementById('sR').value||1e-6;
+  const L=(+document.getElementById('sL').value)*1e-9;
+  const Cap=(+document.getElementById('sC').value)*1e-12;
+
+  const f0=1/(2*Math.PI*Math.sqrt(L*Cap));
+  const w0=2*Math.PI*f0;
+  const Q_series=w0*L/R;
+  const Q_par=R/(w0*L);
+  const Q=resMode==='series'?Q_series:Q_par;
+  const BW=f0/Q;
+  const Zres=resMode==='series'?R:R; // series: Zmin=R; parallel: Zmax=R (lossless approximation)
+
+  document.getElementById('resF0Display').innerHTML='f&#8320; = <b>'+fmtF(f0)+'</b>';
+  document.getElementById('mF0').textContent=f0>=1e9?(f0/1e9).toFixed(4):f0>=1e6?(f0/1e6).toFixed(3):(f0/1e3).toFixed(2);
+  document.getElementById('mF0u').textContent=f0>=1e9?'GHz':f0>=1e6?'MHz':'kHz';
+  document.getElementById('mQ').textContent=Q.toFixed(1);
+  document.getElementById('mBW').textContent=BW>=1e9?(BW/1e9).toFixed(3):BW>=1e6?(BW/1e6).toFixed(3):(BW/1e3).toFixed(2);
+  document.getElementById('mBWu').textContent=BW>=1e9?'GHz':BW>=1e6?'MHz':'kHz';
+  document.getElementById('mZres').textContent=R>=1000?(R/1e3).toFixed(2)+'k':R.toFixed(1);
+
+  // Frequency sweep: 2 decades below to 2 decades above f0 (log scale, 300 points)
+  const fMin=f0/100, fMax=f0*100;
+  const freqs=Array.from({length:300},(_,i)=>fMin*Math.pow(fMax/fMin,i/299));
+  const Zdata=freqs.map(f=>{
+    const z=resMode==='series'?seriesZ(R,L,Cap,f):parallelZ(R,L,Cap,f);
+    return{x:f,y:Math.min(z,1e6)};
+  });
+  const Z0ref=freqs.map(f=>({x:f,y:50}));
+  const f0line=[{x:f0,y:0},{x:f0,y:Math.max(...Zdata.map(d=>d.y))}];
+
+  resChartInst.data.datasets[0].data=Zdata;
+  resChartInst.data.datasets[1].data=Z0ref;
+  resChartInst.data.datasets[2].data=f0line;
+  resChartInst.update('none');
+
+  document.getElementById('resHead').textContent=(resMode==='series'?'Series':'Parallel')+' RLC Resonator';
+  document.getElementById('resChartNote').textContent=resMode==='series'
+    ?'Series RLC: |Z| is minimum (= R) at f₀. Q = ω₀L/R. Dashed copper = f₀.'
+    :'Parallel RLC: |Z| is maximum (≈ R||∞) at f₀. Q = R·ω₀C. Dashed copper = f₀.';
+
+  document.getElementById('annotation').innerHTML=
+    `<strong>${resMode==='series'?'Series':'Parallel'} RLC:</strong> `+
+    `R = ${R} Ω, L = ${(L*1e9).toFixed(2)} nH, C = ${(Cap*1e12).toFixed(2)} pF. `+
+    `<strong>f₀ = ${fmtF(f0)}</strong>, Q = <strong>${Q.toFixed(1)}</strong>, `+
+    `3 dB BW = <strong>${fmtF(BW)}</strong>. `+
+    (resMode==='series'
+      ?`|Z| at resonance = R = ${R} Ω (${R<50?'lower':'higher'} than 50 Ω reference).`
+      :`|Z| peak ≈ R = ${R} Ω at resonance.`);
+}
+
+// ── Update filter ─────────────────────────────────────────────────────────────
+function updateFilt(){
+  const n=+document.getElementById('sOrder').value||5;
+  const ripple=+document.getElementById('sRipple').value||0.5;
+  const fc_MHz=+document.getElementById('sFc').value||1000;
+  const Z0=+document.getElementById('sFZ0').value||50;
+  const fc=fc_MHz*1e6;
+  const wc=2*Math.PI*fc;
+
+  const g=filtType==='butter'?butterworthG(n):chebyshevG(n,ripple);
+  const elements=makeElements(g,Z0,wc,filtTopo);
+
+  // Component table
+  const tbody=document.getElementById('compBody');
+  tbody.innerHTML=elements.map(el=>{
+    const valStr=el.type.includes('L')?fmtH(el.value):fmtF2(el.value);
+    return`<tr><td>${el.idx}</td><td>${el.label}</td><td>${el.topology}</td><td>${valStr}</td></tr>`;
+  }).join('');
+
+  // Frequency response: sweep from 0.05*fc to 5*fc
+  const fMin=0.05*fc, fMax=5*fc;
+  const N=400;
+  const freqs=Array.from({length:N},(_,i)=>fMin+(fMax-fMin)*i/(N-1));
+  const s21_dB=filterS21(elements,freqs,Z0);
+  const labels=freqs.map(f=>(f/1e6).toFixed(1));
+
+  filtChartInst.data.labels=labels;
+  filtChartInst.data.datasets[0].data=s21_dB;
+  filtChartInst.data.datasets[1].data=new Array(N).fill(-3);
+  filtChartInst.data.datasets[2].data=new Array(N).fill(-ripple);
+  filtChartInst.data.datasets[2].hidden=(filtType==='butter');
+  filtChartInst.options.scales.x.ticks.maxTicksLimit=10;
+  filtChartInst.update('none');
+
+  const typeStr=filtType==='butter'?'Butterworth':'Chebyshev ('+ripple+' dB ripple)';
+  const topoStr=filtTopo==='lp'?'Low-pass':'High-pass';
+  document.getElementById('filtHead').textContent=
+    `${n}-order ${typeStr} ${topoStr} — ${fc_MHz} MHz, ${Z0} Ω`;
+  document.getElementById('filtHead').textContent=
+    `${n}${n===1?'st':n===2?'nd':n===3?'rd':'th'}-order ${typeStr} ${topoStr} — ${fc>=1e9?(fc/1e9).toFixed(2)+' GHz':fc_MHz+' MHz'}, ${Z0} Ω`;
+
+  const rolloff=(-20*n).toFixed(0);
+  const atStop=s21_dB[Math.round(N*0.9)];
+  document.getElementById('annotation').innerHTML=
+    `<strong>${n}-order ${typeStr} ${topoStr}:</strong> f<sub>c</sub> = ${fc>=1e9?(fc/1e9).toFixed(3)+' GHz':fc_MHz+' MHz'}, Z₀ = ${Z0} Ω. `+
+    `${n} reactive elements. Rolloff ≈ <strong>${rolloff} dB/decade</strong> in stopband. `+
+    `|S21| at 5f<sub>c</sub> ≈ <strong>${atStop.toFixed(1)} dB</strong>. `+
+    (filtType==='cheby'?`Chebyshev gives steeper rolloff than Butterworth at cost of ${ripple} dB in-band ripple.`:
+      'Butterworth: maximally flat passband, −3 dB at exactly f<sub>c</sub>.');
+}
+
+// ── Mode switches ─────────────────────────────────────────────────────────────
+function setMode(m){
+  appMode=m;
+  document.getElementById('btnRes').classList.toggle('active',m==='res');
+  document.getElementById('btnFilt').classList.toggle('active',m==='filt');
+  document.getElementById('resGroup').style.display=m==='res'?'':'none';
+  document.getElementById('filtGroup').style.display=m==='filt'?'':'none';
+  document.getElementById('resOut').style.display=m==='res'?'':'none';
+  document.getElementById('filtOut').style.display=m==='filt'?'':'none';
+  update();
+}
+function setRes(r){
+  resMode=r;
+  document.getElementById('btnSeries').classList.toggle('active',r==='series');
+  document.getElementById('btnParallel').classList.toggle('active',r==='parallel');
+  update();
+}
+function setFiltType(t){
+  filtType=t;
+  document.getElementById('btnBW').classList.toggle('active',t==='butter');
+  document.getElementById('btnCheb').classList.toggle('active',t==='cheby');
+  document.getElementById('rippleRow').style.display=t==='cheby'?'':'none';
+  update();
+}
+function setFiltTopo(t){
+  filtTopo=t;
+  document.getElementById('btnLP').classList.toggle('active',t==='lp');
+  document.getElementById('btnHP').classList.toggle('active',t==='hp');
+  update();
+}
+
+// ── Main update ───────────────────────────────────────────────────────────────
+function update(){
+  if(appMode==='res') updateRes();
+  else updateFilt();
+}
+
+// ── Slider ↔ input wiring ────────────────────────────────────────────────────
+function linkSI(sId,iId,dec,min,max){
+  const sl=document.getElementById(sId),inp=document.getElementById(iId);
+  function syncI(){inp.value=(+sl.value).toFixed(dec);}
+  sl.addEventListener('input',()=>{syncI();update();});
+  inp.addEventListener('input',()=>{
+    const v=parseFloat(inp.value);
+    if(!isNaN(v)&&v>=min&&v<=max){sl.value=v;update();}
+  });
+  inp.addEventListener('change',()=>{
+    const v=parseFloat(inp.value);
+    if(!isNaN(v)){const c=Math.max(min,Math.min(max,v));inp.value=c.toFixed(dec);sl.value=c;update();}
+  });
+}
+linkSI('sR','iR',1,0,500);
+linkSI('sL','iL',1,0.1,1000);
+linkSI('sC','iC',2,0.01,1000);
+linkSI('sOrder','iOrder',0,1,7);
+linkSI('sRipple','iRipple',2,0.05,3);
+linkSI('sFc','iFc',0,1,10000);
+linkSI('sFZ0','iFZ0',0,10,300);
+
+// Also update labels
+['sR','sL','sC','sOrder','sRipple','sFc','sFZ0'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',()=>{
+    const v=+document.getElementById(id).value;
+    const lId={sR:'lR',sL:'lL',sC:'lC',sOrder:'lOrder',sRipple:'lRipple',sFc:'lFc',sFZ0:'lFZ0'}[id];
+    const unit={sR:' Ω',sL:' nH',sC:' pF',sOrder:'',sRipple:' dB',sFc:' MHz',sFZ0:' Ω'}[id];
+    document.getElementById(lId).textContent=v+unit;
+  });
+});
+
+// ── Toolbar ────────────────────────────────────────────────────────────────────
+function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+function takeScreenshot(){}
+
+function exportCSV(){
+  const lines=['Filter Design & Resonance'];
+  if(appMode==='res'){
+    lines.push('','RESONATOR');
+    lines.push('Mode,'+resMode);
+    lines.push('R,'+document.getElementById('iR').value+' Ω');
+    lines.push('L,'+document.getElementById('iL').value+' nH');
+    lines.push('C,'+document.getElementById('iC').value+' pF');
+    lines.push('f0,'+document.getElementById('mF0').textContent+' '+document.getElementById('mF0u').textContent);
+    lines.push('Q,'+document.getElementById('mQ').textContent);
+    lines.push('BW,'+document.getElementById('mBW').textContent+' '+document.getElementById('mBWu').textContent);
+  } else {
+    lines.push('','FILTER');
+    lines.push('Type,'+filtType);
+    lines.push('Topology,'+filtTopo);
+    lines.push('Order,'+document.getElementById('sOrder').value);
+    if(filtType==='cheby') lines.push('Ripple,'+document.getElementById('sRipple').value+' dB');
+    lines.push('Fc,'+document.getElementById('sFc').value+' MHz');
+    lines.push('Z0,'+document.getElementById('sFZ0').value+' Ω');
+    lines.push('','COMPONENTS','#,Element,Topology,Value');
+    document.querySelectorAll('#compBody tr').forEach(tr=>{
+      lines.push([...tr.querySelectorAll('td')].map(td=>td.textContent).join(','));
+    });
+  }
+  const blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='rf_toolbox_filter_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+
+function copyLink(){
+  const p=new URLSearchParams({mode:appMode,resMode,filtType,filtTopo,
+    r:document.getElementById('iR').value,l:document.getElementById('iL').value,
+    c:document.getElementById('iC').value,n:document.getElementById('iOrder').value,
+    rip:document.getElementById('iRipple').value,fc:document.getElementById('iFc').value,
+    z0:document.getElementById('iFZ0').value});
+  navigator.clipboard.writeText(location.href.split('?')[0]+'?'+p.toString()).then(()=>{
+    const btn=document.getElementById('copyBtn');btn.textContent='✓ Copied';
+    setTimeout(()=>btn.textContent='⎘ Copy Link',1500);
+  });
+}
+
+// ── URL state restore ─────────────────────────────────────────────────────────
+(function(){
+  const p=new URLSearchParams(location.search);
+  if(p.has('r')) document.getElementById('sR').value=document.getElementById('iR').value=p.get('r');
+  if(p.has('l')) document.getElementById('sL').value=document.getElementById('iL').value=p.get('l');
+  if(p.has('c')) document.getElementById('sC').value=document.getElementById('iC').value=p.get('c');
+  if(p.has('n')) document.getElementById('sOrder').value=document.getElementById('iOrder').value=p.get('n');
+  if(p.has('rip')) document.getElementById('sRipple').value=document.getElementById('iRipple').value=p.get('rip');
+  if(p.has('fc')) document.getElementById('sFc').value=document.getElementById('iFc').value=p.get('fc');
+  if(p.has('z0')) document.getElementById('sFZ0').value=document.getElementById('iFZ0').value=p.get('z0');
+  if(p.get('mode')==='filt') setMode('filt');
+  if(p.get('resMode')==='parallel') setRes('parallel');
+  if(p.get('filtType')==='cheby') setFiltType('cheby');
+  if(p.get('filtTopo')==='hp') setFiltTopo('hp');
+})();
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+initResChart();
+initFiltChart();
+update();
+</script>
+</body>
+</html>

@@ -28,6 +28,8 @@ const PAGES = [
   '14_microstrip.html',
   '15_attenuator.html',
   '16_mixer.html',
+  '17_sparam.html',
+  '18_filter.html',
 ];
 
 const VIEWPORTS = [
