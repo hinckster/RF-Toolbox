@@ -437,6 +437,9 @@
 #add-comp-hint { font-size:.73rem; color:#718096; }
 .custom-type-sel { background:#fff8f0; border:1px solid #d0b890; border-radius:4px; color:#b5895a; font-size:.78rem; padding:.22rem .3rem; cursor:pointer; }
 .custom-type-sel:focus { outline:none; }
+
+.all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
+.all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
 </style>
 </head>
 <body>
@@ -1522,5 +1525,7 @@ function showHelp(){document.getElementById('helpOverlay').classList.add('open')
 function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 </script>
+
+<a href="index.html" class="all-tools-btn">&#8862; All Tools</a>
 </body>
 </html>
