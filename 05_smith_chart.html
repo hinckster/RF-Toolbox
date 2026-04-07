@@ -276,10 +276,14 @@ function drawSmith() {
   ctx.beginPath(); ctx.moveTo(cx-R,cy); ctx.lineTo(cx+R,cy);
   ctx.strokeStyle='#adb5c0'; ctx.lineWidth=1; ctx.stroke();
 
-  [0.25,0.5,0.75].forEach(g => {
+  [{s:1.5,g:1/5},{s:2,g:1/3},{s:3,g:1/2},{s:5,g:2/3}].forEach(({s,g}) => {
     ctx.beginPath(); ctx.arc(cx,cy,R*g,0,2*Math.PI);
-    ctx.strokeStyle='#b5895a'; ctx.lineWidth=1.2; ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle='rgba(181,137,90,0.45)'; ctx.lineWidth=0.85;
+    ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#b5895a'; ctx.font='8px monospace'; ctx.textAlign='center';
+    ctx.fillText('S='+s, cx+R*g, cy-4);
   });
+  ctx.textAlign='left';
 
   ctx.fillStyle='#b5895a'; ctx.font='9px monospace';
   ctx.fillText('SC', cx-R-20, cy+4); ctx.fillText('OC', cx+R+4, cy+4);
