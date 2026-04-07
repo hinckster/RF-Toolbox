@@ -94,6 +94,10 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 
 .all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
 .all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
+details.try-it{margin-top:12px;border-top:1px solid var(--bdr);padding-top:10px}
+details.try-it summary{color:#b5895a;font-size:0.78rem;cursor:pointer;user-select:none;list-style:none}
+details.try-it summary::-webkit-details-marker{display:none}
+details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(--tm);line-height:1.7}
 </style>
 </head>
 <body>
@@ -232,6 +236,15 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
         <div class="mc"><div class="ml">EVM at avg power</div><div class="mv" id="mEVMavg" style="color:var(--org)">—</div><div class="mu">%</div></div>
       </div>
     </div>
+
+    <details class="try-it">
+      <summary>&#9658; Things to Try</summary>
+      <ul>
+        <li>Switch between Class A and Class B with the same P<sub>op</sub> and P1dB: observe Class B delivers ~57% efficiency vs Class A's ~25% at 6 dB back-off — the tradeoff that drives Doherty amplifier designs.</li>
+        <li>Load the "WiFi PA" preset (PAPR = 8 dB, Class A): average η drops to ~6%. Switch to Class B — average η improves to ~22%, showing why modern 802.11ax uses envelope-tracking PAs.</li>
+        <li>Increase P<sub>op</sub> until back-off drops below 1 dB and observe the gain compression warning — this is the saturated PA regime used in constant-envelope modulations like GMSK.</li>
+      </ul>
+    </details>
   </div>
 
   <div class="chart-panel">
@@ -286,15 +299,6 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
         <li><strong>DC power draw:</strong> Estimated P<sub>DC</sub> = P<sub>op</sub> / η<sub>op</sub>.</li>
         <li><strong>OIP3 / IIP3:</strong> Third-order intercept points estimated from the P1dB + 9.6 dB rule of thumb.</li>
         <li><strong>Gain at operating point:</strong> Compressed gain G<sub>op</sub> from the Saleh model — always ≤ small-signal gain G.</li>
-      </ul>
-    </div>
-
-    <div class="help-section">Things to try</div>
-    <div class="help-body">
-      <ul class="help-try">
-        <li>Switch between Class A and Class B with the same P<sub>op</sub> and P1dB: observe Class B delivers ~57% efficiency vs Class A's ~25% at 6 dB back-off — the tradeoff that drives Doherty amplifier designs.</li>
-        <li>Load the "WiFi PA" preset (PAPR = 8 dB, Class A): average η drops to ~6%. Switch to Class B — average η improves to ~22%, showing why modern 802.11ax uses envelope-tracking PAs.</li>
-        <li>Increase P<sub>op</sub> until back-off drops below 1 dB and observe the gain compression warning — this is the saturated PA regime used in constant-envelope modulations like GMSK.</li>
       </ul>
     </div>
 
