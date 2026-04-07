@@ -354,19 +354,15 @@ const PRESETS = {
   ],
 };
 
-// Initialize with a simple chain
+// Initialize with a simple chain (used by Reset button)
 let stages = [];
 function defaultChain() {
   nextId = 1;
-  stages = [
-    makeStage({ name:'Preselector BPF', type:'filter',  gain:-1.5, nf:null, iip3:50 }),
-    makeStage({ name:'LNA',             type:'lna',     gain:20,   nf:1.8,  iip3:-4 }),
-    makeStage({ name:'Image Filter',    type:'filter',  gain:-1.0, nf:null, iip3:50 }),
-    makeStage({ name:'Mixer',           type:'mixer',   gain:-6,   nf:8.0,  iip3:10 }),
-    makeStage({ name:'IF Amplifier',    type:'amp',     gain:20,   nf:5.0,  iip3:18 }),
-  ];
+  stages = PRESETS.superhet.map(o => makeStage(o));
 }
-defaultChain();
+// Auto-load Generic Superhet RX preset on page open
+nextId = 1;
+stages = PRESETS.superhet.map(o => makeStage(o));
 
 // ─────────────────────────────────────────────────────────────────
 // MATH
