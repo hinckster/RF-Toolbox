@@ -118,8 +118,10 @@
 
 <div class="toolbar">
   <button class="tbtn" onclick="showHelp()">? Help</button>
-  <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
-  <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
+  <button class="tbtn" onclick="takeScreenshot('Mixer / Frequency Planning')">&#128247; Screenshot</button>
+  <button class="tbtn" onclick="exportCSV()">&#11015; Export CSV</button>
+  <button class="tbtn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">&#8856; Copy Link</button>
 </div>
 
 <nav>
@@ -596,6 +598,73 @@ function updateTable(spurs, fIF) {
     return `<tr class="${cls}"><td>${s.m}</td><td>${s.n}</td><td>${s.order}</td>`
          + `<td>${fStr}</td><td>${deltaStr}</td><td>${typeStr}</td></tr>`;
   }).join('');
+}
+
+// ── Screenshot ────────────────────────────────────────────
+function takeScreenshot(toolName) {
+  const canvases = [...document.querySelectorAll('canvas')];
+  const padding   = 16;
+  const titleH    = 40;
+
+  const totalW = canvases.reduce((sum, c) => sum + c.width + padding, padding);
+  const maxH   = Math.max(...canvases.map(c => c.height));
+
+  const out = document.createElement('canvas');
+  out.width  = totalW;
+  out.height = maxH + titleH + padding * 2;
+
+  const ctx = out.getContext('2d');
+
+  // Background — matches page bg-base
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, out.width, out.height);
+
+  // Top bar
+  ctx.fillStyle = '#f4f5f7';
+  ctx.fillRect(0, 0, out.width, titleH);
+
+  // Title text
+  ctx.fillStyle = '#1a1d23';
+  ctx.font = 'bold 13px Segoe UI, system-ui, sans-serif';
+  ctx.fillText(toolName + '  ·  RF Toolbox', padding, 17);
+
+  // Subtitle / URL
+  ctx.fillStyle = '#b5895a';
+  ctx.font = '11px Segoe UI, system-ui, sans-serif';
+  ctx.fillText('hinckster.github.io/RF-Toolbox', padding, 32);
+
+  // Timestamp (right-aligned)
+  const ts = new Date().toISOString().slice(0, 19).replace('T', ' ') + ' UTC';
+  ctx.fillStyle = '#718096';
+  ctx.font = '10px Courier New, monospace';
+  const tsW = ctx.measureText(ts).width;
+  ctx.fillText(ts, out.width - tsW - padding, 24);
+
+  // Draw each canvas
+  let x = padding;
+  canvases.forEach(c => {
+    ctx.drawImage(c, x, titleH + padding);
+    x += c.width + padding;
+  });
+
+  // Download
+  const a    = document.createElement('a');
+  const slug = toolName.toLowerCase().replace(/\s+/g, '_');
+  const fn   = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+  a.download = `${slug}_${fn}.png`;
+  a.href     = out.toDataURL('image/png');
+  a.click();
+}
+
+// ── Fullscreen ────────────────────────────────────────────
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => {
+      console.warn('Fullscreen request failed:', err.message);
+    });
+  } else {
+    document.exitFullscreen();
+  }
 }
 
 // ── Export CSV ────────────────────────────────────────────
