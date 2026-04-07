@@ -104,6 +104,10 @@
 
 .all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
 .all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
+details.try-it{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
+details.try-it summary{color:var(--accent);font-size:0.78rem;cursor:pointer;user-select:none;list-style:none}
+details.try-it summary::-webkit-details-marker{display:none}
+details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(--muted);line-height:1.7}
 </style>
 </head>
 <body>
@@ -213,6 +217,15 @@
       <div class="result-card"><div class="label">Vmax pos.</div><div class="value v-accent" id="rVmaxPos">&#8212;</div><div class="unit">from load</div></div>
       <div class="result-card"><div class="label">|Zin|</div><div class="value v-accent2" id="rZin">&#8212;</div><div class="unit">&#937;</div></div>
     </div>
+
+    <details class="try-it">
+      <summary>&#9658; Things to Try</summary>
+      <ul>
+        <li>Set R = 50, X = 0, Z₀ = 50: observe |Γ| = 0, VSWR = 1, flat standing wave — a perfect match.</li>
+        <li>Set R = 0, X = 0 (short circuit): |Γ| = 1, VSWR = ∞. Sweep line length and watch Z<sub>in</sub> cycle through all reactive values from 0 to ∞.</li>
+        <li>Load the "Dipole antenna feed" preset (Z<sub>L</sub> = 73 + j42 Ω into 50 Ω) and adjust line length to 90° to see how a quarter-wave section transforms the impedance.</li>
+      </ul>
+    </details>
   </div>
 
   <!-- Chart panel -->
@@ -269,15 +282,6 @@
         <li><strong>Return Loss (dB):</strong> Power reflected back; higher (more positive) is better. &gt;20 dB is excellent.</li>
         <li><strong>Vmax pos.:</strong> Distance from the load to the nearest voltage maximum, in wavelengths.</li>
         <li><strong>|Z<sub>in</sub>|:</strong> Magnitude of the input impedance seen at the source end of the line.</li>
-      </ul>
-    </div>
-
-    <div class="help-section">Things to try</div>
-    <div class="help-body">
-      <ul class="help-try">
-        <li>Set R = 50, X = 0, Z₀ = 50: observe |Γ| = 0, VSWR = 1, flat standing wave — a perfect match.</li>
-        <li>Set R = 0, X = 0 (short circuit): |Γ| = 1, VSWR = ∞. Sweep line length and watch Z<sub>in</sub> cycle through all reactive values from 0 to ∞.</li>
-        <li>Load the "Dipole antenna feed" preset (Z<sub>L</sub> = 73 + j42 Ω into 50 Ω) and adjust line length to 90° to see how a quarter-wave section transforms the impedance.</li>
       </ul>
     </div>
 
