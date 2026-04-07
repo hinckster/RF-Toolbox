@@ -115,6 +115,10 @@
 
 .all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
 .all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
+details.try-it{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
+details.try-it summary{color:var(--accent);font-size:0.78rem;cursor:pointer;user-select:none;list-style:none}
+details.try-it summary::-webkit-details-marker{display:none}
+details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(--muted);line-height:1.7}
 </style>
 </head>
 <body>
@@ -258,6 +262,15 @@
       <button class="preset-btn" onclick="setPreset(75,0)">75 Ω</button>
       <button class="preset-btn" onclick="setPreset(100,0)">100 Ω</button>
     </div>
+
+    <details class="try-it">
+      <summary>&#9658; Things to Try</summary>
+      <ul>
+        <li>Load the "Antenna — inductive load" preset (100+j50 Ω into 50 Ω) and read the L-match synthesis box — then verify that adding the listed series capacitor moves the point to the r = 1 circle on the Smith Chart.</li>
+        <li>Drag R from 0 to 500 Ω with X = 0 and watch the point sweep left to right along the real axis, traversing all constant-r circles. Note VSWR peaks at the extremes and returns to 1.0 when R = Z₀ = 50 Ω.</li>
+        <li>Set R = 50, X = 0, then slowly increase X — observe the point tracing upward along the r = 1 circle, reaching the inductive region while VSWR and mismatch loss grow.</li>
+      </ul>
+    </details>
   </div>
 
   <div class="smith-panel">
@@ -915,13 +928,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
         <li><strong>L-Match Network Synthesis</strong> — both ±Q solutions of the L-network that transforms Z_L → Z₀. If R_L ≠ 0, shows Solution A and Solution B as SVG circuit diagrams with component types (L or C) and reactance values. If the load has reactance, a Step 1 series element cancels it before the L-network.</li>
       </ul>
     </div>
-
-    <div class="help-section">Things to try</div>
-    <ul class="help-try">
-      <li>Load the "Antenna — inductive load" preset (100+j50 Ω into 50 Ω) and read the L-match synthesis box — then verify that adding the listed series capacitor moves the point to the r = 1 circle on the Smith Chart.</li>
-      <li>Drag R from 0 to 500 Ω with X = 0 and watch the point sweep left to right along the real axis, traversing all constant-r circles. Note VSWR peaks at the extremes and returns to 1.0 when R = Z₀ = 50 Ω.</li>
-      <li>Set R = 50, X = 0, then slowly increase X — observe the point tracing upward along the r = 1 circle, reaching the inductive region while VSWR and mismatch loss grow.</li>
-    </ul>
 
     <div class="help-section">Reference</div>
     <div class="help-body">P. H. Smith, "Transmission line calculator," <em>Electronics</em>, vol. 12, no. 1, pp. 29–31, Jan. 1939. See also D. M. Pozar, <em>Microwave Engineering</em>, 4th ed. Hoboken, NJ: Wiley, 2012, §2.4.</div>
