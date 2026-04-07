@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attenuator Pad Calculator | RF Toolbox</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --surface: #f4f5f7; --card: #f4f5f7; --border: #d0d4da;
+    --accent: #b5895a; --accent2: #7c3aed; --text: #1a1d23; --muted: #718096;
+    --green: #16a34a; --orange: #d97706; --red: #dc2626;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  .toolbar { position: fixed; top: 14px; right: 16px; display: flex; gap: 6px; z-index: 100; }
+  .tbtn { background: var(--card); border: 1px solid var(--border); color: var(--muted); border-radius: 5px; padding: 5px 10px; font-size: .75rem; cursor: pointer; transition: border-color .15s, color .15s; }
+  .tbtn:hover { border-color: #b5895a; color: #b5895a; }
+
+  nav { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  nav a { color: #b5895a; text-decoration: none; font-size: 0.88rem; }
+  nav a:hover { text-decoration: underline; }
+  nav span { color: var(--muted); }
+  header { padding: 2rem 1.5rem 1.5rem; max-width: 1100px; margin: 0 auto; }
+  header .tag { font-size: 0.72rem; font-weight: 600; color: #b5895a; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.4rem; }
+  header h1 { font-size: 2rem; font-weight: 700; }
+  header p { color: var(--muted); margin-top: 0.4rem; }
+
+  .equation-box { max-width: 1100px; margin: 0 auto 1.5rem; padding: 0 1.5rem; }
+  .eq-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem 1.5rem; display: flex; flex-wrap: wrap; gap: 2rem; align-items: flex-start; }
+  .eq-primary   { font-family: 'Courier New', monospace; font-size: .95rem; color: var(--accent); margin-bottom: .3rem; }
+  .eq-secondary { font-family: 'Courier New', monospace; font-size: .82rem; color: var(--accent2); margin-bottom: .15rem; }
+  .eq-note      { font-size: .79rem; color: var(--muted); margin-top: .3rem; }
+
+  .layout { display: grid; grid-template-columns: 300px 1fr; gap: 1.4rem; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem; }
+  @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
+  .panel h3 { font-size: .78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+
+  /* Mode tabs */
+  .mode-tabs { display: flex; gap: 6px; margin-bottom: 1.1rem; }
+  .mode-tab { flex: 1; padding: 6px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; font-size: .82rem; font-weight: 600; color: var(--muted); cursor: pointer; text-align: center; transition: border-color .15s, color .15s, background .15s; }
+  .mode-tab.active { background: var(--bg); border-color: var(--accent); color: var(--accent); }
+
+  /* Sliders */
+  .slider-row { margin-bottom: .95rem; }
+  .slider-row label { display: flex; justify-content: space-between; font-size: .88rem; margin-bottom: .3rem; }
+  .slider-row label span { color: var(--orange); font-family: 'Courier New', monospace; font-weight: 600; }
+  input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
+  .hints { display: flex; justify-content: space-between; font-size: .7rem; color: var(--muted); margin-top: .15rem; }
+  .sr-row { display: flex; align-items: center; gap: 6px; }
+  .sr-row input[type=range] { flex: 1; width: auto; min-width: 0; }
+  .si { width: 70px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--accent); font-family: 'Courier New', monospace; font-size: .82rem; padding: 3px 6px; text-align: right; -moz-appearance: textfield; appearance: textfield; }
+  .si::-webkit-outer-spin-button, .si::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .si:focus { outline: none; border-color: var(--accent); }
+  .si-unit { font-size: .75rem; color: var(--muted); white-space: nowrap; }
+
+  /* Right column */
+  .right-col { display: flex; flex-direction: column; gap: 1rem; }
+
+  /* Component result cards */
+  .comp-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .55rem; }
+  .comp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .65rem; }
+  .comp-card .clabel { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .comp-card .cval   { font-size: 1.05rem; font-weight: 700; font-family: 'Courier New', monospace; margin-top: .1rem; color: #2563eb; transition: all 200ms ease; }
+  .comp-card .cunit  { font-size: .67rem; color: var(--muted); }
+  .comp-card .ce96   { font-size: .65rem; color: var(--accent2); margin-top: .15rem; }
+
+  /* Metric cards */
+  .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: .55rem; }
+  .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .65rem; }
+  .metric-card .mlabel { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .metric-card .mval   { font-size: 1.05rem; font-weight: 700; font-family: 'Courier New', monospace; margin-top: .1rem; transition: all 200ms ease; }
+  .metric-card .munit  { font-size: .67rem; color: var(--muted); }
+  .v-blue { color: #2563eb; } .v-accent { color: var(--accent); }
+  .v-orange { color: var(--orange); } .v-accent2 { color: var(--accent2); }
+  .v-green { color: var(--green); }
+
+  /* Circuit diagram card */
+  .circuit-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem 1.4rem; }
+  .circuit-card h3 { font-size: .78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: .9rem; }
+  .circuit-wrap { display: flex; justify-content: center; }
+
+  /* Chart */
+  .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
+  .chart-card h3 { font-size: .78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
+  .chart-wrap { position: relative; height: 260px; }
+
+  /* Annotation */
+  .annotation { border-left: 3px solid #b5895a; background: var(--surface); padding: 11px 14px; border-radius: 0 8px 8px 0; font-size: .83rem; color: var(--muted); line-height: 1.65; max-width: 1100px; margin: 0 1.5rem 2rem; }
+  .annotation strong { color: var(--text); }
+
+  /* Help */
+  .help-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; align-items: center; justify-content: center; }
+  .help-overlay.open { display: flex; }
+  .help-box { background: #fff; border-radius: 12px; max-width: 560px; width: 90%; padding: 32px; position: relative; max-height: 80vh; overflow-y: auto; }
+  .help-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 1.4rem; color: #718096; cursor: pointer; }
+  .help-title { font-size: 1.2rem; font-weight: 700; color: #1a1d23; margin-bottom: 1.2rem; }
+  .help-section { font-size: .75rem; font-weight: 600; text-transform: uppercase; color: #718096; letter-spacing: 1px; margin: .9rem 0 .3rem; }
+  .help-body { font-size: .9rem; color: #4a5568; line-height: 1.75; }
+  .help-try { font-size: .88rem; color: #4a5568; line-height: 1.8; padding-left: 1.2rem; }
+  .help-try li { margin-bottom: .4rem; }
+  .help-try li::marker { color: #b5895a; }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
+  <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
+</div>
+
+<nav>
+  <a href="https://www.noahhinckley.com/home">noahhinckley.com</a>
+  <span>›</span>
+  <a href="index.html">RF Toolbox</a>
+  <span>›</span>
+  <span>Attenuator Pad Calculator</span>
+</nav>
+
+<header>
+  <div class="tag">Tool 15</div>
+  <h1>Attenuator Pad Calculator</h1>
+  <p>Resistor values, nearest E96 standard, power dissipation and design curves for π, T and L-pad attenuators</p>
+</header>
+
+<div class="equation-box">
+  <div class="eq-card">
+    <div>
+      <div class="eq-primary">π-pad:  R_sh = Z₀(K+1)/(K−1)   R_ser = 2Z₀K/(K²−1)</div>
+      <div class="eq-secondary">T-pad:  R_ser = Z₀(K−1)/(K+1)   R_sh = 2Z₀K/(K²−1)</div>
+      <div class="eq-note">K = 10^(A/20) — voltage attenuation ratio · symmetric (Z₁=Z₂=Z₀)</div>
+    </div>
+    <div>
+      <div class="eq-primary">L-pad:  R_ser = √(Z_s(Z_s−Z_L))   R_sh = Z_L(R_ser+Z_s)/(R_ser+Z_s−Z_L)</div>
+      <div class="eq-secondary">IL_min = 20·log₁₀(√(Z_s/Z_L) + √(Z_s/Z_L−1))  dB</div>
+      <div class="eq-note">L-pad for impedance transformation Z_s → Z_L (Z_s &gt; Z_L) — minimum-loss solution</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- LEFT PANEL -->
+  <div class="panel">
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="tab-pi" onclick="setMode('pi')">π-pad</button>
+      <button class="mode-tab"        id="tab-t"  onclick="setMode('t')">T-pad</button>
+      <button class="mode-tab"        id="tab-l"  onclick="setMode('l')">L-pad</button>
+    </div>
+
+    <!-- Symmetric pad inputs (π and T) -->
+    <div id="sym-inputs">
+      <h3>Symmetric (Z₁ = Z₂ = Z₀)</h3>
+
+      <div class="slider-row">
+        <label>Z₀ — system impedance (Ω)<span id="v-z0">50.0</span></label>
+        <div class="sr-row">
+          <input type="range" id="sl-z0" min="10" max="300" step="1" value="50"
+                 oninput="syncSI('sl-z0','si-z0',0);update()">
+          <input type="number" class="si" id="si-z0" value="50" min="10" max="300" step="1"
+                 oninput="syncSlider('si-z0','sl-z0');update()">
+          <span class="si-unit">Ω</span>
+        </div>
+        <div class="hints"><span>10 Ω</span><span>300 Ω</span></div>
+      </div>
+
+      <div class="slider-row">
+        <label>A — attenuation (dB)<span id="v-A">6.0</span></label>
+        <div class="sr-row">
+          <input type="range" id="sl-A" min="0.5" max="40" step="0.5" value="6"
+                 oninput="syncSI('sl-A','si-A',1);update()">
+          <input type="number" class="si" id="si-A" value="6.0" min="0.5" max="40" step="0.5"
+                 oninput="syncSlider('si-A','sl-A');update()">
+          <span class="si-unit">dB</span>
+        </div>
+        <div class="hints"><span>0.5 dB</span><span>40 dB</span></div>
+      </div>
+
+      <div class="slider-row">
+        <label>P_in — input power (mW)<span id="v-Pin">100</span></label>
+        <div class="sr-row">
+          <input type="range" id="sl-Pin" min="1" max="2000" step="1" value="100"
+                 oninput="syncSI('sl-Pin','si-Pin',0);update()">
+          <input type="number" class="si" id="si-Pin" value="100" min="1" max="2000" step="1"
+                 oninput="syncSlider('si-Pin','sl-Pin');update()">
+          <span class="si-unit">mW</span>
+        </div>
+        <div class="hints"><span>1 mW</span><span>2 W</span></div>
+      </div>
+    </div>
+
+    <!-- L-pad inputs -->
+    <div id="lpad-inputs" style="display:none">
+      <h3>Impedance Transformation</h3>
+
+      <div class="slider-row">
+        <label>Z_source (Ω)<span id="v-Zs">100.0</span></label>
+        <div class="sr-row">
+          <input type="range" id="sl-Zs" min="10" max="500" step="1" value="100"
+                 oninput="syncSI('sl-Zs','si-Zs',0);update()">
+          <input type="number" class="si" id="si-Zs" value="100" min="10" max="500" step="1"
+                 oninput="syncSlider('si-Zs','sl-Zs');update()">
+          <span class="si-unit">Ω</span>
+        </div>
+      </div>
+
+      <div class="slider-row">
+        <label>Z_load (Ω)<span id="v-Zl">50.0</span></label>
+        <div class="sr-row">
+          <input type="range" id="sl-Zl" min="10" max="500" step="1" value="50"
+                 oninput="syncSI('sl-Zl','si-Zl',0);update()">
+          <input type="number" class="si" id="si-Zl" value="50" min="10" max="500" step="1"
+                 oninput="syncSlider('si-Zl','sl-Zl');update()">
+          <span class="si-unit">Ω</span>
+        </div>
+        <div class="hints"><span>Z_source must be &gt; Z_load</span></div>
+      </div>
+
+      <div class="slider-row">
+        <label>P_in — input power (mW)<span id="v-PinL">100</span></label>
+        <div class="sr-row">
+          <input type="range" id="sl-PinL" min="1" max="2000" step="1" value="100"
+                 oninput="syncSI('sl-PinL','si-PinL',0);update()">
+          <input type="number" class="si" id="si-PinL" value="100" min="1" max="2000" step="1"
+                 oninput="syncSlider('si-PinL','sl-PinL');update()">
+          <span class="si-unit">mW</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="right-col">
+    <!-- Component values -->
+    <div class="comp-row">
+      <div class="comp-card">
+        <div class="clabel" id="lbl-R1">R1 — shunt (×2)</div>
+        <div class="cval" id="m-R1">—</div>
+        <div class="cunit">Ω</div>
+        <div class="ce96" id="e96-R1"></div>
+        <div class="ce96" id="cpow-R1" style="color:var(--orange)"></div>
+      </div>
+      <div class="comp-card">
+        <div class="clabel" id="lbl-R2">R2 — series</div>
+        <div class="cval" id="m-R2">—</div>
+        <div class="cunit">Ω</div>
+        <div class="ce96" id="e96-R2"></div>
+        <div class="ce96" id="cpow-R2" style="color:var(--orange)"></div>
+      </div>
+      <div class="comp-card" id="card-R3" style="display:none">
+        <div class="clabel" id="lbl-R3">R3</div>
+        <div class="cval" id="m-R3">—</div>
+        <div class="cunit">Ω</div>
+        <div class="ce96" id="e96-R3"></div>
+        <div class="ce96" id="cpow-R3" style="color:var(--orange)"></div>
+      </div>
+    </div>
+
+    <!-- Performance metrics -->
+    <div class="metrics">
+      <div class="metric-card">
+        <div class="mlabel">Attenuation</div>
+        <div class="mval v-blue" id="m-att">—</div>
+        <div class="munit">dB</div>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel">P dissipated</div>
+        <div class="mval v-orange" id="m-Pdiss">—</div>
+        <div class="munit">mW (total)</div>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel">P to load</div>
+        <div class="mval v-green" id="m-Pout">—</div>
+        <div class="munit">mW</div>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel">Max V across</div>
+        <div class="mval v-accent2" id="m-Vmax">—</div>
+        <div class="munit">V (input node)</div>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel">Max I through</div>
+        <div class="mval v-accent" id="m-Imax">—</div>
+        <div class="munit">mA (series R)</div>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel" id="lbl-z-metric">Input Z</div>
+        <div class="mval v-accent" id="m-Zin">—</div>
+        <div class="munit">Ω (matched)</div>
+      </div>
+    </div>
+
+    <!-- Circuit diagram -->
+    <div class="circuit-card">
+      <h3 id="circuit-title">π-pad Circuit</h3>
+      <div class="circuit-wrap">
+        <div id="circuit-svg"></div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-card">
+      <h3 id="chart-title">R values vs Attenuation — 50 Ω π-pad</h3>
+      <div class="chart-wrap">
+        <canvas id="main-chart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="annotation" id="annotation">Computing…</div>
+
+<!-- Help overlay -->
+<div class="help-overlay" id="helpOverlay">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Attenuator Pad Calculator</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Computes exact resistor values for π-pad, T-pad (symmetric, equal terminations) and L-pad (impedance-transforming) attenuators. Outputs include exact Ω values, nearest E96 standard resistor, total dissipated power, voltage and current ratings, and a design curve showing component values vs attenuation across the full range.</div>
+
+    <div class="help-section">Topologies</div>
+    <div class="help-body">
+      <strong>π-pad</strong> — Two equal shunt resistors at input/output, one series resistor in the middle. Preferred for RF work due to shunt-to-ground at both ports; easier to implement as a distributed pad.<br><br>
+      <strong>T-pad</strong> — Two equal series resistors with one shunt resistor in the middle. Dual of the π-pad; common in audio and DC-biased circuits where shunt-to-ground at the ports is undesirable.<br><br>
+      <strong>L-pad</strong> — One series resistor (high-Z side) and one shunt resistor (low-Z side) for minimum-loss impedance transformation. Attenuation is inherent, not user-specified — it is the minimum possible loss for that impedance ratio.
+    </div>
+
+    <div class="help-section">E96 nearest values</div>
+    <div class="help-body">The E96 series (96 values per decade, 1% tolerance) is the standard for RF and precision work. The tool shows the nearest E96 value and the resulting attenuation error. For critical applications verify the as-built attenuation using a VNA or power meter.</div>
+
+    <div class="help-section">Power ratings</div>
+    <div class="help-body">P_in is the total input power. For each resistor the tool distributes the dissipation. The shunt resistors in a π-pad carry less current at high attenuation (they become very large), while the series resistor carries nearly all the input current. Choose resistor power ratings with at least 2× margin.</div>
+
+    <div class="help-section">Things to try</div>
+    <ul class="help-try">
+      <li>Set π-pad, Z₀=50 Ω, A=6 dB — verify R_shunt ≈ 150.5 Ω, R_series ≈ 66.9 Ω (classic result).</li>
+      <li>Increase attenuation to 20 dB and note how R_shunt rises steeply while R_series approaches Z₀.</li>
+      <li>Switch to T-pad at the same attenuation — R_series and R_shunt values are swapped relative to the π-pad.</li>
+      <li>Try the L-pad with Z_s=100 Ω → Z_L=50 Ω: R₁ = R₂ ≈ 70.7 Ω (minimum 7.66 dB insertion loss).</li>
+      <li>Set P_in=1000 mW (1 W) and check the per-resistor power to ensure your chosen packages can handle it.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+let mode = 'pi';
+let chart = null;
+
+// ── E96 series ───────────────────────────────────────────
+const E96 = [1.00,1.02,1.05,1.07,1.10,1.13,1.15,1.18,1.21,1.24,1.27,1.30,1.33,1.37,1.40,1.43,
+             1.47,1.50,1.54,1.58,1.62,1.65,1.69,1.74,1.78,1.82,1.87,1.91,1.96,2.00,2.05,2.10,
+             2.15,2.21,2.26,2.32,2.37,2.43,2.49,2.55,2.61,2.67,2.74,2.80,2.87,2.94,3.01,3.09,
+             3.16,3.24,3.32,3.40,3.48,3.57,3.65,3.74,3.83,3.92,4.02,4.12,4.22,4.32,4.42,4.53,
+             4.64,4.75,4.87,4.99,5.11,5.23,5.36,5.49,5.62,5.76,5.90,6.04,6.19,6.34,6.49,6.65,
+             6.81,6.98,7.15,7.32,7.50,7.68,7.87,8.06,8.25,8.45,8.66,8.87,9.09,9.31,9.53,9.76];
+
+function nearestE96(R) {
+  if (!isFinite(R) || R <= 0) return { val: null, str: '—' };
+  const exp = Math.floor(Math.log10(R));
+  const mant = R / Math.pow(10, exp);
+  let best = E96[0], bestDiff = Infinity;
+  E96.forEach(v => { const d = Math.abs(v - mant); if (d < bestDiff) { bestDiff = d; best = v; } });
+  const val = best * Math.pow(10, exp);
+  const errPct = ((val - R) / R * 100).toFixed(1);
+  const str = fmtR(val) + ` (${errPct > 0 ? '+' : ''}${errPct}%)`;
+  return { val, str };
+}
+
+function fmtR(R) {
+  if (!isFinite(R) || R > 1e6) return '∞';
+  if (R >= 1000) return (R/1000).toFixed(R >= 10000 ? 1 : 2) + ' kΩ';
+  return R.toFixed(R >= 100 ? 1 : 2) + ' Ω';
+}
+
+// ── Slider ↔ number-input sync ───────────────────────────
+function syncSI(sliderId, siId, dec) {
+  const v = parseFloat(document.getElementById(sliderId).value);
+  document.getElementById(siId).value = v.toFixed(dec);
+  const sp = document.getElementById(sliderId.replace('sl-','v-'));
+  if (sp) sp.textContent = v.toFixed(dec);
+}
+function syncSlider(siId, sliderId) {
+  const v = parseFloat(document.getElementById(siId).value);
+  if (isNaN(v)) return;
+  const sl = document.getElementById(sliderId);
+  sl.value = Math.min(Math.max(v, parseFloat(sl.min)), parseFloat(sl.max));
+  const sp = document.getElementById(siId.replace('si-','v-'));
+  if (sp) sp.textContent = document.getElementById(siId).value;
+}
+function gv(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
+// ── Mode toggle ──────────────────────────────────────────
+function setMode(m) {
+  mode = m;
+  ['pi','t','l'].forEach(t => document.getElementById('tab-'+t).classList.toggle('active', t===m));
+  document.getElementById('sym-inputs').style.display  = m==='l' ? 'none' : '';
+  document.getElementById('lpad-inputs').style.display = m==='l' ? '' : 'none';
+  document.getElementById('card-R3').style.display = m==='pi' ? '' : 'none';
+  update();
+}
+
+// ── Calculations ─────────────────────────────────────────
+function calcPi(Z0, A_dB) {
+  const K = Math.pow(10, A_dB/20);
+  const R_sh  = Z0 * (K+1) / (K-1);
+  const R_ser = 2*Z0*K / (K*K - 1);
+  return { R1: R_sh, R2: R_ser, R3: R_sh };
+}
+
+function calcT(Z0, A_dB) {
+  const K = Math.pow(10, A_dB/20);
+  const R_ser = Z0 * (K-1) / (K+1);
+  const R_sh  = 2*Z0*K / (K*K - 1);
+  return { R1: R_ser, R2: R_sh, R3: R_ser };
+}
+
+function calcL(Zs, Zl) {
+  if (Zs <= Zl) return null;
+  const R_ser = Math.sqrt(Zs * (Zs - Zl));
+  const R_sh  = Zl * (R_ser + Zs) / (R_ser + Zs - Zl);
+  const IL_dB = 20*Math.log10(Math.sqrt(Zs/Zl) + Math.sqrt(Zs/Zl - 1));
+  return { R1: R_ser, R2: R_sh, R3: null, IL: IL_dB };
+}
+
+// Power dissipation ─────────────────────────────────────
+function powerPi(R1, R2, R3, Z0, Pin_mW, A_dB) {
+  const lin = Math.pow(10, -A_dB/10);
+  const V_in  = Math.sqrt(Pin_mW * 1e-3 * Z0);
+  const V_out = Math.sqrt(Pin_mW * 1e-3 * lin * Z0);
+  const P_R1  = V_in**2  / R1 * 1000;   // shunt at input (mW)
+  const P_R3  = V_out**2 / R3 * 1000;   // shunt at output (mW)
+  const I_ser = (V_in - V_out) / R2;
+  const P_R2  = I_ser**2 * R2 * 1000;   // series (mW)
+  const Pout  = Pin_mW * lin;
+  return { P_R1, P_R2, P_R3, Pout, V_in, I_ser: I_ser * 1000 };
+}
+
+function powerT(R1, R2, R3, Z0, Pin_mW, A_dB) {
+  const lin   = Math.pow(10, -A_dB/10);
+  const V_in  = Math.sqrt(Pin_mW * 1e-3 * Z0);
+  const Pout  = Pin_mW * lin;
+  const V_out = Math.sqrt(Pout * 1e-3 * Z0);
+  const I_ser = (V_in - V_out) / (R1 + R3);
+  const P_R1  = I_ser**2 * R1 * 1000;
+  const P_R3  = I_ser**2 * R3 * 1000;
+  const V_mid = V_in - I_ser * R1;
+  const P_R2  = V_mid**2 / R2 * 1000;
+  return { P_R1, P_R2, P_R3, Pout, V_in, I_ser: I_ser * 1000 };
+}
+
+// ── SVG circuit diagram ──────────────────────────────────
+function svgResH(x0, y, label) {
+  return `<rect x="${x0}" y="${y-6}" width="28" height="12" rx="2" fill="var(--bg)" stroke="currentColor" stroke-width="1.5"/>`
+       + (label ? `<text x="${x0+14}" y="${y-10}" font-size="8.5" font-family="Courier New,monospace" fill="#7c3aed" text-anchor="middle">${label}</text>` : '');
+}
+function svgResV(x, y0, label) {
+  return `<rect x="${x-6}" y="${y0}" width="12" height="28" rx="2" fill="var(--bg)" stroke="currentColor" stroke-width="1.5"/>`
+       + (label ? `<text x="${x+11}" y="${y0+17}" font-size="8.5" font-family="Courier New,monospace" fill="#7c3aed" text-anchor="start">${label}</text>` : '');
+}
+function svgGnd(x, y) {
+  return `<line x1="${x-11}" y1="${y}"   x2="${x+11}" y2="${y}"   stroke="currentColor" stroke-width="1.5"/>`
+       + `<line x1="${x-7}"  y1="${y+5}" x2="${x+7}"  y2="${y+5}" stroke="currentColor" stroke-width="1.2"/>`
+       + `<line x1="${x-3}"  y1="${y+10}"x2="${x+3}"  y2="${y+10}"stroke="currentColor" stroke-width="1"/>`;
+}
+function svgDot(x, y) { return `<circle cx="${x}" cy="${y}" r="2.5" fill="currentColor"/>`; }
+function svgW(x1,y1,x2,y2) { return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="currentColor" stroke-width="1.5"/>`; }
+function svgLbl(x, y, t, c, a) { return `<text x="${x}" y="${y}" font-size="9" font-family="Courier New,monospace" fill="${c||'currentColor'}" text-anchor="${a||'start'}">${t}</text>`; }
+
+function makePadSVG(topo, R1, R2, R3) {
+  const W=280, H=110, wy=36, col='#1a1d23', mut='#718096', acc='#b5895a';
+  const p = [];
+  const f1 = fmtR(R1), f2 = fmtR(R2), f3 = fmtR(R3||0);
+
+  if (topo === 'pi') {
+    // Z₁──┬──R2──┬──Z₂   R1 shunt left, R3 shunt right
+    const j1=62, j2=218;
+    p.push(svgLbl(2,wy+4,'Z₁',mut,'start'));
+    p.push(svgW(20,wy,j1,wy), svgDot(j1,wy));
+    p.push(svgW(j1,wy,j1+14,wy));
+    p.push(svgResH(j1+14,wy,f2));
+    p.push(svgW(j1+14+28,wy,j2,wy), svgDot(j2,wy));
+    p.push(svgW(j2,wy,258,wy));
+    p.push(svgLbl(260,wy+4,'Z₂',acc,'start'));
+    // R1 shunt (left)
+    p.push(svgW(j1,wy+2,j1,wy+14));
+    p.push(svgResV(j1,wy+14,f1));
+    p.push(svgW(j1,wy+42,j1,wy+50), svgGnd(j1,wy+50));
+    // R3 shunt (right)
+    p.push(svgW(j2,wy+2,j2,wy+14));
+    p.push(svgResV(j2,wy+14,f3));
+    p.push(svgW(j2,wy+42,j2,wy+50), svgGnd(j2,wy+50));
+  } else if (topo === 't') {
+    // Z₁──R1──┬──R3──Z₂   R2 shunt middle
+    const jx=140;
+    p.push(svgLbl(2,wy+4,'Z₁',mut,'start'));
+    p.push(svgW(20,wy,48,wy));
+    p.push(svgResH(48,wy,f1));
+    p.push(svgW(76,wy,jx,wy), svgDot(jx,wy), svgW(jx,wy,jx+14,wy));
+    p.push(svgResH(jx+14,wy,f3));
+    p.push(svgW(jx+42,wy,258,wy));
+    p.push(svgLbl(260,wy+4,'Z₂',acc,'start'));
+    // R2 shunt (middle)
+    p.push(svgW(jx,wy+2,jx,wy+14));
+    p.push(svgResV(jx,wy+14,f2));
+    p.push(svgW(jx,wy+42,jx,wy+50), svgGnd(jx,wy+50));
+  } else {
+    // L-pad: Z_s──R1──┬──Z_L   R2 shunt right
+    const jx=180;
+    p.push(svgLbl(2,wy+4,'Z_s',mut,'start'));
+    p.push(svgW(24,wy,52,wy));
+    p.push(svgResH(52,wy,f1));
+    p.push(svgW(80,wy,jx,wy), svgDot(jx,wy), svgW(jx,wy,258,wy));
+    p.push(svgLbl(260,wy+4,'Z_L',acc,'start'));
+    // R2 shunt
+    p.push(svgW(jx,wy+2,jx,wy+14));
+    p.push(svgResV(jx,wy+14,f2));
+    p.push(svgW(jx,wy+42,jx,wy+50), svgGnd(jx,wy+50));
+  }
+
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;height:auto;color:${col}">${p.join('')}</svg>`;
+}
+
+// ── Main update ─────────────────────────────────────────
+function update() {
+  let R1, R2, R3=null, A_dB, Z0_eff, Pin_mW;
+
+  if (mode === 'pi' || mode === 't') {
+    const Z0 = gv('si-z0'), A = gv('si-A');
+    Pin_mW = gv('si-Pin'); Z0_eff = Z0;
+    if (!Z0 || !A) return;
+    const r = mode==='pi' ? calcPi(Z0,A) : calcT(Z0,A);
+    R1=r.R1; R2=r.R2; R3=r.R3; A_dB=A;
+
+    // Power dissipation
+    const pw = mode==='pi' ? powerPi(R1,R2,R3,Z0,Pin_mW,A_dB) : powerT(R1,R2,R3,Z0,Pin_mW,A_dB);
+    const Pdiss = Pin_mW - pw.Pout;
+
+    document.getElementById('m-R1').textContent = fmtR(R1);
+    document.getElementById('m-R2').textContent = fmtR(R2);
+    document.getElementById('m-R3').textContent = fmtR(R3);
+    document.getElementById('e96-R1').textContent  = 'E96: ' + nearestE96(R1).str;
+    document.getElementById('e96-R2').textContent  = 'E96: ' + nearestE96(R2).str;
+    document.getElementById('e96-R3').textContent  = 'E96: ' + nearestE96(R3).str;
+    document.getElementById('cpow-R1').textContent = 'P: ' + pw.P_R1.toFixed(1) + ' mW';
+    document.getElementById('cpow-R2').textContent = 'P: ' + pw.P_R2.toFixed(1) + ' mW';
+    document.getElementById('cpow-R3').textContent = 'P: ' + pw.P_R3.toFixed(1) + ' mW';
+    document.getElementById('m-att').textContent   = A_dB.toFixed(1);
+    document.getElementById('m-Pdiss').textContent = Pdiss.toFixed(1);
+    document.getElementById('m-Pout').textContent  = pw.Pout.toFixed(1);
+    document.getElementById('m-Vmax').textContent  = pw.V_in.toFixed(3);
+    document.getElementById('m-Imax').textContent  = pw.I_ser.toFixed(2);
+    document.getElementById('m-Zin').textContent   = Z0.toFixed(0);
+
+    // Labels
+    if (mode==='pi') {
+      document.getElementById('lbl-R1').textContent = 'R1 — shunt (input)';
+      document.getElementById('lbl-R2').textContent = 'R2 — series';
+      document.getElementById('lbl-R3').textContent = 'R3 — shunt (output)';
+    } else {
+      document.getElementById('lbl-R1').textContent = 'R1 — series (input)';
+      document.getElementById('lbl-R2').textContent = 'R2 — shunt (center)';
+      document.getElementById('lbl-R3').textContent = 'R3 — series (output)';
+    }
+
+    document.getElementById('annotation').innerHTML =
+      `<strong>${mode==='pi'?'π':'T'}-pad, Z₀=${Z0} Ω, A=${A_dB} dB</strong> — ` +
+      `R_${mode==='pi'?'shunt':'series'} = <strong>${fmtR(R1)}</strong>, ` +
+      `R_${mode==='pi'?'series':'shunt'} = <strong>${fmtR(R2)}</strong>. ` +
+      `At P_in=${Pin_mW} mW: P_out = <strong>${pw.Pout.toFixed(1)} mW</strong>, P_diss = <strong>${Pdiss.toFixed(1)} mW</strong>. ` +
+      `V_in = ${Vin_V.toFixed(3)} V, I_series = ${Iser_mA.toFixed(2)} mA. ` +
+      `Nearest E96 series R: ${nearestE96(R1).str} / ${nearestE96(R2).str}.`;
+
+    document.getElementById('chart-title').textContent = `R values vs Attenuation — ${Z0} Ω ${mode==='pi'?'π':'T'}-pad`;
+
+  } else {
+    // L-pad
+    const Zs = gv('si-Zs'), Zl = gv('si-Zl');
+    Pin_mW = gv('si-PinL'); Z0_eff = Zs;
+    if (!Zs || !Zl || Zs <= Zl) {
+      document.getElementById('annotation').innerHTML =
+        '<strong>L-pad:</strong> Z_source must be greater than Z_load.';
+      return;
+    }
+    const r = calcL(Zs, Zl);
+    R1=r.R1; R2=r.R2; A_dB=r.IL;
+
+    const Vin = Math.sqrt(Pin_mW*1e-3*Zs);
+    const Pout = Pin_mW * Math.pow(10,-A_dB/10);
+    const Pdiss = Pin_mW - Pout;
+    const Iser_mA = Vin / (R1 + R2*Zl/(R2+Zl) + Zs) * 1000;
+
+    document.getElementById('m-R1').textContent = fmtR(R1);
+    document.getElementById('m-R2').textContent = fmtR(R2);
+    document.getElementById('e96-R1').textContent = 'E96: ' + nearestE96(R1).str;
+    document.getElementById('e96-R2').textContent = 'E96: ' + nearestE96(R2).str;
+    document.getElementById('m-att').textContent  = A_dB.toFixed(2);
+    document.getElementById('m-Pdiss').textContent = Pdiss.toFixed(1);
+    document.getElementById('m-Pout').textContent  = Pout.toFixed(1);
+    document.getElementById('m-Vmax').textContent  = Vin.toFixed(3);
+    document.getElementById('m-Imax').textContent  = Iser_mA.toFixed(2);
+    document.getElementById('m-Zin').textContent   = Zs.toFixed(0);
+    document.getElementById('lbl-R1').textContent = 'R1 — series (Z_s side)';
+    document.getElementById('lbl-R2').textContent = 'R2 — shunt (Z_L side)';
+    document.getElementById('lbl-z-metric').textContent = 'Z_source';
+
+    document.getElementById('annotation').innerHTML =
+      `<strong>L-pad ${Zs} Ω → ${Zl} Ω</strong> — ` +
+      `R_series = <strong>${fmtR(R1)}</strong>, R_shunt = <strong>${fmtR(R2)}</strong>. ` +
+      `Minimum insertion loss: <strong>${A_dB.toFixed(2)} dB</strong>. ` +
+      `At P_in=${Pin_mW} mW: P_out = <strong>${Pout.toFixed(1)} mW</strong>, P_diss = <strong>${Pdiss.toFixed(1)} mW</strong>. ` +
+      `Nearest E96: ${nearestE96(R1).str} / ${nearestE96(R2).str}.`;
+
+    document.getElementById('chart-title').textContent = 'Insertion Loss vs Impedance Ratio — L-pad';
+  }
+
+  // Circuit SVG
+  document.getElementById('circuit-title').textContent =
+    mode==='pi' ? 'π-pad Circuit' : mode==='t' ? 'T-pad Circuit' : 'L-pad Circuit';
+  document.getElementById('circuit-svg').innerHTML = makePadSVG(mode, R1, R2, R3);
+
+  updateChart(Z0_eff, A_dB);
+}
+
+// ── Chart ─────────────────────────────────────────────────
+function updateChart(Z0, curA) {
+  let datasets = [];
+  const N = 80;
+
+  if (mode !== 'l') {
+    // R_shunt and R_series vs attenuation for current Z0
+    const shuntPts=[], serPts=[];
+    for (let i=0; i<N; i++) {
+      const A = 0.5 + 39.5*i/(N-1);
+      const r = mode==='pi' ? calcPi(Z0,A) : calcT(Z0,A);
+      shuntPts.push({ x: A, y: parseFloat(r.R1.toFixed(3)) });
+      serPts.push({ x: A, y: parseFloat(r.R2.toFixed(3)) });
+    }
+    datasets = [
+      { label: mode==='pi'?'R_shunt (×2)':'R_series (×2)', data: shuntPts, borderColor:'#2563eb', borderWidth:2, pointRadius:0, tension:0.2 },
+      { label: mode==='pi'?'R_series':'R_shunt', data: serPts, borderColor:'#d97706', borderWidth:2, pointRadius:0, tension:0.2 },
+      { label: `Current (${curA.toFixed(1)} dB)`,
+        data: [{ x: curA, y: mode==='pi' ? calcPi(Z0,curA).R1 : calcT(Z0,curA).R1 }],
+        borderColor:'#b5895a', backgroundColor:'#b5895a', pointRadius:7, showLine:false },
+    ];
+  } else {
+    // L-pad: insertion loss vs Zs/Zl ratio
+    const ilPts=[];
+    const Zl = gv('si-Zl');
+    for (let i=0; i<N; i++) {
+      const ratio = 1.01 + 19*i/(N-1); // 1.01 to 20
+      const Zs_sweep = Zl * ratio;
+      const IL = 20*Math.log10(Math.sqrt(ratio) + Math.sqrt(ratio-1));
+      ilPts.push({ x: parseFloat(ratio.toFixed(3)), y: parseFloat(IL.toFixed(3)) });
+    }
+    const curRatio = gv('si-Zs') / gv('si-Zl');
+    datasets = [
+      { label: 'Min. insertion loss (dB)', data: ilPts, borderColor:'#2563eb', borderWidth:2, pointRadius:0, tension:0.2 },
+      { label: `Current (${curRatio.toFixed(2)}:1)`,
+        data: [{ x: curRatio, y: curA }],
+        borderColor:'#b5895a', backgroundColor:'#b5895a', pointRadius:7, showLine:false },
+    ];
+  }
+
+  const isL = (mode==='l');
+  const cfg = {
+    type: 'scatter',
+    data: { datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 0 },
+      scales: {
+        x: {
+          title: { display:true, text: isL?'Z_s/Z_L ratio':'Attenuation (dB)', color:'#718096', font:{size:11} },
+          ticks: { color:'#718096', font:{size:10} }, grid: { color:'rgba(208,212,218,0.5)' },
+          min: isL?1:0.5,
+        },
+        y: {
+          title: { display:true, text: isL?'Insertion Loss (dB)':'Resistance (Ω)', color:'#718096', font:{size:11} },
+          ticks: { color:'#718096', font:{size:10} }, grid: { color:'rgba(208,212,218,0.5)' },
+          min: 0,
+        },
+      },
+      plugins: {
+        legend: { labels:{ color:'#718096', font:{size:10}, boxWidth:14 } },
+        tooltip: { callbacks:{ label: ctx => isL
+          ? `ratio=${ctx.parsed.x.toFixed(2)}, IL=${ctx.parsed.y.toFixed(2)} dB`
+          : `A=${ctx.parsed.x.toFixed(1)} dB, R=${ctx.parsed.y.toFixed(1)} Ω` }},
+      },
+    },
+  };
+
+  if (!chart) {
+    chart = new Chart(document.getElementById('main-chart'), cfg);
+  } else {
+    chart.data.datasets = cfg.data.datasets;
+    chart.options.scales.x.title.text = cfg.options.scales.x.title.text;
+    chart.options.scales.y.title.text = cfg.options.scales.y.title.text;
+    chart.options.scales.x.min = cfg.options.scales.x.min;
+    chart.update('none');
+  }
+}
+
+// ── Export CSV ───────────────────────────────────────────
+function exportCSV() {
+  const lines = [`RF Toolbox — Attenuator Export,${new Date().toLocaleString()}`,''];
+  if (mode !== 'l') {
+    const Z0=gv('si-z0'), A=gv('si-A');
+    lines.push('PARAMETERS,Value,Unit',`Topology,${mode==='pi'?'Pi':'T'},`,`Z0,${Z0},Ohm`,`Attenuation,${A},dB`,'',
+      'RESISTOR VALUES,Exact (Ohm),E96 nearest',
+      `R1 (${mode==='pi'?'shunt input':'series input'}),${document.getElementById('m-R1').textContent},${nearestE96(mode==='pi'?calcPi(Z0,A).R1:calcT(Z0,A).R1).str}`,
+      `R2 (${mode==='pi'?'series':'shunt center'}),${document.getElementById('m-R2').textContent},${nearestE96(mode==='pi'?calcPi(Z0,A).R2:calcT(Z0,A).R2).str}`,
+      `R3 (${mode==='pi'?'shunt output':'series output'}),${document.getElementById('m-R3').textContent},${nearestE96(mode==='pi'?calcPi(Z0,A).R3:calcT(Z0,A).R3).str}`,
+      '','ATTENUATION SWEEP,A (dB),R_shunt or R_series (Ohm),R_series or R_shunt (Ohm)');
+    for (let i=0;i<81;i++){
+      const a=0.5+i*0.5;
+      const r=mode==='pi'?calcPi(Z0,a):calcT(Z0,a);
+      lines.push(`${a.toFixed(1)},${r.R1.toFixed(3)},${r.R2.toFixed(3)}`);
+    }
+  } else {
+    const Zs=gv('si-Zs'), Zl=gv('si-Zl');
+    const r=calcL(Zs,Zl)||{R1:0,R2:0,IL:0};
+    lines.push('PARAMETERS,Value,Unit',`Topology,L-pad,`,`Z_source,${Zs},Ohm`,`Z_load,${Zl},Ohm`,'',
+      'RESISTOR VALUES,Exact (Ohm),E96 nearest',
+      `R1 (series),${fmtR(r.R1)},${nearestE96(r.R1).str}`,
+      `R2 (shunt),${fmtR(r.R2)},${nearestE96(r.R2).str}`,
+      `Insertion Loss,${r.IL.toFixed(3)},dB`,'',
+      'IL vs Zs/Zl SWEEP,Zs/Zl ratio,IL (dB)');
+    for (let i=0;i<=50;i++){
+      const ratio=1.02+18.98*i/50;
+      const IL=20*Math.log10(Math.sqrt(ratio)+Math.sqrt(ratio-1));
+      lines.push(`${ratio.toFixed(3)},${IL.toFixed(4)}`);
+    }
+  }
+  const blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`rf_toolbox_attenuator_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+}
+
+// ── Copy link ────────────────────────────────────────────
+function copyLink() {
+  const p = new URLSearchParams({ mode,
+    z0:gv('si-z0'), A:gv('si-A'), Zs:gv('si-Zs'), Zl:gv('si-Zl'), Pin:gv('si-Pin') });
+  navigator.clipboard.writeText(location.href.split('?')[0]+'?'+p).then(()=>{
+    const btn=document.getElementById('copyBtn');
+    btn.textContent='✓ Copied'; setTimeout(()=>btn.textContent='⎘ Copy Link',1800);
+  });
+}
+
+// ── Help ─────────────────────────────────────────────────
+function showHelp()  { document.getElementById('helpOverlay').classList.add('open');    }
+function closeHelp() { document.getElementById('helpOverlay').classList.remove('open'); }
+document.getElementById('helpOverlay').addEventListener('click', e=>{
+  if(e.target.id==='helpOverlay') closeHelp();
+});
+
+// ── URL restore ──────────────────────────────────────────
+(function(){
+  const p=new URLSearchParams(location.search);
+  if(p.get('mode')) setMode(p.get('mode'));
+  [['z0','sl-z0','si-z0'],['A','sl-A','si-A'],['Zs','sl-Zs','si-Zs'],['Zl','sl-Zl','si-Zl']].forEach(([k,sl,si])=>{
+    const v=parseFloat(p.get(k)); if(!isNaN(v)){
+      document.getElementById(sl).value=v; document.getElementById(si).value=v;
+      const sp=document.getElementById(sl.replace('sl-','v-')); if(sp) sp.textContent=v;
+    }
+  });
+})();
+
+update();
+</script>
+</body>
+</html>

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mixer / Frequency Planning | RF Toolbox</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --surface: #f4f5f7; --card: #f4f5f7; --border: #d0d4da;
+    --accent: #b5895a; --accent2: #7c3aed; --text: #1a1d23; --muted: #718096;
+    --green: #16a34a; --orange: #d97706; --red: #dc2626;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  .toolbar { position: fixed; top: 14px; right: 16px; display: flex; gap: 6px; z-index: 100; }
+  .tbtn { background: var(--card); border: 1px solid var(--border); color: var(--muted); border-radius: 5px; padding: 5px 10px; font-size: .75rem; cursor: pointer; transition: border-color .15s, color .15s; }
+  .tbtn:hover { border-color: #b5895a; color: #b5895a; }
+
+  nav { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  nav a { color: #b5895a; text-decoration: none; font-size: .88rem; }
+  nav a:hover { text-decoration: underline; }
+  nav span { color: var(--muted); }
+  header { padding: 2rem 1.5rem 1.5rem; max-width: 1200px; margin: 0 auto; }
+  header .tag { font-size: .72rem; font-weight: 600; color: #b5895a; letter-spacing: 2px; text-transform: uppercase; margin-bottom: .4rem; }
+  header h1 { font-size: 2rem; font-weight: 700; }
+  header p { color: var(--muted); margin-top: .4rem; }
+
+  .equation-box { max-width: 1200px; margin: 0 auto 1.5rem; padding: 0 1.5rem; }
+  .eq-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem 1.5rem; display: flex; flex-wrap: wrap; gap: 2rem; }
+  .eq-primary   { font-family: 'Courier New', monospace; font-size: .95rem; color: var(--accent); margin-bottom: .3rem; }
+  .eq-secondary { font-family: 'Courier New', monospace; font-size: .82rem; color: var(--accent2); margin-bottom: .15rem; }
+  .eq-note      { font-size: .79rem; color: var(--muted); margin-top: .3rem; }
+
+  .layout { display: grid; grid-template-columns: 300px 1fr; gap: 1.4rem; max-width: 1200px; margin: 0 auto; padding: 0 1.5rem 2rem; }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
+  .panel h3 { font-size: .78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+
+  /* Sliders */
+  .slider-row { margin-bottom: .9rem; }
+  .slider-row label { display: flex; justify-content: space-between; font-size: .88rem; margin-bottom: .3rem; }
+  .slider-row label span { color: var(--orange); font-family: 'Courier New', monospace; font-weight: 600; }
+  input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
+  .hints { display: flex; justify-content: space-between; font-size: .7rem; color: var(--muted); margin-top: .15rem; }
+  .sr-row { display: flex; align-items: center; gap: 6px; }
+  .sr-row input[type=range] { flex: 1; width: auto; min-width: 0; }
+  .si { width: 70px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--accent); font-family: 'Courier New', monospace; font-size: .82rem; padding: 3px 6px; text-align: right; -moz-appearance: textfield; appearance: textfield; }
+  .si::-webkit-outer-spin-button, .si::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .si:focus { outline: none; border-color: var(--accent); }
+  .si-unit { font-size: .75rem; color: var(--muted); white-space: nowrap; }
+
+  /* Presets */
+  .pbtn { padding: .28rem .55rem; background: var(--surface); border: 1px solid var(--border); border-radius: 5px; color: var(--muted); cursor: pointer; font-size: .74rem; transition: border-color .15s, color .15s; margin: 2px; }
+  .pbtn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Right column */
+  .right-col { display: flex; flex-direction: column; gap: 1rem; }
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: .55rem; }
+  .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .65rem; }
+  .metric-card .mlabel { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .metric-card .mval   { font-size: 1.05rem; font-weight: 700; font-family: 'Courier New', monospace; margin-top: .1rem; transition: all 200ms ease; }
+  .metric-card .munit  { font-size: .67rem; color: var(--muted); }
+  .v-blue { color: #2563eb; } .v-orange { color: var(--orange); } .v-red { color: var(--red); }
+  .v-accent { color: var(--accent); } .v-green { color: var(--green); }
+
+  /* Charts */
+  .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem 1.4rem; }
+  .chart-card h3 { font-size: .78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: .9rem; }
+  .chart-wrap { position: relative; height: 220px; }
+
+  /* Two-column sub-layout for grid + table */
+  .bottom-row { display: grid; grid-template-columns: auto 1fr; gap: 1rem; }
+  @media (max-width: 860px) { .bottom-row { grid-template-columns: 1fr; } }
+
+  /* Spur grid */
+  .grid-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem 1.4rem; }
+  .grid-card h3 { font-size: .78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: .9rem; }
+
+  /* Spur table */
+  .table-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem 1.4rem; min-width: 0; }
+  .table-card h3 { font-size: .78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: .9rem; }
+  .tbl-wrap { max-height: 320px; overflow-y: auto; border-radius: 6px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: .78rem; }
+  th { position: sticky; top: 0; background: var(--surface); padding: .4rem .6rem; text-align: left; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--border); font-size: .7rem; letter-spacing: .5px; }
+  td { padding: .35rem .6rem; border-bottom: 1px solid rgba(208,212,218,.5); font-family: 'Courier New', monospace; font-size: .76rem; }
+  tr.row-desired td { background: rgba(37,99,235,.08); }
+  tr.row-image   td { background: rgba(217,119,6,.10); }
+  tr.row-inband  td { background: rgba(220,38,38,.08); }
+  tr:last-child td { border-bottom: none; }
+
+  /* Legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: .7rem; font-size: .73rem; }
+  .leg { display: flex; align-items: center; gap: 4px; }
+  .leg-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+  /* Annotation */
+  .annotation { border-left: 3px solid #b5895a; background: var(--surface); padding: 11px 14px; border-radius: 0 8px 8px 0; font-size: .83rem; color: var(--muted); line-height: 1.65; max-width: 1200px; margin: 0 1.5rem 2rem; }
+  .annotation strong { color: var(--text); }
+
+  /* Help */
+  .help-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; align-items: center; justify-content: center; }
+  .help-overlay.open { display: flex; }
+  .help-box { background: #fff; border-radius: 12px; max-width: 580px; width: 90%; padding: 32px; position: relative; max-height: 85vh; overflow-y: auto; }
+  .help-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 1.4rem; color: #718096; cursor: pointer; }
+  .help-title { font-size: 1.2rem; font-weight: 700; color: #1a1d23; margin-bottom: 1.2rem; }
+  .help-section { font-size: .75rem; font-weight: 600; text-transform: uppercase; color: #718096; letter-spacing: 1px; margin: .9rem 0 .3rem; }
+  .help-body { font-size: .9rem; color: #4a5568; line-height: 1.75; }
+  .help-try { font-size: .88rem; color: #4a5568; line-height: 1.8; padding-left: 1.2rem; }
+  .help-try li { margin-bottom: .4rem; }
+  .help-try li::marker { color: #b5895a; }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
+  <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
+</div>
+
+<nav>
+  <a href="https://www.noahhinckley.com/home">noahhinckley.com</a>
+  <span>›</span>
+  <a href="index.html">RF Toolbox</a>
+  <span>›</span>
+  <span>Mixer / Frequency Planning</span>
+</nav>
+
+<header>
+  <div class="tag">Tool 16</div>
+  <h1>Mixer / Frequency Planning</h1>
+  <p>Spurious mixing products f = |m·RF − n·LO|, image frequency, in-band spur count and m×n spur grid</p>
+</header>
+
+<div class="equation-box">
+  <div class="eq-card">
+    <div>
+      <div class="eq-primary">Desired IF = |f_RF − f_LO|    (m=1, n=1 fundamental)</div>
+      <div class="eq-secondary">Spurs: f_out = |m·f_RF − n·f_LO|   for m,n = 1,2,3,…</div>
+      <div class="eq-note">Only difference products shown — sum products (m·RF + n·LO) are typically rejected by the IF filter</div>
+    </div>
+    <div>
+      <div class="eq-primary">Image: f_img = 2·f_LO − f_RF    (produces same IF as desired)</div>
+      <div class="eq-secondary">Image rejection requires bandpass filter before mixer: BW &lt; 2·|f_IF|</div>
+      <div class="eq-note">Half-IF spur: m=2, n=2 → at 2·IF — first even-order in-band threat</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- LEFT PANEL -->
+  <div class="panel">
+    <h3>Frequency Plan</h3>
+
+    <div class="slider-row">
+      <label>f_RF — signal frequency<span id="v-frf">2.400 GHz</span></label>
+      <div class="sr-row">
+        <input type="range" id="sl-frf" min="-1" max="2" step="0.001" value="0.3802"
+               oninput="updateDispLog('frf');update()">
+        <input type="number" class="si" id="si-frf" value="2.400" min="0.1" max="100" step="0.001"
+               oninput="setFromLinear('frf');update()">
+        <span class="si-unit">GHz</span>
+      </div>
+      <div class="hints"><span>0.1 GHz</span><span>100 GHz</span></div>
+    </div>
+
+    <div class="slider-row">
+      <label>f_LO — local oscillator<span id="v-flo">2.350 GHz</span></label>
+      <div class="sr-row">
+        <input type="range" id="sl-flo" min="-1" max="2" step="0.001" value="0.3711"
+               oninput="updateDispLog('flo');update()">
+        <input type="number" class="si" id="si-flo" value="2.350" min="0.1" max="100" step="0.001"
+               oninput="setFromLinear('flo');update()">
+        <span class="si-unit">GHz</span>
+      </div>
+      <div class="hints"><span>0.1 GHz</span><span>100 GHz</span></div>
+    </div>
+
+    <hr class="divider">
+    <h3>IF Filter</h3>
+
+    <div class="slider-row">
+      <label>IF bandwidth (one-sided)<span id="v-bw">5.0 MHz</span></label>
+      <div class="sr-row">
+        <input type="range" id="sl-bw" min="0.01" max="500" step="0.01" value="5"
+               oninput="syncSI('sl-bw','si-bw',2);update()">
+        <input type="number" class="si" id="si-bw" value="5.00" min="0.01" max="500" step="0.01"
+               oninput="syncSlider('si-bw','sl-bw');update()">
+        <span class="si-unit">MHz</span>
+      </div>
+      <div class="hints"><span>0.01 MHz</span><span>500 MHz</span></div>
+    </div>
+
+    <div class="slider-row">
+      <label>Max order to evaluate<span id="v-ord">7</span></label>
+      <input type="range" id="sl-ord" min="2" max="10" step="1" value="7"
+             oninput="document.getElementById('v-ord').textContent=this.value;update()">
+      <div class="hints"><span>2</span><span>10</span></div>
+    </div>
+
+    <hr class="divider">
+    <h3>Scenario Presets</h3>
+    <div style="display:flex;flex-wrap:wrap">
+      <button class="pbtn" onclick="loadPreset(2.4,2.35,5)">2.4 GHz WiFi (50 MHz IF)</button>
+      <button class="pbtn" onclick="loadPreset(0.9,0.85,10)">900 MHz cellular (50 MHz IF)</button>
+      <button class="pbtn" onclick="loadPreset(28,26.9,100)">28 GHz 5G mmWave</button>
+      <button class="pbtn" onclick="loadPreset(10.5,10.0,50)">10 GHz SatCom</button>
+      <button class="pbtn" onclick="loadPreset(5.8,5.63,10)">5.8 GHz ISM</button>
+    </div>
+
+    <hr class="divider">
+    <h3>LO Synthesis</h3>
+    <div style="font-size:.76rem;color:var(--muted);margin-bottom:.5rem">Set LO from target IF</div>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:.78rem">IF =</span>
+      <input type="number" class="si" id="si-target-if" value="50" min="0.01" max="10000" step="0.1"
+             style="width:65px">
+      <span class="si-unit">MHz</span>
+      <button class="pbtn" onclick="synthLow()">LO low</button>
+      <button class="pbtn" onclick="synthHigh()">LO high</button>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="right-col">
+
+    <!-- Metric cards -->
+    <div class="metrics">
+      <div class="metric-card">
+        <div class="mlabel">Desired IF</div>
+        <div class="mval v-blue" id="m-if">—</div>
+        <div class="munit" id="m-if-unit">GHz</div>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel">Image Frequency</div>
+        <div class="mval v-orange" id="m-img">—</div>
+        <div class="munit">GHz (= 2·LO − RF)</div>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel">In-band Spurs</div>
+        <div class="mval v-red" id="m-ninband">—</div>
+        <div class="munit">within IF ± BW</div>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel">Half-IF Spur</div>
+        <div class="mval v-accent" id="m-halfif">—</div>
+        <div class="munit">GHz (m=2,n=2)</div>
+      </div>
+    </div>
+
+    <!-- IF Spectrum Chart -->
+    <div class="chart-card">
+      <h3>IF Output Spectrum</h3>
+      <div class="legend">
+        <div class="leg"><div class="leg-dot" style="background:#2563eb"></div><span>Desired (1,1)</span></div>
+        <div class="leg"><div class="leg-dot" style="background:#d97706"></div><span>Image-related</span></div>
+        <div class="leg"><div class="leg-dot" style="background:#dc2626"></div><span>In-band spur</span></div>
+        <div class="leg"><div class="leg-dot" style="background:#94a3b8"></div><span>Out-of-band</span></div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="spectrum-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Grid + Table row -->
+    <div class="bottom-row">
+      <div class="grid-card">
+        <h3>Spur Grid (m × n)</h3>
+        <canvas id="spur-grid" width="252" height="252" style="display:block"></canvas>
+      </div>
+
+      <div class="table-card">
+        <h3>Spur Table <span id="spur-count" style="font-weight:400;color:var(--muted);font-size:.75rem"></span></h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>m</th><th>n</th><th>Ord</th>
+                <th>f_out</th><th>Δ from IF</th><th>Type</th>
+              </tr>
+            </thead>
+            <tbody id="spur-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="annotation" id="annotation">Computing…</div>
+
+<!-- Help overlay -->
+<div class="help-overlay" id="helpOverlay">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Mixer / Frequency Planning</div>
+
+    <div class="help-section">What this tool does</div>
+    <div class="help-body">Computes all difference mixing products f_out = |m·f_RF − n·f_LO| for integer m,n up to the selected max order. Highlights the desired IF (m=n=1), the image frequency (2·f_LO − f_RF), and any products that fall within the IF passband (in-band spurs). The m×n spur grid gives a visual heat-map of which harmonic combinations are problematic for the current frequency plan.</div>
+
+    <div class="help-section">Key concepts</div>
+    <div class="help-body">
+      <strong>Image frequency</strong> — An RF signal at f_img = 2·f_LO − f_RF also produces an output at f_IF after mixing. A pre-selector filter must reject f_img before the mixer.<br><br>
+      <strong>Half-IF spur</strong> — The m=2, n=2 product lands at 2·f_IF, but more importantly f_RF ± f_IF/2 signals produce output near the passband due to the m=2 harmonic. Watch for this in low-IF receivers.<br><br>
+      <strong>In-band spur</strong> — Any product f_out with |f_out − f_IF| &lt; BW is an in-band spur that cannot be removed by the IF filter. These must be addressed by pre-selector filtering, frequency planning, or balanced mixer topologies.<br><br>
+      <strong>LO Synthesis</strong> — Enter a target IF frequency and press "LO low" (f_LO = f_RF − IF) or "LO high" (f_LO = f_RF + IF) to auto-set the LO slider.
+    </div>
+
+    <div class="help-section">Spur grid</div>
+    <div class="help-body">Each cell (m, n) is colored by how close |m·f_RF − n·f_LO| is to the desired IF: blue = desired, red = in-band spur, orange = within 10× BW, white = far. Cell (1,1) is always the desired product.</div>
+
+    <div class="help-section">Things to try</div>
+    <ul class="help-try">
+      <li>Load the WiFi 2.4 GHz preset and increase max order — watch how the spur grid fills in and the in-band count may rise.</li>
+      <li>Adjust the IF bandwidth slider to see which products cross the in-band threshold as BW widens.</li>
+      <li>Try LO Synthesis: set IF = 70 MHz and click "LO low" — verify the desired IF card reads 70 MHz.</li>
+      <li>For the 28 GHz 5G preset, note the image is at 25.8 GHz — only 200 MHz separation, requiring a very selective pre-selector.</li>
+      <li>Set a very small BW (0.1 MHz) to see only the tightest in-band spurs — useful for narrowband receiver design.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+let specChart = null;
+
+// ── Log-slider helpers for RF/LO ────────────────────────
+function logVal(key) { return Math.pow(10, parseFloat(document.getElementById('sl-'+key).value)); }
+function updateDispLog(key) {
+  const v = logVal(key);
+  document.getElementById('si-'+key).value = v.toFixed(v < 1 ? 4 : v < 10 ? 3 : 2);
+  document.getElementById('v-'+key).textContent = fmtFreq(v) + ' GHz';
+}
+function setFromLinear(key) {
+  const v = parseFloat(document.getElementById('si-'+key).value);
+  if (v > 0) {
+    document.getElementById('sl-'+key).value = Math.log10(v).toFixed(5);
+    document.getElementById('v-'+key).textContent = fmtFreq(v) + ' GHz';
+  }
+}
+
+// ── Linear-slider sync (for BW) ─────────────────────────
+function syncSI(slId, siId, dec) {
+  const v = parseFloat(document.getElementById(slId).value);
+  document.getElementById(siId).value = v.toFixed(dec);
+  const sp = document.getElementById(slId.replace('sl-','v-'));
+  if (sp) sp.textContent = v.toFixed(dec) + ' MHz';
+}
+function syncSlider(siId, slId) {
+  const v = parseFloat(document.getElementById(siId).value);
+  if (!isNaN(v)) document.getElementById(slId).value =
+    Math.min(Math.max(v, parseFloat(document.getElementById(slId).min)), parseFloat(document.getElementById(slId).max));
+}
+
+function fmtFreq(v_GHz) {
+  if (v_GHz < 0.001) return (v_GHz*1e6).toFixed(2) + ' kHz';
+  if (v_GHz < 1)     return (v_GHz*1e3).toFixed(3) + ' MHz disp';
+  return v_GHz.toFixed(v_GHz < 10 ? 4 : 3);
+}
+function fmtFreqFull(v_GHz) {
+  if (v_GHz < 0.001) return (v_GHz*1e6).toFixed(1) + ' kHz';
+  if (v_GHz < 1)     return (v_GHz*1e3).toFixed(2) + ' MHz';
+  return v_GHz.toFixed(4) + ' GHz';
+}
+
+// ── Load preset ──────────────────────────────────────────
+function loadPreset(fRF, fLO, bw_MHz) {
+  const setLog = (key, v) => {
+    document.getElementById('sl-'+key).value = Math.log10(v).toFixed(5);
+    document.getElementById('si-'+key).value = v.toFixed(v<1?4:v<10?3:2);
+    document.getElementById('v-'+key).textContent = fmtFreq(v) + ' GHz';
+  };
+  setLog('frf', fRF); setLog('flo', fLO);
+  document.getElementById('sl-bw').value  = bw_MHz;
+  document.getElementById('si-bw').value  = bw_MHz.toFixed(2);
+  document.getElementById('v-bw').textContent = bw_MHz.toFixed(2) + ' MHz';
+  update();
+}
+
+// ── LO synthesis ─────────────────────────────────────────
+function synthLow() {
+  const fRF = logVal('frf');
+  const ifMHz = parseFloat(document.getElementById('si-target-if').value)||50;
+  const fLO = fRF - ifMHz/1000;
+  if (fLO > 0.09) loadPreset(fRF, fLO, parseFloat(document.getElementById('si-bw').value));
+}
+function synthHigh() {
+  const fRF = logVal('frf');
+  const ifMHz = parseFloat(document.getElementById('si-target-if').value)||50;
+  const fLO = fRF + ifMHz/1000;
+  if (fLO <= 100) loadPreset(fRF, fLO, parseFloat(document.getElementById('si-bw').value));
+}
+
+// ── Core computation ─────────────────────────────────────
+function computeSpurs(fRF, fLO, bw_GHz, maxOrd) {
+  const fIF     = Math.abs(fRF - fLO);
+  const fImage  = 2*fLO - fRF;
+  const halfIF  = Math.abs(2*fRF - 2*fLO); // m=2, n=2 → 2*fIF
+  const spurs   = [];
+
+  for (let m = 1; m <= maxOrd; m++) {
+    for (let n = 1; n <= maxOrd; n++) {
+      const freq = Math.abs(m*fRF - n*fLO);
+      const delta = freq - fIF;           // signed, GHz
+      const adelta = Math.abs(delta);
+      const inBand = adelta <= bw_GHz;
+      const isDesired = (m===1 && n===1);
+
+      // Classify
+      let type = 'spur';
+      if (isDesired) type = 'desired';
+      else if (inBand) type = 'inband';
+
+      spurs.push({ m, n, order: m+n, freq, delta, adelta, inBand, isDesired, type });
+    }
+  }
+
+  spurs.sort((a,b) => a.freq - b.freq);
+  const nInBand = spurs.filter(s => s.inBand && !s.isDesired).length;
+  return { fIF, fImage, halfIF, spurs, nInBand };
+}
+
+// ── Main update ───────────────────────────────────────────
+function update() {
+  const fRF    = logVal('frf');
+  const fLO    = logVal('flo');
+  const bw_MHz = parseFloat(document.getElementById('si-bw').value) || 5;
+  const bw_GHz = bw_MHz / 1000;
+  const maxOrd = parseInt(document.getElementById('sl-ord').value) || 7;
+
+  const { fIF, fImage, halfIF, spurs, nInBand } = computeSpurs(fRF, fLO, bw_GHz, maxOrd);
+
+  // IF display units
+  const ifDisp = fIF < 1 ? (fIF*1e3).toFixed(3)+' MHz' : fIF.toFixed(4)+' GHz';
+  document.getElementById('m-if').textContent   = fIF < 1 ? (fIF*1e3).toFixed(2) : fIF.toFixed(4);
+  document.getElementById('m-if-unit').textContent = fIF < 1 ? 'MHz' : 'GHz';
+  document.getElementById('m-img').textContent  = fImage.toFixed(4);
+  document.getElementById('m-ninband').textContent = nInBand;
+  document.getElementById('m-halfif').textContent  = halfIF < 1 ? (halfIF*1e3).toFixed(2)+' M' : halfIF.toFixed(4);
+  document.getElementById('m-ninband').className = 'mval ' + (nInBand===0?'v-green':nInBand<=2?'v-orange':'v-red');
+
+  // Annotation
+  const injSide = fLO > fRF ? 'high-side' : 'low-side';
+  document.getElementById('annotation').innerHTML =
+    `<strong>RF = ${fmtFreqFull(fRF)}, LO = ${fmtFreqFull(fLO)} (${injSide} injection)</strong> → ` +
+    `IF = <strong>${ifDisp}</strong>, Image = <strong>${fmtFreqFull(fImage)}</strong> ` +
+    `(image separation = ${fmtFreqFull(Math.abs(fImage-fRF))}, must be rejected by pre-selector). ` +
+    (nInBand===0
+      ? `No in-band spurs within IF ± ${bw_MHz} MHz. Frequency plan is clean up to order ${maxOrd}.`
+      : `<strong style="color:var(--red)">${nInBand} in-band spur${nInBand>1?'s':''}</strong> within IF ± ${bw_MHz} MHz — consider adjusting LO or IF frequency.`);
+
+  updateSpectrum(spurs, fIF, bw_GHz);
+  updateGrid(spurs, maxOrd, fIF, bw_GHz);
+  updateTable(spurs, fIF);
+}
+
+// ── IF Spectrum chart ────────────────────────────────────
+function updateSpectrum(spurs, fIF, bw_GHz) {
+  const fUnit = fIF < 1 ? 1000 : 1;
+  const unitLabel = fIF < 1 ? 'MHz' : 'GHz';
+  const maxF = Math.min(Math.max(fIF * 5, bw_GHz * 20) * fUnit * 1.1, fIF < 1 ? 5000 : 5);
+
+  // Build stick datasets: pairs of [f,0],[f,level],[null] separated by null
+  const groups = {
+    desired: { data: [], color: '#2563eb',  bw: 2.5 },
+    inband:  { data: [], color: '#dc2626',  bw: 2   },
+    other:   { data: [], color: '#94a3b8',  bw: 1.2 },
+  };
+
+  spurs.forEach(s => {
+    if (s.freq * fUnit > maxF * 1.05) return;
+    const f = s.freq * fUnit;
+    const h = 1 / s.order;
+    const grp = s.isDesired ? 'desired' : s.inBand ? 'inband' : 'other';
+    const arr = groups[grp].data;
+    arr.push({ x: f, y: 0 }, { x: f, y: h }, { x: null, y: null });
+  });
+
+  const datasets = Object.entries(groups)
+    .filter(([,g]) => g.data.length)
+    .map(([key, g]) => ({
+      label: key==='desired'?'Desired (1,1)':key==='inband'?'In-band spur':'Out-of-band',
+      data: g.data, borderColor: g.color, backgroundColor: g.color,
+      borderWidth: g.bw, pointRadius: 0, showLine: true, tension: 0,
+      spanGaps: false,
+    }));
+
+  // IF passband annotation band (fake dataset as filled area)
+  datasets.push({
+    label: 'IF passband',
+    data: [{ x: (fIF - bw_GHz)*fUnit, y: 0 }, { x: (fIF-bw_GHz)*fUnit, y: 1.1 },
+           { x: (fIF + bw_GHz)*fUnit, y: 1.1 }, { x: (fIF+bw_GHz)*fUnit, y: 0 }],
+    fill: true, backgroundColor: 'rgba(37,99,235,0.07)',
+    borderColor: 'rgba(37,99,235,0.25)', borderWidth: 1,
+    pointRadius: 0, showLine: true, tension: 0,
+  });
+
+  const opts = {
+    responsive: true, maintainAspectRatio: false, animation: { duration: 0 },
+    scales: {
+      x: { type:'linear', min:0, max: maxF,
+           title:{ display:true, text:`Frequency (${unitLabel})`, color:'#718096', font:{size:11} },
+           ticks:{ color:'#718096', font:{size:10}, maxTicksLimit:8 },
+           grid:{ color:'rgba(208,212,218,0.5)' } },
+      y: { min:0, max:1.15,
+           title:{ display:true, text:'1/order (proxy level)', color:'#718096', font:{size:11} },
+           ticks:{ color:'#718096', font:{size:10}, maxTicksLimit:5 },
+           grid:{ color:'rgba(208,212,218,0.5)' } },
+    },
+    plugins: {
+      legend:{ labels:{ color:'#718096', font:{size:10}, boxWidth:12, filter: i=>i.text!=='IF passband' } },
+      tooltip:{ callbacks:{ label: ctx => {
+        if (!ctx.parsed.y) return null;
+        const f = ctx.parsed.x;
+        return `f=${f.toFixed(f<10?3:1)} ${unitLabel}, level=1/${Math.round(1/ctx.parsed.y)}`;
+      }}},
+    },
+  };
+
+  if (!specChart) {
+    specChart = new Chart(document.getElementById('spectrum-chart'), { type:'scatter', data:{ datasets }, options: opts });
+  } else {
+    specChart.data.datasets = datasets;
+    specChart.options.scales.x.max = maxF;
+    specChart.options.scales.x.title.text = `Frequency (${unitLabel})`;
+    specChart.update('none');
+  }
+}
+
+// ── Spur grid (m×n canvas) ───────────────────────────────
+function updateGrid(spurs, maxOrd, fIF, bw_GHz) {
+  const canvas = document.getElementById('spur-grid');
+  const ctx    = canvas.getContext('2d');
+  const N   = Math.min(maxOrd, 7);   // show up to 7×7
+  const pad = 28, cw = (252 - pad) / N, ch = (252 - pad) / N;
+  ctx.clearRect(0, 0, 252, 252);
+
+  // Build lookup: key "m,n" → spur
+  const spurMap = {};
+  spurs.forEach(s => { spurMap[`${s.m},${s.n}`] = s; });
+
+  for (let m = 1; m <= N; m++) {
+    for (let n = 1; n <= N; n++) {
+      const x = pad + (m-1)*cw, y = pad + (N-n)*ch;
+      const s = spurMap[`${m},${n}`];
+      let fill = '#f0f0f0';
+      if (s) {
+        if (s.isDesired) fill = '#2563eb';
+        else if (s.inBand) fill = '#dc2626';
+        else if (s.adelta < bw_GHz*10) fill = s.adelta < bw_GHz*3 ? '#f59e0b' : '#fde68a';
+      }
+      ctx.fillStyle = fill;
+      ctx.fillRect(x+1, y+1, cw-2, ch-2);
+      ctx.strokeStyle = '#d0d4da';
+      ctx.strokeRect(x+1, y+1, cw-2, ch-2);
+      // m,n labels inside cell
+      ctx.fillStyle = (s && (s.isDesired || s.inBand)) ? '#fff' : '#718096';
+      ctx.font = `${Math.max(7,cw*0.28)}px Segoe UI,system-ui,sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(`${m},${n}`, x + cw/2, y + ch/2);
+    }
+  }
+
+  // Axis labels
+  ctx.fillStyle = '#718096';
+  ctx.font = '9px Segoe UI,system-ui,sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (let m = 1; m <= N; m++) ctx.fillText(m, pad + (m-0.5)*cw, 2);
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for (let n = 1; n <= N; n++) ctx.fillText(n, pad-3, pad + (N-n+0.5)*ch);
+
+  ctx.fillStyle = '#718096'; ctx.font = '9px Segoe UI,system-ui,sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+  ctx.fillText('m (RF harmonic)', 252/2, 252);
+  ctx.save(); ctx.translate(10, 252/2);
+  ctx.rotate(-Math.PI/2); ctx.textBaseline = 'bottom';
+  ctx.fillText('n (LO harmonic)', 0, 0); ctx.restore();
+}
+
+// ── Spur table ────────────────────────────────────────────
+function updateTable(spurs, fIF) {
+  const tbody = document.getElementById('spur-tbody');
+  const fUnit = fIF < 1 ? 1000 : 1;
+  const unitLabel = fIF < 1 ? 'MHz' : 'GHz';
+
+  document.getElementById('spur-count').textContent = `(${spurs.length} products)`;
+
+  tbody.innerHTML = spurs.map(s => {
+    const fStr    = (s.freq*fUnit).toFixed(s.freq<0.001?3:3) + ' ' + unitLabel;
+    const deltaStr = (s.delta >= 0 ? '+' : '') + (s.delta*fUnit).toFixed(3) + ' ' + unitLabel;
+    const typeStr = s.isDesired ? '✓ Desired' : s.inBand ? '⚠ In-band' : '—';
+    const cls = s.isDesired ? 'row-desired' : s.inBand ? 'row-inband' : '';
+    return `<tr class="${cls}"><td>${s.m}</td><td>${s.n}</td><td>${s.order}</td>`
+         + `<td>${fStr}</td><td>${deltaStr}</td><td>${typeStr}</td></tr>`;
+  }).join('');
+}
+
+// ── Export CSV ────────────────────────────────────────────
+function exportCSV() {
+  const fRF = logVal('frf'), fLO = logVal('flo');
+  const bw  = parseFloat(document.getElementById('si-bw').value)||5;
+  const ord = parseInt(document.getElementById('sl-ord').value)||7;
+  const { fIF, fImage, spurs, nInBand } = computeSpurs(fRF, fLO, bw/1000, ord);
+  const lines = [
+    `RF Toolbox — Mixer/Freq Planning Export,${new Date().toLocaleString()}`,
+    '',`f_RF,${fRF.toFixed(6)},GHz`,`f_LO,${fLO.toFixed(6)},GHz`,
+    `Desired IF,${fIF.toFixed(6)},GHz`,`Image,${fImage.toFixed(6)},GHz`,
+    `IF BW (one-sided),${bw},MHz`,`Max Order,${ord},`,`In-band spurs,${nInBand},`,
+    '','m,n,Order,f_out (GHz),Delta from IF (GHz),In-band,Type',
+    ...spurs.map(s=>`${s.m},${s.n},${s.order},${s.freq.toFixed(6)},${s.delta.toFixed(6)},${s.inBand},${s.isDesired?'Desired':s.inBand?'In-band':'Spur'}`),
+  ];
+  const blob = new Blob([lines.join('\n')],{type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `rf_toolbox_mixer_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ── Copy link ─────────────────────────────────────────────
+function copyLink() {
+  const p = new URLSearchParams({
+    frf: logVal('frf').toFixed(6), flo: logVal('flo').toFixed(6),
+    bw: document.getElementById('si-bw').value,
+    ord: document.getElementById('sl-ord').value,
+  });
+  navigator.clipboard.writeText(location.href.split('?')[0]+'?'+p).then(()=>{
+    const btn=document.getElementById('copyBtn');
+    btn.textContent='✓ Copied'; setTimeout(()=>btn.textContent='⎘ Copy Link',1800);
+  });
+}
+
+// ── Help ──────────────────────────────────────────────────
+function showHelp()  { document.getElementById('helpOverlay').classList.add('open');    }
+function closeHelp() { document.getElementById('helpOverlay').classList.remove('open'); }
+document.getElementById('helpOverlay').addEventListener('click',e=>{ if(e.target.id==='helpOverlay') closeHelp(); });
+
+// ── URL restore ───────────────────────────────────────────
+(function(){
+  const p = new URLSearchParams(location.search);
+  const setLog = (key,v) => {
+    if(v>0){
+      document.getElementById('sl-'+key).value=Math.log10(v).toFixed(5);
+      document.getElementById('si-'+key).value=v.toFixed(v<1?4:v<10?3:2);
+      document.getElementById('v-'+key).textContent=fmtFreq(v)+' GHz';
+    }
+  };
+  if(p.get('frf')) setLog('frf', parseFloat(p.get('frf')));
+  if(p.get('flo')) setLog('flo', parseFloat(p.get('flo')));
+  if(p.get('bw')) {
+    const v=parseFloat(p.get('bw'));
+    document.getElementById('sl-bw').value=v;
+    document.getElementById('si-bw').value=v.toFixed(2);
+    document.getElementById('v-bw').textContent=v.toFixed(2)+' MHz';
+  }
+  if(p.get('ord')) document.getElementById('sl-ord').value=p.get('ord');
+})();
+
+update();
+</script>
+</body>
+</html>

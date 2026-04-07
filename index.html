@@ -199,7 +199,7 @@ footer a{color:#b5895a}
   <div class="section-hdr">
     <div class="sh-line"></div>
     <div class="sh-label">Signal Integrity &amp; Circuit Theory</div>
-    <span class="sh-badge sig">Nonlinearity · Arrays · Matching · TL</span>
+    <span class="sh-badge sig">Nonlinearity · Arrays · Matching · TL · Microstrip · Attenuator · Mixer</span>
     <div class="sh-line"></div>
   </div>
 
@@ -242,6 +242,36 @@ footer a{color:#b5895a}
       </div>
       <div class="card-desc">Reflection coefficient, VSWR, return loss for arbitrary load on a lossless TL. Standing wave pattern |V(z)| and Smith chart position vs line length. Input impedance Zin computation.</div>
       <div class="card-eq">Γ(l) = Γ_L · e^(−j4πl/λ) · Zin = Z₀·(ZL + jZ₀tanβl)/(Z₀ + jZL tanβl)</div>
+    </a>
+
+    <a class="card" href="14_microstrip.html">
+      <div class="card-top"><div class="card-icon">▬</div><div class="card-arrow">›</div></div>
+      <div>
+        <div class="card-num"><span class="live-badge">Live</span></div>
+        <h2>Microstrip / Stripline</h2>
+      </div>
+      <div class="card-desc">Characteristic impedance Z₀, effective permittivity ε_eff, guided wavelength λ_g and quarter-wave length for microstrip and centered stripline. Synthesis mode finds trace width W for a target Z₀. Z₀ vs W/H chart with FR4, RO4003C, RT5880 and alumina reference curves.</div>
+      <div class="card-eq">Z₀ = 60/√ε_eff · ln(8H/W + W/4H)  [microstrip, W/H ≤ 1]</div>
+    </a>
+
+    <a class="card" href="15_attenuator.html">
+      <div class="card-top"><div class="card-icon">⊟</div><div class="card-arrow">›</div></div>
+      <div>
+        <div class="card-num"><span class="live-badge">Live</span></div>
+        <h2>Attenuator Pad Calculator</h2>
+      </div>
+      <div class="card-desc">Exact resistor values for π-pad, T-pad (symmetric) and L-pad (impedance-transforming) attenuators. Shows nearest E96 standard value with error, per-resistor power dissipation, voltage/current ratings, and R vs attenuation design curves.</div>
+      <div class="card-eq">π: R_sh = Z₀(K+1)/(K−1)  ·  T: R_ser = Z₀(K−1)/(K+1)  ·  K = 10^(A/20)</div>
+    </a>
+
+    <a class="card" href="16_mixer.html">
+      <div class="card-top"><div class="card-icon">⊗</div><div class="card-arrow">›</div></div>
+      <div>
+        <div class="card-num"><span class="live-badge">Live</span></div>
+        <h2>Mixer / Frequency Planning</h2>
+      </div>
+      <div class="card-desc">Spur analysis for any RF+LO combination. Computes all |m·f_RF − n·f_LO| products up to selectable order, flags in-band spurs, identifies image and half-IF frequencies. Interactive m×n spur grid heatmap, IF spectrum plot, and LO synthesis from target IF.</div>
+      <div class="card-eq">f_IF = |m·f_RF − n·f_LO|  ·  f_image = 2·f_LO − f_RF</div>
     </a>
   </div>
 </div>

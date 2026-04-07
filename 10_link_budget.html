@@ -487,6 +487,8 @@
         <option value="mmwave">5G mmWave — 28 GHz urban 200 m</option>
         <option value="leo">LEO Satellite downlink 550 km</option>
         <option value="bt">Bluetooth — 2.4 GHz 10 m</option>
+        <option value="lte">LTE 700 MHz macrocell 5 km</option>
+        <option value="mwbh">Microwave backhaul — 11 GHz P2P 10 km</option>
       </select>
     </div>
 
@@ -997,7 +999,8 @@ function recalc() {
     '<strong>' + distKm().toFixed(distKm() < 10 ? 2 : 1) + ' km</strong> / ' +
     '<strong>' + freqGHz().toFixed(freqGHz() < 10 ? 3 : 2) + ' GHz</strong>. ' +
     'This is a <strong>' + qual + '</strong> margin. ' +
-    'To gain 6 dB: double antenna gain on each end, halve distance, or double Pt.';
+    'To gain 6 dB: double antenna gain on each end, halve distance, or double Pt.' +
+    (lastPresetNote ? '<br><span style="color:#58a6ff;font-size:.82rem">Loaded: ' + lastPresetNote + '</span>' : '');
 
   // Chart
   updateChart(pr, sensitivity, fspl);
@@ -1188,18 +1191,34 @@ document.getElementById('dist-slider').addEventListener('input', function() {
    ========================================================= */
 function exportCSV() {
   var g = function(id){ var el = document.getElementById(id); return el ? el.textContent.trim() : ''; };
-  var lines = ['PARAMETERS', 'Parameter,Value',
-    'Frequency,' + g('freq-display'),
-    'Distance,' + g('dist-display'),
+  var lines = [
+    'RF Toolbox — Link Budget Export,' + new Date().toLocaleString(),
+    '',
+    'PARAMETERS',
+    'Parameter,Value,Unit',
+    'Frequency,' + freqGHz().toFixed(4) + ',GHz',
+    'Distance,'  + distKm().toFixed(4)  + ',km',
   ];
+  // All budget rows with their input value and running total
+  lines.push('', 'BUDGET WATERFALL', 'Stage,Value,Unit,Running Power (dBm)');
   rows.forEach(function(row) {
-    if (row.editable) lines.push(row.label + ',' + row.value + ' ' + row.unit);
+    var valStr  = row.value.toFixed(2);
+    var runCell = document.getElementById('run-' + row.id);
+    var runStr  = runCell ? runCell.textContent.trim() : '—';
+    lines.push('"' + row.label + '",' + valStr + ',' + row.unit + ',' + runStr);
   });
-  lines.push('', 'RESULTS', 'Result,Value',
-    'Received Power (Pr),' + g('sum-pr'),
-    'Sensitivity,' + g('sum-sens'),
-    'Link Margin,' + g('sum-margin'),
-  );
+  // Custom components (user-added rows)
+  if (typeof customComponents !== 'undefined') {
+    customComponents.forEach(function(cc) {
+      var runCell = document.getElementById('run-custom-' + cc.id);
+      var runStr  = runCell ? runCell.textContent.trim() : '—';
+      lines.push('"' + cc.label + '",' + cc.value.toFixed(2) + ',dB,' + runStr);
+    });
+  }
+  lines.push('', 'SUMMARY', 'Result,Value');
+  lines.push('Received Power (Pr),' + g('sum-pr'));
+  lines.push('Sensitivity,'         + g('sum-sens'));
+  lines.push('Link Margin,'         + g('sum-margin'));
   var blob = new Blob([lines.join('\n')], {type:'text/csv'});
   var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = 'rf_toolbox_link_budget_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
@@ -1303,16 +1322,21 @@ function animateSliderTo(slider, globalVarName, target, dur, afterFn) {
   })(performance.now());
 }
 
+var lastPresetNote = '';
 var PRESETS_LB = {
   wifi6:  { freqLog: Math.log10(2.4),    distLog: Math.log10(0.05),  pt:20, gt:3,  ltx:-1, atm:-1, gr:3,  lrx:-1, nf:-5,  sens:-85,  note:'WiFi 6 — 2.4 GHz, 50 m indoor. License-free band, typical omnidirectional APs.' },
   mmwave: { freqLog: Math.log10(28),     distLog: Math.log10(0.2),   pt:23, gt:25, ltx:-1, atm:-3, gr:10, lrx:-1, nf:-7,  sens:-80,  note:'5G mmWave — 28 GHz, 200 m urban. High Tx directivity; large FSPL at mmWave.' },
   leo:    { freqLog: Math.log10(12),     distLog: Math.log10(550),   pt:30, gt:30, ltx:-2, atm:-2, gr:40, lrx:-2, nf:-3,  sens:-100, note:'LEO Satellite — 550 km orbit, Ku-band. Large dish (40 dBi) required to close the link.' },
   bt:     { freqLog: Math.log10(2.4),    distLog: Math.log10(0.01),  pt:0,  gt:0,  ltx:-1, atm:-1, gr:0,  lrx:-1, nf:-5,  sens:-85,  note:'Bluetooth — 2.4 GHz, 10 m, 0 dBm class 2 device. Omnidirectional BLE scenario.' },
+  lte:    { freqLog: Math.log10(0.7),    distLog: Math.log10(5),     pt:46, gt:17, ltx:-1, atm:-1, gr:0,  lrx:-1, nf:-9,  sens:-100, note:'LTE 700 MHz macrocell — 5 km. 46 dBm eNB, 17 dBi sector antenna, omnidirectional UE.' },
+  mwbh:   { freqLog: Math.log10(11),     distLog: Math.log10(10),    pt:23, gt:37, ltx:-1, atm:-2, gr:37, lrx:-1, nf:-4,  sens:-85,  note:'Microwave backhaul — 11 GHz, 10 km P2P. High-gain parabolic dishes (37 dBi) both ends.' },
 };
 
 function loadPreset(key) {
   var p = PRESETS_LB[key]; if (!p) return;
-  // Expand dist-slider range if needed
+  // Expand slider ranges if needed
+  var fSlider = document.getElementById('freq-slider');
+  if (fSlider && p.freqLog < parseFloat(fSlider.min)) fSlider.min = (p.freqLog - 0.1).toFixed(3);
   var dSlider = document.getElementById('dist-slider');
   if (dSlider && p.distLog < parseFloat(dSlider.min)) dSlider.min = (p.distLog * 1.2).toFixed(3);
   // Animate frequency and distance sliders
@@ -1331,11 +1355,8 @@ function loadPreset(key) {
       if (row) row.value = fields[id];
     }
   });
+  lastPresetNote = p.note;
   recalc();
-  setTimeout(function() {
-    var ann = document.getElementById('annotation-box');
-    if (ann) ann.innerHTML += '<br><span style="color:#58a6ff;font-size:.82rem">Loaded: ' + p.note + '</span>';
-  }, 220);
 }
 
 /* =========================================================

@@ -861,6 +861,10 @@ function exportCSV() {
     lines.push('SFDR,' + (res.SFDR !== null ? res.SFDR.toFixed(1) : '') + ' dB');
     var snrMin = parseFloat(document.getElementById('snrMinInput').value) || 10;
     lines.push('MDS,' + (res.nfloor_dBm + snrMin).toFixed(1) + ' dBm');
+    var p1dB_in = isFinite(res.IIP3_sys_dBm) ? res.IIP3_sys_dBm - 9.6 : null;
+    var mds_dBm = res.nfloor_dBm + snrMin;
+    lines.push('P1dB (est.),' + (p1dB_in !== null ? p1dB_in.toFixed(1) : '—') + ' dBm');
+    lines.push('Blocking DR,' + (p1dB_in !== null ? (p1dB_in - mds_dBm).toFixed(1) : '—') + ' dB');
   }
   var blob = new Blob([lines.join('\n')], {type:'text/csv'});
   var a = document.createElement('a'); a.href = URL.createObjectURL(blob);

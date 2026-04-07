@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Microstrip / Stripline | RF Toolbox</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --surface: #f4f5f7; --card: #f4f5f7; --border: #d0d4da;
+    --accent: #b5895a; --accent2: #7c3aed; --text: #1a1d23; --muted: #718096;
+    --green: #16a34a; --orange: #d97706; --red: #dc2626;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  /* ── Toolbar ── */
+  .toolbar { position: fixed; top: 14px; right: 16px; display: flex; gap: 6px; z-index: 100; }
+  .tbtn { background: var(--card); border: 1px solid var(--border); color: var(--muted); border-radius: 5px; padding: 5px 10px; font-size: .75rem; cursor: pointer; transition: border-color .15s, color .15s; }
+  .tbtn:hover { border-color: #b5895a; color: #b5895a; }
+
+  nav { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  nav a { color: #b5895a; text-decoration: none; font-size: 0.88rem; }
+  nav a:hover { text-decoration: underline; }
+  nav span { color: var(--muted); }
+  header { padding: 2rem 1.5rem 1.5rem; max-width: 1100px; margin: 0 auto; }
+  header .tag { font-size: 0.72rem; font-weight: 600; color: #b5895a; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.4rem; }
+  header h1 { font-size: 2rem; font-weight: 700; }
+  header p { color: var(--muted); margin-top: 0.4rem; }
+
+  .equation-box { max-width: 1100px; margin: 0 auto 1.5rem; padding: 0 1.5rem; }
+  .eq-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem 1.5rem; display: flex; flex-wrap: wrap; gap: 2rem; align-items: flex-start; }
+  .eq-primary { font-family: 'Courier New', monospace; font-size: .95rem; color: var(--accent); margin-bottom: 0.3rem; }
+  .eq-secondary { font-family: 'Courier New', monospace; font-size: 0.82rem; color: var(--accent2); margin-bottom: 0.15rem; }
+  .eq-note { font-size: 0.79rem; color: var(--muted); margin-top: 0.3rem; }
+
+  .layout { display: grid; grid-template-columns: 300px 1fr; gap: 1.4rem; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem; }
+  @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
+  .panel h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+
+  /* Mode tabs */
+  .mode-tabs { display: flex; gap: 6px; margin-bottom: 1.1rem; }
+  .mode-tab { flex: 1; padding: 6px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; font-size: .8rem; font-weight: 600; color: var(--muted); cursor: pointer; text-align: center; transition: border-color .15s, color .15s, background .15s; }
+  .mode-tab.active { background: var(--bg); border-color: var(--accent); color: var(--accent); }
+
+  /* Substrate presets */
+  .preset-row { margin-bottom: 1rem; }
+  .preset-row label { font-size: .74rem; color: var(--muted); display: block; margin-bottom: .4rem; }
+  .presets { display: flex; flex-wrap: wrap; gap: 4px; }
+  .pbtn { padding: .28rem .55rem; background: var(--surface); border: 1px solid var(--border); border-radius: 5px; color: var(--muted); cursor: pointer; font-size: .74rem; transition: border-color .15s, color .15s; }
+  .pbtn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Sliders */
+  .slider-row { margin-bottom: .95rem; }
+  .slider-row label { display: flex; justify-content: space-between; font-size: .88rem; margin-bottom: .3rem; }
+  .slider-row label span { color: var(--orange); font-family: 'Courier New', monospace; font-weight: 600; transition: color 200ms ease; }
+  input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
+  .hints { display: flex; justify-content: space-between; font-size: .7rem; color: var(--muted); margin-top: .15rem; }
+  .sr-row { display: flex; align-items: center; gap: 6px; }
+  .sr-row input[type=range] { flex: 1; width: auto; min-width: 0; }
+  .si { width: 70px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--accent); font-family: 'Courier New', monospace; font-size: .82rem; padding: 3px 6px; text-align: right; -moz-appearance: textfield; appearance: textfield; }
+  .si::-webkit-outer-spin-button, .si::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .si:focus { outline: none; border-color: var(--accent); }
+  .si-unit { font-size: .75rem; color: var(--muted); white-space: nowrap; }
+
+  /* Synthesis */
+  .synth-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .6rem .8rem; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; margin-top: .4rem; }
+  .synth-label { font-size: .76rem; color: var(--muted); white-space: nowrap; }
+  .synth-val { font-size: .82rem; font-family: 'Courier New', monospace; color: var(--accent2); font-weight: 600; }
+
+  /* Right column */
+  .right-col { display: flex; flex-direction: column; gap: 1rem; }
+  .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: .55rem; }
+  .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .65rem; }
+  .metric-card .mlabel { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .metric-card .mval { font-size: 1.1rem; font-weight: 700; font-family: 'Courier New', monospace; margin-top: .1rem; transition: all 200ms ease; }
+  .metric-card .munit { font-size: .67rem; color: var(--muted); }
+  .v-blue { color: #2563eb; } .v-accent { color: var(--accent); } .v-orange { color: var(--orange); }
+  .v-accent2 { color: var(--accent2); } .v-green { color: var(--green); }
+
+  /* Chart */
+  .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
+  .chart-card h3 { font-size: .78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; }
+  .chart-wrap { position: relative; height: 300px; }
+
+  /* Annotation */
+  .annotation { border-left: 3px solid #b5895a; background: var(--surface); padding: 11px 14px; border-radius: 0 8px 8px 0; font-size: .83rem; color: var(--muted); line-height: 1.65; max-width: 1100px; margin: 0 1.5rem 2rem; }
+  .annotation strong { color: var(--text); }
+
+  /* Help */
+  .help-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; align-items: center; justify-content: center; }
+  .help-overlay.open { display: flex; }
+  .help-box { background: #fff; border-radius: 12px; max-width: 560px; width: 90%; padding: 32px; position: relative; max-height: 80vh; overflow-y: auto; }
+  .help-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 1.4rem; color: #718096; cursor: pointer; }
+  .help-title { font-size: 1.2rem; font-weight: 700; color: #1a1d23; margin-bottom: 1.2rem; }
+  .help-section { font-size: .75rem; font-weight: 600; text-transform: uppercase; color: #718096; letter-spacing: 1px; margin: .9rem 0 .3rem; }
+  .help-body { font-size: .9rem; color: #4a5568; line-height: 1.75; }
+  .help-try { font-size: .88rem; color: #4a5568; line-height: 1.8; padding-left: 1.2rem; }
+  .help-try li { margin-bottom: .4rem; }
+  .help-try li::marker { color: #b5895a; }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="tbtn" onclick="showHelp()">? Help</button>
+  <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
+</div>
+
+<nav>
+  <a href="https://www.noahhinckley.com/home">noahhinckley.com</a>
+  <span>›</span>
+  <a href="index.html">RF Toolbox</a>
+  <span>›</span>
+  <span>Microstrip / Stripline</span>
+</nav>
+
+<header>
+  <div class="tag">Tool 14</div>
+  <h1>Microstrip / Stripline Calculator</h1>
+  <p>Characteristic impedance, effective permittivity, guided wavelength and trace-width synthesis for planar transmission lines</p>
+</header>
+
+<div class="equation-box">
+  <div class="eq-card">
+    <div>
+      <div class="eq-primary">Microstrip Z₀ = 60/√ε_eff · ln(8H/W + W/4H)  [W/H ≤ 1]</div>
+      <div class="eq-secondary">Z₀ = 120π / [√ε_eff · (W/H + 1.393 + 0.667·ln(W/H+1.444))]  [W/H > 1]</div>
+      <div class="eq-note">Hammerstad–Jensen closed-form · accuracy &lt; 0.5% for 0.05 ≤ W/H ≤ 20</div>
+    </div>
+    <div>
+      <div class="eq-primary">Stripline Z₀ = 60/√ε_r · ln(4B / 0.67π(0.8W+T))  [centered]</div>
+      <div class="eq-secondary">ε_eff = (ε_r+1)/2 + (ε_r−1)/2 · (1+12H/W)^−½   [microstrip]</div>
+      <div class="eq-note">Cohn's formula for symmetric stripline · B = total board thickness</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- LEFT PANEL -->
+  <div class="panel">
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="tab-ms" onclick="setMode('ms')">Microstrip</button>
+      <button class="mode-tab"        id="tab-sl" onclick="setMode('sl')">Stripline</button>
+    </div>
+
+    <div class="preset-row">
+      <label>Substrate presets</label>
+      <div class="presets">
+        <button class="pbtn" onclick="loadSubstrate(4.5,  0.800,'FR4')">FR4</button>
+        <button class="pbtn" onclick="loadSubstrate(3.55, 0.508,'RO4003C')">RO4003C</button>
+        <button class="pbtn" onclick="loadSubstrate(2.2,  0.787,'RT5880')">RT/duroid 5880</button>
+        <button class="pbtn" onclick="loadSubstrate(9.9,  0.635,'Alumina')">Alumina</button>
+        <button class="pbtn" onclick="loadSubstrate(1.0,  1.000,'Air')">Air</button>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <h3>Substrate</h3>
+
+    <div class="slider-row">
+      <label>ε_r — dielectric constant<span id="v-er">4.50</span></label>
+      <div class="sr-row">
+        <input type="range" id="sl-er" min="1.0" max="15.0" step="0.05" value="4.5"
+               oninput="syncSI('sl-er','si-er',2);update()">
+        <input type="number" class="si" id="si-er" value="4.50" min="1.0" max="15.0" step="0.05"
+               oninput="syncSlider('si-er','sl-er');update()">
+      </div>
+      <div class="hints"><span>1.0 (air)</span><span>15.0</span></div>
+    </div>
+
+    <div class="slider-row">
+      <label id="lbl-H">H — substrate height (mm)<span id="v-H">0.800</span></label>
+      <div class="sr-row">
+        <input type="range" id="sl-H" min="0.05" max="3.2" step="0.01" value="0.8"
+               oninput="syncSI('sl-H','si-H',3);update()">
+        <input type="number" class="si" id="si-H" value="0.800" min="0.05" max="3.2" step="0.01"
+               oninput="syncSlider('si-H','sl-H');update()">
+        <span class="si-unit">mm</span>
+      </div>
+      <div class="hints"><span>0.05 mm</span><span>3.2 mm</span></div>
+    </div>
+
+    <div class="slider-row">
+      <label>T — conductor thickness (mm)<span id="v-T">0.035</span></label>
+      <div class="sr-row">
+        <input type="range" id="sl-T" min="0.005" max="0.25" step="0.005" value="0.035"
+               oninput="syncSI('sl-T','si-T',3);update()">
+        <input type="number" class="si" id="si-T" value="0.035" min="0.005" max="0.25" step="0.005"
+               oninput="syncSlider('si-T','sl-T');update()">
+        <span class="si-unit">mm</span>
+      </div>
+      <div class="hints"><span>½ oz Cu</span><span>7 oz Cu</span></div>
+    </div>
+
+    <hr class="divider">
+    <h3>Trace</h3>
+
+    <div class="slider-row">
+      <label>W — trace width (mm)<span id="v-W">1.500</span></label>
+      <div class="sr-row">
+        <input type="range" id="sl-W" min="0.05" max="10.0" step="0.01" value="1.5"
+               oninput="syncSI('sl-W','si-W',3);update()">
+        <input type="number" class="si" id="si-W" value="1.500" min="0.05" max="10.0" step="0.01"
+               oninput="syncSlider('si-W','sl-W');update()">
+        <span class="si-unit">mm</span>
+      </div>
+      <div class="hints"><span>0.05 mm</span><span>10 mm</span></div>
+    </div>
+
+    <div class="slider-row">
+      <label>f — frequency (GHz)<span id="v-f">2.4</span></label>
+      <div class="sr-row">
+        <input type="range" id="sl-f" min="0.1" max="40.0" step="0.1" value="2.4"
+               oninput="syncSI('sl-f','si-f',1);update()">
+        <input type="number" class="si" id="si-f" value="2.4" min="0.1" max="40.0" step="0.1"
+               oninput="syncSlider('si-f','sl-f');update()">
+        <span class="si-unit">GHz</span>
+      </div>
+      <div class="hints"><span>0.1 GHz</span><span>40 GHz</span></div>
+    </div>
+
+    <hr class="divider">
+    <h3>Synthesis — find W for target Z₀</h3>
+
+    <div class="slider-row">
+      <label>Target Z₀<span id="v-zt">50.0</span></label>
+      <div class="sr-row">
+        <input type="range" id="sl-zt" min="10" max="200" step="1" value="50"
+               oninput="syncSI('sl-zt','si-zt',1);updateSynth()">
+        <input type="number" class="si" id="si-zt" value="50.0" min="10" max="200" step="1"
+               oninput="syncSlider('si-zt','sl-zt');updateSynth()">
+        <span class="si-unit">Ω</span>
+      </div>
+    </div>
+    <div class="synth-box">
+      <span class="synth-label">W =</span><span class="synth-val" id="synth-W">—</span>
+      <span class="synth-label">W/H =</span><span class="synth-val" id="synth-u">—</span>
+      <span class="synth-label">Z₀ =</span><span class="synth-val" id="synth-z0">—</span>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="right-col">
+    <div class="metrics">
+      <div class="metric-card">
+        <div class="mlabel">Z₀</div>
+        <div class="mval v-blue" id="m-z0">—</div>
+        <div class="munit">Ω</div>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel">ε_eff</div>
+        <div class="mval v-accent" id="m-er">—</div>
+        <div class="munit">effective permittivity</div>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel">W / H</div>
+        <div class="mval v-orange" id="m-wh">—</div>
+        <div class="munit">width / height ratio</div>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel">vp / c</div>
+        <div class="mval v-accent2" id="m-vp">—</div>
+        <div class="munit">phase velocity ratio</div>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel">λ_g</div>
+        <div class="mval v-accent2" id="m-lam">—</div>
+        <div class="munit">mm (guided wavelength)</div>
+      </div>
+      <div class="metric-card">
+        <div class="mlabel">λ_g / 4</div>
+        <div class="mval v-green" id="m-qw">—</div>
+        <div class="munit">mm (quarter-wave stub)</div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3 id="chart-title">Z₀ vs W/H — Microstrip</h3>
+      <div class="chart-wrap">
+        <canvas id="main-chart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="annotation" id="annotation">Computing…</div>
+
+<!-- Help overlay -->
+<div class="help-overlay" id="helpOverlay">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <div class="help-title">Microstrip / Stripline Calculator</div>
+
+    <div class="help-section">What this tool calculates</div>
+    <div class="help-body">Computes the characteristic impedance Z₀, effective dielectric constant ε_eff, phase velocity vp, guided wavelength λ_g, and quarter-wave length for microstrip and centered-stripline geometries using closed-form expressions. Synthesis mode inverts the equations to find the required trace width W for a target Z₀ given substrate parameters.</div>
+
+    <div class="help-section">Formulas used</div>
+    <div class="help-body">
+      <strong>Microstrip</strong> — Hammerstad–Jensen (1980). Accurate to &lt;0.5% for 0.05 ≤ W/H ≤ 20. Conductor thickness T is not included in the quasi-static Z₀; for T/H &gt; 0.05, the effective width is reduced by ΔW ≈ T/π · ln(2H/T).<br><br>
+      <strong>Stripline</strong> — Cohn's formula for a centered conductor between parallel ground planes. B is the total board thickness. T = 0 is protected against division by zero internally.
+    </div>
+
+    <div class="help-section">Inputs</div>
+    <div class="help-body">
+      <strong>ε_r</strong> — substrate relative permittivity at RF. FR4 ≈ 4.0–4.8 (lossy above 2 GHz); Rogers RO4003C = 3.55; RT/duroid 5880 = 2.2 (low-loss); alumina = 9.9.<br>
+      <strong>H</strong> — substrate height (microstrip) or total board thickness B (stripline), in mm.<br>
+      <strong>T</strong> — conductor thickness in mm. Standard values: 1 oz Cu = 0.035 mm; 2 oz Cu = 0.070 mm.<br>
+      <strong>W</strong> — trace width in mm. The Analysis section computes Z₀ from W; Synthesis inverts this.<br>
+      <strong>f</strong> — frequency in GHz. Z₀ and ε_eff are quasi-static (frequency-independent); f is used only to compute λ_g and λ/4.
+    </div>
+
+    <div class="help-section">Chart</div>
+    <div class="help-body">Shows Z₀ vs W/H on a log x-axis. Four reference curves (air, RT5880, FR4, alumina) plus a highlighted curve for the current ε_r. The copper dot marks the current operating point. Use this to visually compare substrates and read off W/H for a target impedance.</div>
+
+    <div class="help-section">Things to try</div>
+    <ul class="help-try">
+      <li>Load FR4, set Target Z₀ = 50 Ω in the synthesis section — then drag W to match the result and confirm the Z₀ card reads 50 Ω.</li>
+      <li>Switch to RT/duroid 5880 (ε_r = 2.2) — observe Z₀ rises for the same W/H. Lower permittivity requires a wider trace to stay at 50 Ω.</li>
+      <li>Enable Stripline mode — Z₀ drops compared to microstrip for the same W/B because the conductor is fully enclosed in dielectric (no air above).</li>
+      <li>Set f = 24 GHz (24 GHz automotive radar) on RO4003C — check λ/4 to size a quarter-wave matching stub or bandpass filter resonator.</li>
+      <li>Use Export CSV to save the full Z₀ vs W/H sweep for post-processing in a spreadsheet or script.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+const C0 = 2.998e8; // speed of light, m/s
+let mode = 'ms';    // 'ms' | 'sl'
+let chart = null;
+
+// ── Slider ↔ number-input sync ──────────────────────────
+function syncSI(sliderId, siId, dec) {
+  const v = parseFloat(document.getElementById(sliderId).value);
+  document.getElementById(siId).value = v.toFixed(dec);
+  const sp = document.getElementById(sliderId.replace('sl-', 'v-'));
+  if (sp) sp.textContent = v.toFixed(dec);
+}
+function syncSlider(siId, sliderId) {
+  const v = parseFloat(document.getElementById(siId).value);
+  if (isNaN(v)) return;
+  const sl = document.getElementById(sliderId);
+  sl.value = Math.min(Math.max(v, parseFloat(sl.min)), parseFloat(sl.max));
+  const sp = document.getElementById(siId.replace('si-', 'v-'));
+  if (sp) sp.textContent = document.getElementById(siId).value;
+}
+function gv(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
+// ── Mode toggle ──────────────────────────────────────────
+function setMode(m) {
+  mode = m;
+  document.getElementById('tab-ms').classList.toggle('active', m === 'ms');
+  document.getElementById('tab-sl').classList.toggle('active', m === 'sl');
+  const lblH = document.getElementById('lbl-H');
+  lblH.childNodes[0].textContent = m === 'sl'
+    ? 'B — total board thickness (mm)' : 'H — substrate height (mm)';
+  document.getElementById('chart-title').textContent = m === 'ms'
+    ? 'Z₀ vs W/H — Microstrip' : 'Z₀ vs W/B — Stripline';
+  update();
+}
+
+// ── Substrate presets ────────────────────────────────────
+function loadSubstrate(er, H) {
+  const set = (sl, si, v, dec) => {
+    document.getElementById(sl).value = v;
+    document.getElementById(si).value = v.toFixed(dec);
+    const sp = document.getElementById(sl.replace('sl-', 'v-'));
+    if (sp) sp.textContent = v.toFixed(dec);
+  };
+  set('sl-er', 'si-er', er, 2);
+  set('sl-H',  'si-H',  H,  3);
+  update();
+}
+
+// ── Microstrip analysis (Hammerstad-Jensen) ─────────────
+function calcMS(W, H, er) {
+  const u = W / H;
+  let er_eff, Z0;
+  if (u <= 1) {
+    er_eff = (er+1)/2 + (er-1)/2 * (Math.pow(1 + 12/u, -0.5) + 0.04*Math.pow(1-u, 2));
+    Z0 = 60 / Math.sqrt(er_eff) * Math.log(8/u + u/4);
+  } else {
+    er_eff = (er+1)/2 + (er-1)/2 * Math.pow(1 + 12/u, -0.5);
+    Z0 = 120*Math.PI / (Math.sqrt(er_eff) * (u + 1.393 + 0.667*Math.log(u + 1.444)));
+  }
+  return { Z0: Math.max(0.1, Z0), er_eff, u };
+}
+
+// ── Stripline analysis (Cohn) ────────────────────────────
+function calcSL(W, B, T, er) {
+  const t = Math.max(T, 0.001 * B); // guard T=0
+  const u = W / B;
+  let Z0;
+  if (u < 0.85) {
+    const d = 0.8*W + t;
+    Z0 = 60 / Math.sqrt(er) * Math.log(4*B / (0.67*Math.PI*d));
+  } else {
+    Z0 = 94.15 / Math.sqrt(er) / (u + 0.441);
+  }
+  return { Z0: Math.max(0.1, Z0), er_eff: er, u };
+}
+
+// ── Microstrip synthesis (Hammerstad-Jensen inverse) ─────
+function synthMS(Z0t, H, er) {
+  const A = Z0t/60 * Math.sqrt((er+1)/2) + (er-1)/(er+1) * (0.23 + 0.11/er);
+  let u = 8 * Math.exp(A) / (Math.exp(2*A) - 2);
+  if (u > 2) {
+    const B = 377*Math.PI / (2*Z0t*Math.sqrt(er));
+    u = 2/Math.PI * (B - 1 - Math.log(2*B - 1)
+        + (er-1)/(2*er) * (Math.log(B - 1) + 0.39 - 0.61/er));
+  }
+  u = Math.max(0.05, u);
+  const { Z0 } = calcMS(u * H, H, er);
+  return { W: u * H, u, Z0 };
+}
+
+// ── Dispatch ─────────────────────────────────────────────
+function analyze(W, H, T, er) {
+  return mode === 'ms' ? calcMS(W, H, er) : calcSL(W, H, T, er);
+}
+
+// ── Main update ─────────────────────────────────────────
+function update() {
+  const er = gv('si-er'), H = gv('si-H'), T = gv('si-T'),
+        W  = gv('si-W'),  f = gv('si-f');
+  if (!er || !H || !W || !f) return;
+
+  const { Z0, er_eff, u } = analyze(W, H, T, er);
+  const vp_ratio = 1 / Math.sqrt(er_eff);
+  const lam_mm   = C0 * vp_ratio / (f * 1e9) * 1e3;
+
+  document.getElementById('m-z0').textContent  = Z0.toFixed(2);
+  document.getElementById('m-er').textContent  = er_eff.toFixed(3);
+  document.getElementById('m-wh').textContent  = u.toFixed(3);
+  document.getElementById('m-vp').textContent  = vp_ratio.toFixed(4);
+  document.getElementById('m-lam').textContent = lam_mm.toFixed(2);
+  document.getElementById('m-qw').textContent  = (lam_mm / 4).toFixed(2);
+
+  const qual = Z0 < 30
+    ? 'low-impedance line — wide trace, high current capacity; monitor surface-wave onset at mmWave'
+    : Z0 > 120
+    ? 'high-impedance line — narrow trace; fabrication tolerance becomes critical'
+    : 'impedance within 30–120 Ω range, well-suited for standard 50 Ω system integration';
+  document.getElementById('annotation').innerHTML =
+    `<strong>Z₀ = ${Z0.toFixed(2)} Ω</strong>, ε_eff = <strong>${er_eff.toFixed(3)}</strong>, W/${mode==='ms'?'H':'B'} = <strong>${u.toFixed(3)}</strong>. ` +
+    `Phase velocity v_p = c/√ε_eff = <strong>${(vp_ratio*100).toFixed(2)}% of c</strong>. ` +
+    `At ${f.toFixed(1)} GHz: λ_g = <strong>${lam_mm.toFixed(2)} mm</strong>, λ/4 = <strong>${(lam_mm/4).toFixed(2)} mm</strong>. ` +
+    `This is a ${qual}.`;
+
+  updateChart(er, H, T, W, u, Z0);
+  updateSynth();
+}
+
+// ── Synthesis update ─────────────────────────────────────
+function updateSynth() {
+  const er = gv('si-er'), H = gv('si-H'), Z0t = gv('si-zt');
+  document.getElementById('v-zt').textContent = Z0t.toFixed(1);
+  if (!er || !H || !Z0t) return;
+  if (mode === 'ms') {
+    const s = synthMS(Z0t, H, er);
+    document.getElementById('synth-W').textContent  = s.W.toFixed(3) + ' mm';
+    document.getElementById('synth-u').textContent  = s.u.toFixed(3);
+    document.getElementById('synth-z0').textContent = s.Z0.toFixed(1) + ' Ω';
+  } else {
+    document.getElementById('synth-W').textContent  = '—';
+    document.getElementById('synth-u').textContent  = '—';
+    document.getElementById('synth-z0').textContent = 'N/A (stripline)';
+  }
+}
+
+// ── Chart ─────────────────────────────────────────────────
+const REF_ERS = [
+  { er: 1.0, label: 'Air (1.0)',       color: 'rgba(100,185,100,0.5)' },
+  { er: 2.2, label: 'RT5880 (2.2)',    color: 'rgba(90,140,220,0.5)'  },
+  { er: 4.5, label: 'FR4 (4.5)',       color: 'rgba(200,120,55,0.5)'  },
+  { er: 9.9, label: 'Alumina (9.9)',   color: 'rgba(155,85,200,0.5)'  },
+];
+const N_CURVE = 120;
+
+function buildCurve(er_val, H, T) {
+  const pts = [];
+  for (let i = 0; i < N_CURVE; i++) {
+    const u = Math.pow(10, -1 + 2 * i / (N_CURVE - 1)); // 0.1 → 10
+    const W = u * H;
+    const { Z0 } = mode === 'ms' ? calcMS(W, H, er_val) : calcSL(W, H, T, er_val);
+    pts.push({ x: parseFloat(u.toFixed(5)), y: parseFloat(Z0.toFixed(3)) });
+  }
+  return pts;
+}
+
+function updateChart(er, H, T, W, curU, curZ0) {
+  const datasets = [];
+  REF_ERS.forEach(r => datasets.push({
+    label: r.label, data: buildCurve(r.er, H, T),
+    borderColor: r.color, borderWidth: 1.3, pointRadius: 0, tension: 0.25,
+  }));
+  datasets.push({
+    label: `Current (ε_r=${er.toFixed(2)})`,
+    data: buildCurve(er, H, T),
+    borderColor: '#2563eb', borderWidth: 2.5, pointRadius: 0, tension: 0.25,
+  });
+  datasets.push({
+    label: `${curZ0.toFixed(1)} Ω  W/${mode==='ms'?'H':'B'}=${curU.toFixed(2)}`,
+    data: [{ x: curU, y: parseFloat(curZ0.toFixed(2)) }],
+    borderColor: '#b5895a', backgroundColor: '#b5895a',
+    pointRadius: 7, pointHoverRadius: 9, showLine: false,
+  });
+
+  const cfg = {
+    type: 'scatter',
+    data: { datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 0 },
+      scales: {
+        x: {
+          type: 'logarithmic',
+          title: { display: true, text: mode==='ms'?'W/H ratio':'W/B ratio', color:'#718096', font:{size:11} },
+          min: 0.1, max: 10,
+          ticks: { color:'#718096', font:{size:10}, maxTicksLimit:8,
+            callback: v => v<1 ? v.toFixed(1) : Number.isInteger(v) ? v : '' },
+          grid: { color:'rgba(208,212,218,0.5)' },
+        },
+        y: {
+          title: { display: true, text:'Z₀ (Ω)', color:'#718096', font:{size:11} },
+          min: 0, max: 200,
+          ticks: { color:'#718096', font:{size:10} },
+          grid: { color:'rgba(208,212,218,0.5)' },
+        },
+      },
+      plugins: {
+        legend: { labels:{ color:'#718096', font:{size:10}, boxWidth:14 } },
+        tooltip: { callbacks:{ label: ctx=>`W/H=${ctx.parsed.x.toFixed(3)}, Z₀=${ctx.parsed.y.toFixed(1)} Ω` } },
+      },
+    },
+  };
+
+  if (!chart) {
+    chart = new Chart(document.getElementById('main-chart'), cfg);
+  } else {
+    chart.data.datasets = datasets;
+    chart.options.scales.x.title.text = cfg.options.scales.x.title.text;
+    chart.update('none');
+  }
+}
+
+// ── Export CSV ───────────────────────────────────────────
+function exportCSV() {
+  const er = gv('si-er'), H = gv('si-H'), T = gv('si-T'), W = gv('si-W'), f = gv('si-f');
+  const lines = [
+    `RF Toolbox — Microstrip/Stripline Export,${new Date().toLocaleString()}`,
+    '',
+    'PARAMETERS,Value,Unit',
+    `Mode,${mode==='ms'?'Microstrip':'Stripline'},`,
+    `epsilon_r,${er},`,
+    `${mode==='ms'?'H (substrate height)':'B (board thickness)'},${H},mm`,
+    `T (conductor thickness),${T},mm`,
+    `W (trace width),${W},mm`,
+    `f (frequency),${f},GHz`,
+    '',
+    'RESULTS,Value,Unit',
+    `Z0,${document.getElementById('m-z0').textContent},Ohm`,
+    `epsilon_eff,${document.getElementById('m-er').textContent},`,
+    `W/H_ratio,${document.getElementById('m-wh').textContent},`,
+    `vp_over_c,${document.getElementById('m-vp').textContent},`,
+    `lambda_g,${document.getElementById('m-lam').textContent},mm`,
+    `lambda_g_over_4,${document.getElementById('m-qw').textContent},mm`,
+    '',
+    `Z0 vs W/${mode==='ms'?'H':'B'} SWEEP (current substrate ε_r=${er})`,
+    `W/${mode==='ms'?'H':'B'},Z0 (Ohm)`,
+  ];
+  for (let i = 0; i < 60; i++) {
+    const u = Math.pow(10, -1 + 2*i/59);
+    const { Z0 } = mode==='ms' ? calcMS(u*H, H, er) : calcSL(u*H, H, T, er);
+    lines.push(`${u.toFixed(5)},${Z0.toFixed(4)}`);
+  }
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `rf_toolbox_microstrip_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ── Copy link ────────────────────────────────────────────
+function copyLink() {
+  const p = new URLSearchParams({
+    mode, er: gv('si-er'), H: gv('si-H'), T: gv('si-T'), W: gv('si-W'), f: gv('si-f')
+  });
+  navigator.clipboard.writeText(location.href.split('?')[0] + '?' + p).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ Copied';
+    setTimeout(() => btn.textContent = '⎘ Copy Link', 1800);
+  });
+}
+
+// ── Help ─────────────────────────────────────────────────
+function showHelp()  { document.getElementById('helpOverlay').classList.add('open');    }
+function closeHelp() { document.getElementById('helpOverlay').classList.remove('open'); }
+document.getElementById('helpOverlay').addEventListener('click', e => {
+  if (e.target.id === 'helpOverlay') closeHelp();
+});
+
+// ── URL restore ──────────────────────────────────────────
+(function () {
+  const p = new URLSearchParams(location.search);
+  if (p.get('mode')) setMode(p.get('mode'));
+  ['er','H','T','W','f'].forEach(k => {
+    const v = parseFloat(p.get(k));
+    if (!isNaN(v)) {
+      const sl = document.getElementById('sl-'+k), si = document.getElementById('si-'+k);
+      if (sl && si) {
+        sl.value = v; si.value = v;
+        const sp = document.getElementById('v-'+k);
+        if (sp) sp.textContent = si.value;
+      }
+    }
+  });
+})();
+
+// ── Init ─────────────────────────────────────────────────
+update();
+</script>
+</body>
+</html>
