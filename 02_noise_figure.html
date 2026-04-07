@@ -128,6 +128,10 @@ table.whatif tr:last-child td { border-bottom: none; }
 
 .all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
 .all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
+details.try-it{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
+details.try-it summary{color:var(--accent);font-size:0.78rem;cursor:pointer;user-select:none;list-style:none}
+details.try-it summary::-webkit-details-marker{display:none}
+details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(--muted);line-height:1.7}
 </style>
 </head>
 <body>
@@ -213,6 +217,15 @@ table.whatif tr:last-child td { border-bottom: none; }
     <div class="metric-card"><div class="mlabel">MDS</div><div class="mval" id="mMDS" style="color:var(--purple)">—</div><div class="munit">dBm (NF floor + SNR_min)</div></div>
     <div class="metric-card"><div class="mlabel">Blocking DR</div><div class="mval" id="mBDR">—</div><div class="munit">dB (P1dB − MDS)</div></div>
   </div>
+
+    <details class="try-it">
+      <summary>&#9658; Things to Try</summary>
+      <ul>
+        <li>Load the <strong>BLE / Bluetooth RX</strong> preset, then use the <strong>1&#8596;2</strong> quick-swap button to move the LNA before the preselector BPF — watch how system NF collapses when the high-NF switch now precedes the LNA.</li>
+        <li>Load the <strong>GPS L1</strong> preset and raise the LNA gain from 20 dB to 35 dB — notice cascaded IIP3 degrades sharply as the high-gain LNA amplifies signals into the mixer's nonlinear region.</li>
+        <li>Toggle the NF display between <strong>NF (dB)</strong> and <strong>Teq (K)</strong> modes and observe that small NF differences near 1 dB represent large temperature differences at low noise figures — a key consideration for satellite and radio astronomy receivers.</li>
+      </ul>
+    </details>
 </div>
 
 <!-- Stage table -->
@@ -945,15 +958,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
         <li><strong>Cascaded IIP3 / OIP3:</strong> system-level intercept points. OIP3 = IIP3 + Total Gain.</li>
         <li><strong>SFDR:</strong> spurious-free dynamic range = ⅔(OIP3 − N_floor), in dB.</li>
         <li><strong>MDS:</strong> minimum detectable signal — the weakest signal the chain can process at the required SNR_min.</li>
-      </ul>
-    </div>
-
-    <div class="help-section">Things to try</div>
-    <div class="help-body">
-      <ul class="help-try">
-        <li>Load the <strong>BLE / Bluetooth RX</strong> preset, then use the <strong>1↔2</strong> quick-swap button to move the LNA before the preselector BPF — watch how system NF collapses when the high-NF switch now precedes the LNA.</li>
-        <li>Load the <strong>GPS L1</strong> preset and raise the LNA gain from 20 dB to 35 dB — notice cascaded IIP3 degrades sharply as the high-gain LNA amplifies signals into the mixer's nonlinear region.</li>
-        <li>Toggle the NF display between <strong>NF (dB)</strong> and <strong>Teq (K)</strong> modes and observe that small NF differences near 1 dB represent large temperature differences at low noise figures — a key consideration for satellite and radio astronomy receivers.</li>
       </ul>
     </div>
 
