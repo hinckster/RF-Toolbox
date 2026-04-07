@@ -104,6 +104,10 @@
 
 .all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
 .all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
+details.try-it{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
+details.try-it summary{color:var(--accent);font-size:0.78rem;cursor:pointer;user-select:none;list-style:none}
+details.try-it summary::-webkit-details-marker{display:none}
+details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(--muted);line-height:1.7}
 </style>
 </head>
 <body>
@@ -258,6 +262,17 @@
       <span class="synth-label">W/H =</span><span class="synth-val" id="synth-u">—</span>
       <span class="synth-label">Z₀ =</span><span class="synth-val" id="synth-z0">—</span>
     </div>
+
+    <details class="try-it">
+      <summary>&#9658; Things to Try</summary>
+      <ul>
+        <li>Load FR4, set Target Z₀ = 50 Ω in the synthesis section — then drag W to match the result and confirm the Z₀ card reads 50 Ω.</li>
+        <li>Switch to RT/duroid 5880 (ε_r = 2.2) — observe Z₀ rises for the same W/H. Lower permittivity requires a wider trace to stay at 50 Ω.</li>
+        <li>Enable Stripline mode — Z₀ drops compared to microstrip for the same W/B because the conductor is fully enclosed in dielectric (no air above).</li>
+        <li>Set f = 24 GHz (24 GHz automotive radar) on RO4003C — check λ/4 to size a quarter-wave matching stub or bandpass filter resonator.</li>
+        <li>Use Export CSV to save the full Z₀ vs W/H sweep for post-processing in a spreadsheet or script.</li>
+      </ul>
+    </details>
   </div>
 
   <!-- RIGHT COLUMN -->
@@ -347,15 +362,6 @@
 
     <div class="help-section">Chart</div>
     <div class="help-body">Shows Z₀ vs W/H on a log x-axis. Four reference curves (air, RT5880, FR4, alumina) plus a highlighted curve for the current ε_r. The copper dot marks the current operating point. Use this to visually compare substrates and read off W/H for a target impedance.</div>
-
-    <div class="help-section">Things to try</div>
-    <ul class="help-try">
-      <li>Load FR4, set Target Z₀ = 50 Ω in the synthesis section — then drag W to match the result and confirm the Z₀ card reads 50 Ω.</li>
-      <li>Switch to RT/duroid 5880 (ε_r = 2.2) — observe Z₀ rises for the same W/H. Lower permittivity requires a wider trace to stay at 50 Ω.</li>
-      <li>Enable Stripline mode — Z₀ drops compared to microstrip for the same W/B because the conductor is fully enclosed in dielectric (no air above).</li>
-      <li>Set f = 24 GHz (24 GHz automotive radar) on RO4003C — check λ/4 to size a quarter-wave matching stub or bandpass filter resonator.</li>
-      <li>Use Export CSV to save the full Z₀ vs W/H sweep for post-processing in a spreadsheet or script.</li>
-    </ul>
   </div>
 </div>
 
