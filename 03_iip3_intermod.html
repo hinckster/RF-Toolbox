@@ -100,6 +100,10 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 .ds-num{background:var(--deep);border:1px solid var(--bdr);border-radius:4px;color:#b5895a;font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;width:78px;text-align:right;-moz-appearance:textfield;appearance:textfield}
 .ds-num::-webkit-outer-spin-button,.ds-num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .ds-num:focus{outline:none;border-color:#b5895a}
+details.try-it{margin-top:12px;border-top:1px solid var(--bdr);padding-top:10px}
+details.try-it summary{color:#b5895a;font-size:0.78rem;cursor:pointer;user-select:none;list-style:none}
+details.try-it summary::-webkit-details-marker{display:none}
+details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(--tm);line-height:1.7}
 </style>
 </head>
 <body>
@@ -260,6 +264,15 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
         <div class="mc"><div class="mlb">IM2 level</div><div class="mv" id="mIM2" style="color:var(--org)">—</div><div class="mu">dBm</div></div>
       </div>
     </div>
+
+    <details class="try-it">
+      <summary>&#9658; Things to Try</summary>
+      <ul>
+        <li>Load the <strong>Mixer near compression</strong> preset and slowly increase P_in from −5 dBm to +5 dBm — watch the IM3 bars on the spectrum chart grow 3× faster (in dB) than the fundamentals, and the operating point approach P1dB on the intercept diagram.</li>
+        <li>With the LNA preset loaded, set a₂ to 0 and observe that IM2 and all even harmonics disappear — this demonstrates why differential (balanced) amplifiers suppress even-order distortion by cancellation.</li>
+        <li>Make a₃ less negative (e.g., −0.05) while keeping a₁ constant — IIP3 increases dramatically, but P1dB also shifts, illustrating the trade-off between linearity and gain-compression headroom in device biasing.</li>
+      </ul>
+    </details>
   </div>
 
   <div>
@@ -657,15 +670,6 @@ function sendToReceiverChain() {
         <li><strong>P1dB (in):</strong> input power at which gain compresses by 1 dB. Roughly IIP3 − 9.6 dB for a pure cubic nonlinearity.</li>
         <li><strong>IM3 level / IM3 rel.:</strong> absolute IM3 power (dBm) and power relative to the fundamental (dBc). At 2 dB above P1dB, IM3 typically reaches −20 dBc.</li>
         <li><strong>IM2 level:</strong> absolute IM2 power (dBm). Relevant in wideband or direct-conversion systems.</li>
-      </ul>
-    </div>
-
-    <div class="help-section">Things to try</div>
-    <div class="help-body">
-      <ul class="help-try">
-        <li>Load the <strong>Mixer near compression</strong> preset and slowly increase P_in from −5 dBm to +5 dBm — watch the IM3 bars on the spectrum chart grow 3× faster (in dB) than the fundamentals, and the operating point approach P1dB on the intercept diagram.</li>
-        <li>With the LNA preset loaded, set a₂ to 0 and observe that IM2 and all even harmonics disappear — this demonstrates why differential (balanced) amplifiers suppress even-order distortion by cancellation.</li>
-        <li>Make a₃ less negative (e.g., −0.05) while keeping a₁ constant — IIP3 increases dramatically, but P1dB also shifts, illustrating the trade-off between linearity and gain-compression headroom in device biasing.</li>
       </ul>
     </div>
 
