@@ -166,35 +166,88 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
   </div>
 </div>
 
-<!-- Block diagram -->
+<!-- Block diagram (SVG) -->
 <div style="max-width:1200px;margin:0 auto .9rem;padding:0 1.5rem">
-  <div class="block-diag" id="blockDiag">
-    <div class="blk rf-filter">RF<br>Filter</div>
-    <div class="arr">→</div>
-    <div class="blk lna">LNA</div>
-    <div class="arr">→</div>
-    <div class="blk rf-filter">Image<br>Reject</div>
-    <div class="arr">→</div>
-    <div class="lo-row">
-      <div style="font-size:.65rem;color:var(--yel)">LO</div>
-      <div class="blk mixer">Mixer</div>
-      <div style="font-size:.65rem;color:var(--yel)" id="bdLO">—</div>
-    </div>
-    <div class="arr">→</div>
-    <div class="blk if-filter">IF<br>Filter</div>
-    <div class="arr">→</div>
-    <div class="blk if-amp">IF<br>Amp</div>
-    <div class="arr" id="arrDbl" style="display:none">→</div>
-    <div class="lo-row" id="blkMix2" style="display:none">
-      <div style="font-size:.65rem;color:var(--red)">LO₂</div>
-      <div class="blk mixer">Mixer₂</div>
-      <div style="font-size:.65rem;color:var(--red)" id="bdLO2">—</div>
-    </div>
-    <div class="arr" id="arrDbl2" style="display:none">→</div>
-    <div class="blk if-filter" id="blkIF2" style="display:none">IF₂<br>Filter</div>
-    <div class="arr">→</div>
-    <div class="blk" style="border-color:var(--tm)">Demod</div>
-  </div>
+<div style="background:#eaecef;border:1px solid #d0d4da;border-radius:8px;padding:10px 14px;overflow-x:auto">
+<svg id="rxDiag" viewBox="0 0 600 135" height="135" style="display:block;width:100%;min-width:420px;max-width:600px">
+<defs>
+  <marker id="mArr"  viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#718096"/></marker>
+  <marker id="mArrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+</defs>
+
+<!-- annotations: f_RF (between RF BPF and LNA) and f_img (above Image BPF, red) -->
+<text id="svgFRF"  x="77"  y="13" text-anchor="middle" font-size="9" fill="#2563eb" font-family="Courier New,monospace">f_RF = 900 MHz</text>
+<text id="svgFImg" x="191" y="13" text-anchor="middle" font-size="9" fill="#dc2626" font-family="Courier New,monospace">f_img = 1040 MHz</text>
+
+<!-- Row 1 blocks -->
+<rect x="5"   y="18" width="62" height="26" rx="4" fill="#f4f5f7" stroke="#16a34a" stroke-width="1.5"/>
+<text x="36"  y="35" text-anchor="middle" font-size="10" fill="#16a34a" font-weight="600" font-family="Segoe UI,system-ui,sans-serif">RF BPF</text>
+
+<rect x="87"  y="18" width="48" height="26" rx="4" fill="#f4f5f7" stroke="#2563eb" stroke-width="1.5"/>
+<text x="111" y="35" text-anchor="middle" font-size="10" fill="#2563eb" font-weight="600" font-family="Segoe UI,system-ui,sans-serif">LNA</text>
+
+<rect x="155" y="18" width="72" height="26" rx="4" fill="#f4f5f7" stroke="#16a34a" stroke-width="1.5"/>
+<text x="191" y="35" text-anchor="middle" font-size="10" fill="#16a34a" font-weight="600" font-family="Segoe UI,system-ui,sans-serif">Image BPF</text>
+
+<rect x="247" y="18" width="54" height="26" rx="4" fill="#f4f5f7" stroke="#e6c547" stroke-width="1.5"/>
+<text x="274" y="35" text-anchor="middle" font-size="10" fill="#e6c547" font-weight="600" font-family="Segoe UI,system-ui,sans-serif">Mixer</text>
+
+<!-- LO block: blue 20% fill, two lines (label + live freq) -->
+<rect x="321" y="18" width="76" height="26" rx="4" fill="rgba(37,99,235,0.2)" stroke="#2563eb" stroke-width="1.5"/>
+<text x="359" y="28" text-anchor="middle" font-size="10" fill="#2563eb" font-weight="600" font-family="Segoe UI,system-ui,sans-serif">LO</text>
+<text id="svgFLO" x="359" y="40" text-anchor="middle" font-size="8" fill="#2563eb" font-family="Courier New,monospace">fLO=970 MHz</text>
+
+<!-- Row 1 arrows -->
+<line x1="68"  y1="31" x2="86"  y2="31" stroke="#718096" stroke-width="1.5" marker-end="url(#mArr)"/>
+<line x1="136" y1="31" x2="154" y2="31" stroke="#718096" stroke-width="1.5" marker-end="url(#mArr)"/>
+<line x1="228" y1="31" x2="246" y2="31" stroke="#718096" stroke-width="1.5" marker-end="url(#mArr)"/>
+<!-- LO → Mixer (left-pointing into Mixer) -->
+<line x1="320" y1="31" x2="303" y2="31" stroke="#2563eb" stroke-width="1.5" marker-end="url(#mArrB)"/>
+
+<!-- Vertical arrow Mixer → IF path -->
+<line x1="274" y1="44" x2="274" y2="90" stroke="#718096" stroke-width="1.5" marker-end="url(#mArr)"/>
+<text id="svgFIF" x="282" y="71" text-anchor="start" font-size="9" fill="#7c3aed" font-family="Courier New,monospace">f_IF = 70 MHz</text>
+
+<!-- Row 2 blocks (always visible) -->
+<rect x="245" y="91" width="54" height="26" rx="4" fill="#f4f5f7" stroke="#7c3aed" stroke-width="1.5"/>
+<text x="272" y="108" text-anchor="middle" font-size="10" fill="#7c3aed" font-weight="600" font-family="Segoe UI,system-ui,sans-serif">IF BPF</text>
+
+<rect x="319" y="91" width="54" height="26" rx="4" fill="#f4f5f7" stroke="#d97706" stroke-width="1.5"/>
+<text x="346" y="108" text-anchor="middle" font-size="10" fill="#d97706" font-weight="600" font-family="Segoe UI,system-ui,sans-serif">IF Amp</text>
+
+<line x1="299" y1="104" x2="318" y2="104" stroke="#718096" stroke-width="1.5" marker-end="url(#mArr)"/>
+
+<!-- Single-conv only -->
+<g id="grpSingle">
+  <line x1="373" y1="104" x2="391" y2="104" stroke="#718096" stroke-width="1.5" marker-end="url(#mArr)"/>
+  <rect x="392" y="91" width="52" height="26" rx="4" fill="#f4f5f7" stroke="#718096" stroke-width="1.5"/>
+  <text x="418" y="108" text-anchor="middle" font-size="10" fill="#718096" font-weight="600" font-family="Segoe UI,system-ui,sans-serif">Demod</text>
+</g>
+
+<!-- Double-conv only (hidden by default) -->
+<g id="grpDouble" style="display:none">
+  <!-- Mixer2 -->
+  <line x1="373" y1="104" x2="391" y2="104" stroke="#718096" stroke-width="1.5" marker-end="url(#mArr)"/>
+  <rect x="392" y="91" width="54" height="26" rx="4" fill="#f4f5f7" stroke="#e6c547" stroke-width="1.5"/>
+  <text x="419" y="108" text-anchor="middle" font-size="10" fill="#e6c547" font-weight="600" font-family="Segoe UI,system-ui,sans-serif">Mixer₂</text>
+  <!-- LO2 → Mixer2 -->
+  <line x1="462" y1="104" x2="448" y2="104" stroke="#2563eb" stroke-width="1.5" marker-end="url(#mArrB)"/>
+  <rect x="463" y="91" width="76" height="26" rx="4" fill="rgba(37,99,235,0.2)" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="501" y="101" text-anchor="middle" font-size="10" fill="#2563eb" font-weight="600" font-family="Segoe UI,system-ui,sans-serif">LO₂</text>
+  <text id="svgFLO2" x="501" y="113" text-anchor="middle" font-size="8" fill="#2563eb" font-family="Courier New,monospace">fLO2=59.3 MHz</text>
+  <!-- Mixer2 → Row 3 -->
+  <line x1="419" y1="117" x2="419" y2="158" stroke="#718096" stroke-width="1.5" marker-end="url(#mArr)"/>
+  <text id="svgFIF2" x="427" y="140" text-anchor="start" font-size="9" fill="#d97706" font-family="Courier New,monospace">f_IF2 = 10.7 MHz</text>
+  <!-- Row 3 -->
+  <rect x="392" y="159" width="62" height="26" rx="4" fill="#f4f5f7" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="423" y="176" text-anchor="middle" font-size="10" fill="#7c3aed" font-weight="600" font-family="Segoe UI,system-ui,sans-serif">IF₂ BPF</text>
+  <line x1="454" y1="172" x2="472" y2="172" stroke="#718096" stroke-width="1.5" marker-end="url(#mArr)"/>
+  <rect x="473" y="159" width="52" height="26" rx="4" fill="#f4f5f7" stroke="#718096" stroke-width="1.5"/>
+  <text x="499" y="176" text-anchor="middle" font-size="10" fill="#718096" font-weight="600" font-family="Segoe UI,system-ui,sans-serif">Demod</text>
+</g>
+
+</svg>
+</div>
 </div>
 
 <div class="layout">
@@ -294,10 +347,12 @@ function setConv(mode,btn){
   btn.classList.add('active');
   const isDbl=mode==='double';
   document.getElementById('dbl2Ctrl').style.display=isDbl?'':'none';
-  document.getElementById('arrDbl').style.display=isDbl?'':'none';
-  document.getElementById('blkMix2').style.display=isDbl?'':'none';
-  document.getElementById('arrDbl2').style.display=isDbl?'':'none';
-  document.getElementById('blkIF2').style.display=isDbl?'':'none';
+  // SVG block diagram — toggle conv groups and resize
+  document.getElementById('grpSingle').style.display=isDbl?'none':'';
+  document.getElementById('grpDouble').style.display=isDbl?'':'none';
+  const svg=document.getElementById('rxDiag');
+  svg.setAttribute('height',isDbl?'200':'135');
+  svg.setAttribute('viewBox',isDbl?'0 0 600 200':'0 0 600 135');
   update();
 }
 
@@ -356,9 +411,15 @@ function update(){
   const fLO2=convMode==='double'?fIF-fIF2:0;
   const fImg2=convMode==='double'?fIF+2*fIF2:0;
 
-  // Update block diagram LO labels
-  document.getElementById('bdLO').textContent=fmtMHz(fLO);
-  if(convMode==='double') document.getElementById('bdLO2').textContent=fmtMHz(fLO2);
+  // Update SVG block diagram labels
+  document.getElementById('svgFRF').textContent='f_RF = '+fmtMHz(fRF);
+  document.getElementById('svgFImg').textContent='f_img = '+fmtMHz(fImage);
+  document.getElementById('svgFLO').textContent='fLO='+fmtMHz(fLO);
+  document.getElementById('svgFIF').textContent='f_IF = '+fmtMHz(fIF);
+  if(convMode==='double'){
+    document.getElementById('svgFLO2').textContent='fLO2='+fmtMHz(fLO2);
+    document.getElementById('svgFIF2').textContent='f_IF2 = '+fmtMHz(fIF2);
+  }
 
   // Frequency plan table
   let fpHTML=`
