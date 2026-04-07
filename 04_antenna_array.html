@@ -95,6 +95,10 @@ select.sel{width:100%;background:var(--deep);border:1px solid var(--bdr);color:v
 
 .all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
 .all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
+details.try-it{margin-top:12px;border-top:1px solid var(--bdr);padding-top:10px}
+details.try-it summary{color:#b5895a;font-size:0.78rem;cursor:pointer;user-select:none;list-style:none}
+details.try-it summary::-webkit-details-marker{display:none}
+details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(--tm);line-height:1.7}
 </style>
 </head>
 <body>
@@ -247,6 +251,15 @@ select.sel{width:100%;background:var(--deep);border:1px solid var(--bdr);color:v
         <div class="mc"><div class="mlb">Grating Lobes</div><div class="mv" id="mGL" style="color:var(--tm)">—</div><div class="mu"></div></div>
       </div>
     </div>
+
+    <details class="try-it">
+      <summary>&#9658; Things to Try</summary>
+      <ul>
+        <li>Set N=16, d/λ=0.5, steer to 30° — watch grating lobes appear at the red dashed lines as you increase d/λ past 0.87λ (the grating-lobe threshold at 30° scan).</li>
+        <li>Compare Array A (Uniform) vs. Array B (Hamming) with N=32 — observe the 30 dB SLL reduction at the cost of ~1.5× beam broadening.</li>
+        <li>Switch element pattern from Isotropic to Patch (cos²θ) with large steer angle — note how the element pattern suppresses sidelobes near ±90° that the AF would otherwise show.</li>
+      </ul>
+    </details>
   </div>
 
   <div>
@@ -786,13 +799,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
         <li><strong>Grating Lobes</strong> — lists angles (degrees) where full-strength grating lobes appear, or "None" if d/λ is small enough to prevent them.</li>
       </ul>
     </div>
-
-    <div class="help-section">Things to try</div>
-    <ul class="help-try">
-      <li>Set N=16, d/λ=0.5, steer to 30° — watch grating lobes appear at the red dashed lines as you increase d/λ past 0.87λ (the grating-lobe threshold at 30° scan).</li>
-      <li>Compare Array A (Uniform) vs. Array B (Hamming) with N=32 — observe the 30 dB SLL reduction at the cost of ~1.5× beam broadening.</li>
-      <li>Switch element pattern from Isotropic to Patch (cos²θ) with large steer angle — note how the element pattern suppresses sidelobes near ±90° that the AF would otherwise show.</li>
-    </ul>
 
     <div class="help-section">Reference</div>
     <div class="help-body">C. A. Balanis, <em>Antenna Theory: Analysis and Design</em>, 4th ed. Hoboken, NJ: Wiley, 2016, Ch. 6 (Arrays) and Ch. 7 (Planar Arrays).</div>
