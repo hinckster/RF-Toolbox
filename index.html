@@ -55,6 +55,7 @@ a:hover{text-decoration:underline}
 .sh-badge.rf{background:rgba(37,99,235,.1);color:var(--blue)}
 .sh-badge.sig{background:rgba(124,58,237,.1);color:var(--pur)}
 .sh-badge.new{background:rgba(22,163,74,.1);color:var(--grn)}
+.sh-badge.edu{background:var(--deep);color:var(--tm)}
 
 /* Tool grid */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:1.1rem;margin-bottom:2rem}
@@ -151,12 +152,12 @@ footer a{color:#b5895a}
   </div>
 </div>
 
-<!-- RF Systems Design Section -->
+<!-- RF System Analysis Section -->
 <div class="section">
   <div class="section-hdr">
     <div class="sh-line"></div>
-    <div class="sh-label">RF Systems Design</div>
-    <span class="sh-badge rf">Link · Receiver · Radar · Propagation</span>
+    <div class="sh-label">RF System Analysis</div>
+    <span class="sh-badge rf">Link Budget · Receiver Chain · Propagation</span>
     <div class="sh-line"></div>
   </div>
 
@@ -171,16 +172,6 @@ footer a{color:#b5895a}
       <div class="card-eq">Margin = Pt − L_tx + Gt − FSPL − L_atm + Gr − L_rx − S_min</div>
     </a>
 
-    <a class="card" href="01_friis_transmission.html">
-      <div class="card-top"><div class="card-icon">📡</div><div class="card-arrow">›</div></div>
-      <div>
-        <div class="card-num"><span class="live-badge">Live</span></div>
-        <h2>Friis Transmission Equation</h2>
-      </div>
-      <div class="card-desc">Free-space received power as a function of distance and frequency. Pr vs frequency and Pr vs distance sweeps. Link margin above sensitivity threshold annotated on chart.</div>
-      <div class="card-eq">Pr = Pt·Gt·Gr·(λ/4πd)² · LF = (c/f·4πd)²</div>
-    </a>
-
     <a class="card" href="02_noise_figure.html">
       <div class="card-top"><div class="card-icon">🔬</div><div class="card-arrow">›</div></div>
       <div>
@@ -189,26 +180,6 @@ footer a{color:#b5895a}
       </div>
       <div class="card-desc">Arbitrary N-stage receiver chain. Cascaded NF (Friis), cascaded IIP3, noise floor, MDS threshold. Per-stage NF contribution bar chart. Sensitivity what-if analysis. Stage swap + Teq mode.</div>
       <div class="card-eq">F_sys = F₁ + (F₂−1)/G₁ + (F₃−1)/G₁G₂ + ···</div>
-    </a>
-
-    <a class="card" href="06_radar_range.html">
-      <div class="card-top"><div class="card-icon">🛰️</div><div class="card-arrow">›</div></div>
-      <div>
-        <div class="card-num"><span class="live-badge">Live</span></div>
-        <h2>Radar Range Equation</h2>
-      </div>
-      <div class="card-desc">Maximum range vs RCS sweep (the key radar design curve). Received power vs range with S_min threshold. Clutter RCS context (birds, cars, aircraft). Pulse compression gain. Open in Link Budget.</div>
-      <div class="card-eq">R⁴ = Pt·Gt·Gr·λ²·σ / [(4π)³·L·S_min]</div>
-    </a>
-
-    <a class="card" href="07_superheterodyne.html">
-      <div class="card-top"><div class="card-icon">📻</div><div class="card-arrow">›</div></div>
-      <div>
-        <div class="card-num"><span class="live-badge">Live</span></div>
-        <h2>Superheterodyne Receiver</h2>
-      </div>
-      <div class="card-desc">Interactive block diagram: RF filter → LNA → mixer → IF. Frequency plan spectrum shows RF, LO, IF, image — all labeled. IRR vs IF frequency tradeoff. Double-conversion option.</div>
-      <div class="card-eq">f_image = f_RF + 2·f_IF · IRR = 20 log(2·f_IF / BW_RF)</div>
     </a>
 
     <a class="card" href="08_fspl.html">
@@ -313,6 +284,48 @@ footer a{color:#b5895a}
       </div>
       <div class="card-desc">BER vs Eb/N0 curves for BPSK, QPSK, 8PSK, 16QAM, 64QAM, 256QAM. Shannon capacity limit overlay. Required SNR for target BER. Spectral efficiency vs required SNR tradeoff chart.</div>
       <div class="card-eq">BER_BPSK = Q(√(2Eb/N0)) · C = B·log₂(1+SNR) bits/s/Hz</div>
+    </a>
+  </div>
+</div>
+
+<!-- Educational / Interactive Section -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="sh-line"></div>
+    <div class="sh-label">Educational &amp; Interactive Demos</div>
+    <span class="sh-badge edu">Concept visualization · Teaching tools</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="grid">
+    <a class="card" href="07_superheterodyne.html">
+      <div class="card-top"><div class="card-icon">📻</div><div class="card-arrow">›</div></div>
+      <div>
+        <div class="card-num"><span class="live-badge">Live</span></div>
+        <h2>Superheterodyne Receiver</h2>
+      </div>
+      <div class="card-desc">Interactive block diagram: RF filter → LNA → mixer → IF. Frequency plan spectrum shows RF, LO, IF, image — all labeled. IRR vs IF frequency tradeoff. Double-conversion option.</div>
+      <div class="card-eq">f_image = f_RF + 2·f_IF · IRR = 20 log(2·f_IF / BW_RF)</div>
+    </a>
+
+    <a class="card" href="01_friis_transmission.html">
+      <div class="card-top"><div class="card-icon">📡</div><div class="card-arrow">›</div></div>
+      <div>
+        <div class="card-num"><span class="live-badge">Live</span></div>
+        <h2>Friis Transmission Equation</h2>
+      </div>
+      <div class="card-desc">Free-space received power as a function of distance and frequency. Pr vs frequency and Pr vs distance sweeps. Link margin above sensitivity threshold annotated on chart.</div>
+      <div class="card-eq">Pr = Pt·Gt·Gr·(λ/4πd)² · LF = (c/f·4πd)²</div>
+    </a>
+
+    <a class="card" href="06_radar_range.html">
+      <div class="card-top"><div class="card-icon">🛰️</div><div class="card-arrow">›</div></div>
+      <div>
+        <div class="card-num"><span class="live-badge">Live</span></div>
+        <h2>Radar Range Equation</h2>
+      </div>
+      <div class="card-desc">Maximum range vs RCS sweep (the key radar design curve). Received power vs range with S_min threshold. Clutter RCS context (birds, cars, aircraft). Pulse compression gain.</div>
+      <div class="card-eq">R⁴ = Pt·Gt·Gr·λ²·σ / [(4π)³·L·S_min]</div>
     </a>
   </div>
 </div>
