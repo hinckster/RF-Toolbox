@@ -116,6 +116,10 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 
 .all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
 .all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
+details.try-it{margin-top:12px;border-top:1px solid var(--bdr);padding-top:10px}
+details.try-it summary{color:#b5895a;font-size:0.78rem;cursor:pointer;user-select:none;list-style:none}
+details.try-it summary::-webkit-details-marker{display:none}
+details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(--tm);line-height:1.7}
 </style>
 </head>
 <body>
@@ -324,6 +328,15 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
         <div class="mc"><div class="mlb">IRR (ideal)</div><div class="mv" id="mIRR" style="color:var(--grn)">—</div><div class="mu">dB</div></div>
       </div>
     </div>
+
+    <details class="try-it">
+      <summary>&#9658; Things to Try</summary>
+      <ul>
+        <li>Load the <em>AM radio</em> preset (1 MHz RF, 455 kHz IF) — notice the image lands at 1.910 MHz, only 910 kHz away from the desired signal. Now increase f_IF to 10.7 MHz (FM standard) and watch image separation and IRR improve dramatically.</li>
+        <li>Switch to <em>Double conversion</em> and set f_IF2 to 455 kHz while leaving f_IF at 10.7 MHz — this replicates the classic FM receiver architecture: high first IF for image rejection, low second IF for a sharp channel filter.</li>
+        <li>With the <em>GSM 900</em> preset, tighten RF filter BW from 20 MHz to 1 MHz and observe how IRR jumps by ~26 dB — demonstrating why tight preselection is critical at microwave frequencies where IF choices are constrained.</li>
+      </ul>
+    </details>
   </div>
 
   <div>
@@ -660,15 +673,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
         <li><strong>Image freq</strong> — The unwanted input frequency that also mixes to f_IF. Any signal at this frequency passes through the mixer and corrupts the desired channel.</li>
         <li><strong>Image sep.</strong> — Frequency distance between the RF signal and the image: 2·f_IF. Must be wider than the RF preselect filter to achieve useful rejection.</li>
         <li><strong>IRR (ideal)</strong> — Ideal image rejection ratio in dB assuming a single-pole RF filter with the specified bandwidth. Real filters achieve this only near band-center.</li>
-      </ul>
-    </div>
-
-    <div class="help-section">Things to try</div>
-    <div class="help-body">
-      <ul class="help-try">
-        <li>Load the <em>AM radio</em> preset (1 MHz RF, 455 kHz IF) — notice the image lands at 1.910 MHz, only 910 kHz away from the desired signal. Now increase f_IF to 10.7 MHz (FM standard) and watch image separation and IRR improve dramatically.</li>
-        <li>Switch to <em>Double conversion</em> and set f_IF2 to 455 kHz while leaving f_IF at 10.7 MHz — this replicates the classic FM receiver architecture: high first IF for image rejection, low second IF for a sharp channel filter.</li>
-        <li>With the <em>GSM 900</em> preset, tighten RF filter BW from 20 MHz to 1 MHz and observe how IRR jumps by ~26 dB — demonstrating why tight preselection is critical at microwave frequencies where IF choices are constrained.</li>
       </ul>
     </div>
 
