@@ -107,6 +107,10 @@
 
 .all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
 .all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
+details.try-it{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
+details.try-it summary{color:var(--accent);font-size:0.78rem;cursor:pointer;user-select:none;list-style:none}
+details.try-it summary::-webkit-details-marker{display:none}
+details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(--muted);line-height:1.7}
 </style>
 </head>
 <body>
@@ -328,6 +332,17 @@
       </div>
     </div>
 
+    <details class="try-it">
+      <summary>&#9658; Things to Try</summary>
+      <ul>
+        <li>Set π-pad, Z₀=50 Ω, A=6 dB — verify R_shunt ≈ 150.5 Ω, R_series ≈ 66.9 Ω (classic result).</li>
+        <li>Increase attenuation to 20 dB and note how R_shunt rises steeply while R_series approaches Z₀.</li>
+        <li>Switch to T-pad at the same attenuation — R_series and R_shunt values are swapped relative to the π-pad.</li>
+        <li>Try the L-pad with Z_s=100 Ω → Z_L=50 Ω: R₁ = R₂ ≈ 70.7 Ω (minimum 7.66 dB insertion loss).</li>
+        <li>Set P_in=1000 mW (1 W) and check the per-resistor power to ensure your chosen packages can handle it.</li>
+      </ul>
+    </details>
+
     <!-- Circuit diagram -->
     <div class="circuit-card">
       <h3 id="circuit-title">π-pad Circuit</h3>
@@ -369,15 +384,6 @@
 
     <div class="help-section">Power ratings</div>
     <div class="help-body">P_in is the total input power. For each resistor the tool distributes the dissipation. The shunt resistors in a π-pad carry less current at high attenuation (they become very large), while the series resistor carries nearly all the input current. Choose resistor power ratings with at least 2× margin.</div>
-
-    <div class="help-section">Things to try</div>
-    <ul class="help-try">
-      <li>Set π-pad, Z₀=50 Ω, A=6 dB — verify R_shunt ≈ 150.5 Ω, R_series ≈ 66.9 Ω (classic result).</li>
-      <li>Increase attenuation to 20 dB and note how R_shunt rises steeply while R_series approaches Z₀.</li>
-      <li>Switch to T-pad at the same attenuation — R_series and R_shunt values are swapped relative to the π-pad.</li>
-      <li>Try the L-pad with Z_s=100 Ω → Z_L=50 Ω: R₁ = R₂ ≈ 70.7 Ω (minimum 7.66 dB insertion loss).</li>
-      <li>Set P_in=1000 mW (1 W) and check the per-resistor power to ensure your chosen packages can handle it.</li>
-    </ul>
   </div>
 </div>
 
