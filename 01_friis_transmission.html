@@ -111,6 +111,10 @@
 .help-try li::marker{color:#b5895a}
 .all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
 .all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
+details.try-it{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
+details.try-it summary{color:var(--accent);font-size:0.78rem;cursor:pointer;user-select:none;list-style:none}
+details.try-it summary::-webkit-details-marker{display:none}
+details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(--muted);line-height:1.7}
 </style>
 </head>
 <body>
@@ -250,6 +254,15 @@
         <div class="unit">dB/K</div>
       </div>
     </div>
+
+    <details class="try-it">
+      <summary>▸ Things to Try</summary>
+      <ul>
+        <li>Load the <strong>LEO Satellite</strong> preset and note how 550 km at 12 GHz demands a 40 dBi dish just to close the link — then reduce Gr to see when margin goes negative.</li>
+        <li>Fix distance at 1 km and sweep frequency from 1 GHz to 100 GHz to see the 40 dB of additional path loss at mmWave — then add 20 dBi of beam-forming gain to recover it.</li>
+        <li>Compare the <strong>Bluetooth</strong> preset (0 dBm, 10 m) with the <strong>Wi-Fi 6</strong> preset (20 dBm, 50 m) to see why link margin — not raw power — determines reliability.</li>
+      </ul>
+    </details>
   </div>
 
   <div class="chart-panel">
@@ -294,15 +307,6 @@
         <li><strong>Path Loss:</strong> FSPL in dB — the free-space attenuation between isotropic antennas.</li>
         <li><strong>Wavelength:</strong> λ in mm — useful for antenna sizing and near-field boundary estimates (r = λ/2π).</li>
         <li><strong>Link Margin:</strong> Pr minus −90 dBm. Green (&gt;20 dB) = robust link; orange (6–20 dB) = marginal; red (&lt;6 dB) = at-risk or broken.</li>
-      </ul>
-    </div>
-
-    <div class="help-section">Things to try</div>
-    <div class="help-body">
-      <ul class="help-try">
-        <li>Load the <strong>LEO Satellite</strong> preset and note how 550 km at 12 GHz demands a 40 dBi dish just to close the link — then reduce Gr to see when margin goes negative.</li>
-        <li>Fix distance at 1 km and sweep frequency from 1 GHz to 100 GHz to see the 40 dB of additional path loss at mmWave — then add 20 dBi of beam-forming gain to recover it.</li>
-        <li>Compare the <strong>Bluetooth</strong> preset (0 dBm, 10 m) with the <strong>Wi-Fi 6</strong> preset (20 dBm, 50 m) to see why link margin — not raw power — determines reliability.</li>
       </ul>
     </div>
 
