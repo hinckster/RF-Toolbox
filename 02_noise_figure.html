@@ -208,6 +208,7 @@ table.whatif tr:last-child td { border-bottom: none; }
     <div class="metric-card"><div class="mlabel">SFDR</div><div class="mval good" id="mSFDR">—</div><div class="munit">dB</div></div>
     <div class="metric-card"><div class="mlabel">P1dB est.</div><div class="mval" id="mP1dB" style="color:var(--muted)">—</div><div class="munit">dBm input (≈IIP3−9.6)</div></div>
     <div class="metric-card"><div class="mlabel">MDS</div><div class="mval" id="mMDS" style="color:var(--purple)">—</div><div class="munit">dBm (NF floor + SNR_min)</div></div>
+    <div class="metric-card"><div class="mlabel">Blocking DR</div><div class="mval" id="mBDR">—</div><div class="munit">dB (P1dB − MDS)</div></div>
   </div>
 </div>
 
@@ -567,7 +568,7 @@ function renderTable(res) {
 
 function renderMetrics(res) {
   if (!res) {
-    ['mNFsys','mGtot','mTeq','mNfloor','mIIP3','mOIP3','mSFDR','mP1dB'].forEach(id => { document.getElementById(id).textContent = '—'; });
+    ['mNFsys','mGtot','mTeq','mNfloor','mIIP3','mOIP3','mSFDR','mP1dB','mBDR'].forEach(id => { document.getElementById(id).textContent = '—'; });
     return;
   }
   const { NF_sys, T_eq, nfloor_dBm, cumG_dB, IIP3_sys_dBm, OIP3_sys_dBm, SFDR, T0, BW } = res;
@@ -600,6 +601,13 @@ function renderMetrics(res) {
   const SNR_min = parseFloat(document.getElementById('snrMinInput').value) || 10;
   const mds_dBm = nfloor_dBm + SNR_min;
   el('mMDS').textContent = mds_dBm.toFixed(1);
+  if (isFinite(IIP3_sys_dBm)) {
+    const bdr = (IIP3_sys_dBm - 9.6) - mds_dBm;
+    el('mBDR').textContent = bdr.toFixed(1);
+    el('mBDR').className = 'mval ' + (bdr > 90 ? 'good' : bdr > 70 ? 'warn' : 'bad');
+  } else {
+    el('mBDR').textContent = '—';
+  }
 }
 
 function renderCharts(res) {
