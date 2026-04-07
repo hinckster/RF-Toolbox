@@ -617,11 +617,11 @@
         <li><strong>Distance (0.1 km–1000 km, log scale):</strong> Link range. FSPL grows as 20·log₁₀(d); doubling distance adds 6 dB.</li>
         <li><strong>Tx Power Pt (dBm):</strong> Transmitter output power delivered to the antenna port.</li>
         <li><strong>Tx Antenna Gain Gt (dBi):</strong> Boresight gain of the transmit antenna over an isotropic radiator.</li>
-        <li><strong>Tx Cable/Connector Loss (dB, enter as negative):</strong> Ohmic losses between PA output and antenna feed.</li>
-        <li><strong>Atmospheric/Rain Loss (dB, enter as negative):</strong> Gaseous absorption and rain fade margin — especially relevant above 10 GHz.</li>
+        <li><strong>Tx Cable/Connector Loss (dB):</strong> Ohmic losses between PA output and antenna feed. Enter as a positive number (e.g., 1 for 1 dB loss).</li>
+        <li><strong>Atmospheric Gas Loss (dB):</strong> Gaseous absorption and rain fade margin — especially relevant above 10 GHz. Enter as a positive number.</li>
         <li><strong>Rx Antenna Gain Gr (dBi):</strong> Boresight gain of the receive antenna.</li>
-        <li><strong>Rx Cable/Connector Loss (dB, enter as negative):</strong> Feed-line loss between receive antenna and LNA input.</li>
-        <li><strong>Noise Figure Margin NF (dB, enter as negative):</strong> System noise figure plus implementation loss allowance.</li>
+        <li><strong>Rx Cable/Connector Loss (dB):</strong> Feed-line loss between receive antenna and LNA input. Enter as a positive number.</li>
+        <li><strong>Noise Figure Margin NF (dB):</strong> System noise figure plus implementation loss allowance. Enter as a positive number.</li>
         <li><strong>Sensitivity (dBm):</strong> Minimum detectable signal for the required SNR/BER; displayed in orange as a reference floor.</li>
       </ul>
     </div>
@@ -665,14 +665,14 @@ const SPEED_OF_LIGHT = 3e8; // m/s
 const rows = [
   { id: 'pt',   label: 'Tx Power (Pt)',           value: 30,    unit: 'dBm', desc: 'Transmitter output power',                   type: 'add', editable: true  },
   { id: 'gt',   label: 'Tx Antenna Gain (Gt)',     value: 15,    unit: 'dBi', desc: 'Transmit antenna boresight gain',            type: 'add', editable: true  },
-  { id: 'ltx',  label: 'Tx Cable/Connector Loss',  value: -1,    unit: 'dB',  desc: 'Coax and connector losses at transmitter',   type: 'sub', editable: true  },
+  { id: 'ltx',  label: 'Tx Cable/Connector Loss',  value: 1,     unit: 'dB',  desc: 'Coax and connector losses at transmitter',   type: 'sub', editable: true,  positiveInput: true },
   { id: 'fspl', label: 'Free-Space Path Loss',     value: 0,     unit: 'dB',  desc: 'FSPL — set via frequency & distance sliders', type: 'sub', editable: false },
-  { id: 'atm',   label: 'Atmospheric Gas Loss',      value: -2,    unit: 'dB',  desc: 'O₂/H₂O absorption — relevant above 10 GHz', type: 'sub', editable: true  },
+  { id: 'atm',   label: 'Atmospheric Gas Loss',      value: 2,     unit: 'dB',  desc: 'O₂/H₂O absorption — relevant above 10 GHz', type: 'sub', editable: true,  positiveInput: true },
   { id: 'rain',  label: 'Rain Attenuation',         value: 0,     unit: 'dB',  desc: 'ITU-R P.838 rain fade — set via calculator', type: 'sub', editable: true  },
   { id: 'point', label: 'Pointing / Alignment Loss',value: 0,     unit: 'dB',  desc: 'Antenna misalignment — set via calculator',  type: 'sub', editable: true  },
   { id: 'gr',   label: 'Rx Antenna Gain (Gr)',     value: 15,    unit: 'dBi', desc: 'Receive antenna boresight gain',             type: 'add', editable: true  },
-  { id: 'lrx',  label: 'Rx Cable/Connector Loss',  value: -1,    unit: 'dB',  desc: 'Coax and connector losses at receiver',      type: 'sub', editable: true  },
-  { id: 'nf',   label: 'Noise Figure Margin (NF)', value: -5,    unit: 'dB',  desc: 'System noise figure and implementation loss', type: 'sub', editable: true  },
+  { id: 'lrx',  label: 'Rx Cable/Connector Loss',  value: 1,     unit: 'dB',  desc: 'Coax and connector losses at receiver',      type: 'sub', editable: true,  positiveInput: true },
+  { id: 'nf',   label: 'Noise Figure Margin (NF)', value: 5,     unit: 'dB',  desc: 'System noise figure and implementation loss', type: 'sub', editable: true,  positiveInput: true },
   { id: 'sens', label: 'Sensitivity (floor)',       value: -100,  unit: 'dBm', desc: 'Minimum detectable signal / required SNR',  type: 'ref', editable: true  },
 ];
 
@@ -937,8 +937,11 @@ function recalc() {
     } else if (row.type === 'add') {
       running += Math.abs(row.value);
     } else if (row.type === 'sub') {
-      // value stored as negative for editable rows, FSPL stored as negative too
-      running += row.value; // value is already negative
+      if (row.positiveInput) {
+        running -= row.value; // user enters positive dB loss, subtract it
+      } else {
+        running += row.value; // FSPL, rain, point stored as negative
+      }
     }
 
     runningTotals.push(running);
@@ -1072,14 +1075,14 @@ function buildChartData(pr, sensitivity, fspl) {
   // Pt: from 0 to Pt (absolute)
   seg('Tx Power (Pt)', ptRow.value, true);
   seg('Tx Ant. Gain', Math.abs(gtRow.value), true);
-  seg('Tx Cable Loss', ltxRow.value, false);         // negative
+  seg('Tx Cable Loss', -ltxRow.value, false);        // positive stored, negate for waterfall
   seg('FSPL', -fspl, false);                         // negative
-  seg('Atm. Gas Loss', atmRow.value, false);
+  seg('Atm. Gas Loss', -atmRow.value, false);
   if (rainRow && rainRow.value !== 0)  seg('Rain Atten.', rainRow.value, false);
   if (pointRow && pointRow.value !== 0) seg('Pointing Loss', pointRow.value, false);
   seg('Rx Ant. Gain', Math.abs(grRow.value), true);
-  seg('Rx Cable Loss', lrxRow.value, false);         // negative
-  seg('Noise Figure', nfRow.value, false);            // negative
+  seg('Rx Cable Loss', -lrxRow.value, false);        // positive stored, negate for waterfall
+  seg('Noise Figure', -nfRow.value, false);           // positive stored, negate for waterfall
 
   // Custom components appear after NF in the waterfall (copper colored)
   customComponents.forEach(cc => {
@@ -1364,12 +1367,12 @@ function animateSliderTo(slider, globalVarName, target, dur, afterFn) {
 
 var lastPresetNote = '';
 var PRESETS_LB = {
-  wifi6:  { freqLog: Math.log10(2.4),    distLog: Math.log10(0.05),  pt:20, gt:3,  ltx:-1, atm:-1, gr:3,  lrx:-1, nf:-5,  sens:-85,  note:'WiFi 6 — 2.4 GHz, 50 m indoor. License-free band, typical omnidirectional APs.' },
-  mmwave: { freqLog: Math.log10(28),     distLog: Math.log10(0.2),   pt:23, gt:25, ltx:-1, atm:-3, gr:10, lrx:-1, nf:-7,  sens:-80,  note:'5G mmWave — 28 GHz, 200 m urban. High Tx directivity; large FSPL at mmWave.' },
-  leo:    { freqLog: Math.log10(12),     distLog: Math.log10(550),   pt:30, gt:30, ltx:-2, atm:-2, gr:40, lrx:-2, nf:-3,  sens:-100, note:'LEO Satellite — 550 km orbit, Ku-band. Large dish (40 dBi) required to close the link.' },
-  bt:     { freqLog: Math.log10(2.4),    distLog: Math.log10(0.01),  pt:0,  gt:0,  ltx:-1, atm:-1, gr:0,  lrx:-1, nf:-5,  sens:-85,  note:'Bluetooth — 2.4 GHz, 10 m, 0 dBm class 2 device. Omnidirectional BLE scenario.' },
-  lte:    { freqLog: Math.log10(0.7),    distLog: Math.log10(5),     pt:46, gt:17, ltx:-1, atm:-1, gr:0,  lrx:-1, nf:-9,  sens:-100, note:'LTE 700 MHz macrocell — 5 km. 46 dBm eNB, 17 dBi sector antenna, omnidirectional UE.' },
-  mwbh:   { freqLog: Math.log10(11),     distLog: Math.log10(10),    pt:23, gt:37, ltx:-1, atm:-2, gr:37, lrx:-1, nf:-4,  sens:-85,  note:'Microwave backhaul — 11 GHz, 10 km P2P. High-gain parabolic dishes (37 dBi) both ends.' },
+  wifi6:  { freqLog: Math.log10(2.4),    distLog: Math.log10(0.05),  pt:20, gt:3,  ltx:1, atm:1, gr:3,  lrx:1, nf:5,  sens:-85,  note:'WiFi 6 — 2.4 GHz, 50 m indoor. License-free band, typical omnidirectional APs.' },
+  mmwave: { freqLog: Math.log10(28),     distLog: Math.log10(0.2),   pt:23, gt:25, ltx:1, atm:3, gr:10, lrx:1, nf:7,  sens:-80,  note:'5G mmWave — 28 GHz, 200 m urban. High Tx directivity; large FSPL at mmWave.' },
+  leo:    { freqLog: Math.log10(12),     distLog: Math.log10(550),   pt:30, gt:30, ltx:2, atm:2, gr:40, lrx:2, nf:3,  sens:-100, note:'LEO Satellite — 550 km orbit, Ku-band. Large dish (40 dBi) required to close the link.' },
+  bt:     { freqLog: Math.log10(2.4),    distLog: Math.log10(0.01),  pt:0,  gt:0,  ltx:1, atm:1, gr:0,  lrx:1, nf:5,  sens:-85,  note:'Bluetooth — 2.4 GHz, 10 m, 0 dBm class 2 device. Omnidirectional BLE scenario.' },
+  lte:    { freqLog: Math.log10(0.7),    distLog: Math.log10(5),     pt:46, gt:17, ltx:1, atm:1, gr:0,  lrx:1, nf:9,  sens:-100, note:'LTE 700 MHz macrocell — 5 km. 46 dBm eNB, 17 dBi sector antenna, omnidirectional UE.' },
+  mwbh:   { freqLog: Math.log10(11),     distLog: Math.log10(10),    pt:23, gt:37, ltx:1, atm:2, gr:37, lrx:1, nf:4,  sens:-85,  note:'Microwave backhaul — 11 GHz, 10 km P2P. High-gain parabolic dishes (37 dBi) both ends.' },
 };
 
 function loadPreset(key) {
