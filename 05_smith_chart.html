@@ -112,6 +112,9 @@
   .lm-hdr.b { color:var(--accent2); }
   .lm-body { padding:.5rem .65rem; }
   .lm-vals { display:flex; flex-direction:column; gap:.12rem; margin-top:.35rem; font-size:.73rem; font-family:'Courier New',monospace; color:var(--accent2); }
+
+.all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
+.all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
 </style>
 </head>
 <body>
@@ -924,5 +927,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
     <div class="help-body">P. H. Smith, "Transmission line calculator," <em>Electronics</em>, vol. 12, no. 1, pp. 29–31, Jan. 1939. See also D. M. Pozar, <em>Microwave Engineering</em>, 4th ed. Hoboken, NJ: Wiley, 2012, §2.4.</div>
   </div>
 </div>
+
+<a href="index.html" class="all-tools-btn">&#8862; All Tools</a>
 </body>
 </html>
