@@ -177,7 +177,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
       <a href="02_noise_figure.html" onclick="sendToReceiverChain(); return false;" style="display:block;text-align:right;color:#58a6ff;font-size:.75rem;text-decoration:none;margin-top:.2rem;margin-bottom:.6rem">→ Open in Receiver Chain</a>
       <div id="polyGroup">
         <div class="sr">
-          <label>a₁ — linear gain <span id="vA1" style="display:none">5.0</span></label>
+          <label>a₁ — Linear Gain (V/V) <span id="vA1" style="display:none">5.0</span></label>
           <div class="sr-row">
             <input type="range" id="sA1" min="0.1" max="20" step="0.1" value="5">
             <input type="number" class="si" id="iA1" value="5.0">
@@ -186,7 +186,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
           <div class="hints"><span>0.1</span><span>20 V/V</span></div>
         </div>
         <div class="sr">
-          <label>a₂ — 2nd-order coeff <span id="vA2" style="display:none">1.0</span></label>
+          <label>a₂ — 2nd-order (V/V²) <span id="vA2" style="display:none">1.0</span></label>
           <div class="sr-row">
             <input type="range" id="sA2" min="0" max="10" step="0.1" value="1">
             <input type="number" class="si" id="iA2" value="1.0">
@@ -195,7 +195,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
           <div class="hints"><span>0</span><span>10 V/V²</span></div>
         </div>
         <div class="sr">
-          <label>a₃ — 3rd-order coeff <span id="vA3" style="display:none">-0.50</span></label>
+          <label>a₃ — 3rd-order (V/V³) <span id="vA3" style="display:none">-0.50</span></label>
           <div class="sr-row">
             <input type="range" id="sA3" min="-5" max="-0.01" step="0.01" value="-0.5">
             <input type="number" class="si" id="iA3" value="-0.50">
@@ -253,7 +253,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
     </div>
 
     <div class="panel">
-      <h3>Derived Parameters</h3>
+      <h3>Computed Results</h3>
       <div class="metrics">
         <div class="mc"><div class="mlb">IIP3</div><div class="mv info" id="mIIP3">—</div><div class="mu">dBm</div></div>
         <div class="mc"><div class="mlb">OIP3</div><div class="mv info" id="mOIP3">—</div><div class="mu">dBm</div></div>
