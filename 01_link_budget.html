@@ -125,8 +125,8 @@ tr.drag-over td{background:rgba(37,99,235,.06)}
 <body>
 
 <div class="toolbar" role="toolbar" aria-label="Page controls">
-  <button class="tbtn" onclick="takeScreenshot('Link Budget')" aria-label="Download chart as PNG">📷 Screenshot</button>
-  <button class="tbtn" onclick="exportCSV()" aria-label="Export budget as CSV">⬇ Export CSV</button>
+  <button class="tbtn" id="ssBtn" onclick="takeScreenshot('Link Budget',this)" aria-label="Download chart as PNG">📷 Screenshot</button>
+  <button class="tbtn" id="csvBtn" onclick="exportCSV(this)" aria-label="Export budget as CSV">⬇ Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()" aria-label="Toggle fullscreen">⛶ Fullscreen</button>
   <button class="tbtn" id="copyBtn" onclick="copyLink()" aria-label="Copy page URL">⎘ Copy Link</button>
 </div>
@@ -789,7 +789,13 @@ function update() {
 }
 
 // ── Toolbar ───────────────────────────────────────────────────────────────────
-function takeScreenshot(toolName) {
+function _btnFlash(btn, msg) {
+  if (!btn) return;
+  const orig = btn.textContent;
+  btn.textContent = msg; btn.style.color = '#16a34a'; btn.style.borderColor = '#16a34a';
+  setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+}
+function takeScreenshot(toolName, btn) {
   const canvases = [...document.querySelectorAll('canvas')];
   const padding = 16, titleH = 40;
   const totalW = canvases.reduce((s,c)=>s+c.width+padding, padding);
@@ -813,9 +819,10 @@ function takeScreenshot(toolName) {
   const slug = toolName.toLowerCase().replace(/\s+/g,'_');
   const fn = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
   a.download = `${slug}_${fn}.png`; a.href = out.toDataURL('image/png'); a.click();
+  _btnFlash(btn, '✓ Saved!');
 }
 
-function exportCSV() {
+function exportCSV(btn) {
   const Pt    = +document.getElementById('sPt').value;
   const f_Hz  = +document.getElementById('sF').value * 1e6;
   const d_m   = Math.pow(10, +document.getElementById('sD').value);
@@ -842,6 +849,7 @@ function exportCSV() {
     a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(lines.join('\n'));
     a.download = `link_budget_${new Date().toISOString().slice(0,10)}.csv`; a.click();
   }
+  _btnFlash(btn, '✓ Saved!');
 }
 
 function toggleFullscreen() {
