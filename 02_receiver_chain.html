@@ -51,6 +51,24 @@ table.stages tr.total td:first-child{color:var(--t1)}
 .bn{font-size:.67rem;padding:.12rem .35rem;border-radius:10px;font-weight:600;font-family:'Segoe UI',system-ui,sans-serif}
 .bn-b{background:rgba(248,81,73,.15);color:var(--red)}
 .bn-g{background:rgba(63,185,80,.15);color:var(--grn)}
+/* IIP3 toggle */
+.iip3-tog{display:inline-flex;align-items:center;gap:4px;cursor:pointer;user-select:none;font-size:.68rem;color:var(--tm);font-family:'Segoe UI',system-ui,sans-serif}
+.iip3-tog input{display:none}
+.iip3-pill{padding:.1rem .35rem;border-radius:8px;border:1px solid var(--bdr);background:var(--deep);font-size:.65rem;font-weight:600;transition:.15s}
+.iip3-on .iip3-pill{background:var(--blue);border-color:var(--blue);color:#fff}
+.iip3-off .iip3-pill{background:var(--deep);color:var(--tm)}
+/* Sensitivity table */
+.sens-table-wrap{max-width:1200px;margin:0 auto .9rem;padding:0 1.5rem}
+.sens-summary{max-width:1200px;margin:0 auto .4rem;padding:0 1.5rem;font-size:.82rem;color:var(--t2);line-height:1.6}
+.sens-legend{max-width:1200px;margin:0 auto .9rem;padding:0 1.5rem;display:flex;flex-wrap:wrap;gap:.7rem;font-size:.75rem;color:var(--tm)}
+.legend-item{display:flex;align-items:center;gap:.3rem}
+.impact-bar{display:inline-block;height:8px;border-radius:3px;vertical-align:middle}
+[title]{cursor:help;border-bottom:1px dotted var(--tm)}
+table.sens-tbl{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;font-size:.79rem}
+table.sens-tbl th{padding:.4rem .6rem;color:var(--tm);font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--bdr);background:var(--deep)}
+table.sens-tbl th:first-child{text-align:left}
+table.sens-tbl td{padding:.35rem .55rem;border-bottom:1px solid rgba(0,0,0,.04);text-align:right;font-family:'Courier New',monospace;font-size:.78rem}
+table.sens-tbl td:first-child{text-align:left;font-family:'Segoe UI',system-ui,sans-serif;color:var(--t1)}
 
 /* Metrics bar */
 .metrics-bar{max-width:1200px;margin:0 auto .9rem;padding:0 1.5rem}
@@ -136,7 +154,7 @@ table.stages tr.total td:first-child{color:var(--t1)}
         <th style="text-align:left">Type</th>
         <th>NF (dB)</th>
         <th>Gain (dB)</th>
-        <th>IIP3 (dBm)</th>
+        <th>IIP3 (dBm) <span style="font-weight:400;font-size:.62rem;text-transform:none">toggle →</span></th>
         <th>Casc. NF (dB)</th>
         <th>Casc. OIP3 (dBm)</th>
         <th>NF bottleneck?</th>
@@ -151,6 +169,27 @@ table.stages tr.total td:first-child{color:var(--t1)}
       </tr>
     </tfoot>
   </table>
+</div>
+
+<!-- What-If Sensitivity Table -->
+<div class="sens-summary" id="sensSummary">—</div>
+<div class="sens-table-wrap">
+  <table class="sens-tbl">
+    <thead>
+      <tr>
+        <th style="text-align:left">Stage</th>
+        <th><span title="How much does system NF improve if this stage's NF improves by 1 dB? Larger = this stage matters more.">Impact: NF −1 dB</span></th>
+        <th><span title="How much does system NF improve if this stage's gain increases by 1 dB? Larger = increasing gain here suppresses downstream noise more.">Impact: Gain +1 dB</span></th>
+        <th>Sensitivity</th>
+      </tr>
+    </thead>
+    <tbody id="sensBody"></tbody>
+  </table>
+</div>
+<div class="sens-legend">
+  <span class="legend-item"><span class="impact-bar" style="width:22px;background:var(--red)"></span> High impact (&gt;0.5 dB) — optimize this stage first</span>
+  <span class="legend-item"><span class="impact-bar" style="width:14px;background:var(--org)"></span> Moderate (0.1–0.5 dB)</span>
+  <span class="legend-item"><span class="impact-bar" style="width:8px;background:var(--bdr)"></span> Low impact (&lt;0.1 dB)</span>
 </div>
 
 <!-- System metrics -->
@@ -196,17 +235,17 @@ table.stages tr.total td:first-child{color:var(--t1)}
 
 <script>
 // Default 4-stage receiver: LNA → filter → mixer → IF amp
-// Defaults: 2.4 GHz WiFi-like front end
+// iip3en: false = treat as linear (infinite IIP3) — typical for passive filters
 const stages = [
-  {name:'LNA',       nf:1.5,  gain:20,  iip3:-5},
-  {name:'BPF',       nf:1.0,  gain:-1,  iip3:40},
-  {name:'Mixer',     nf:7.0,  gain:6,   iip3:10},
-  {name:'IF Amp',    nf:5.0,  gain:20,  iip3:15},
+  {name:'LNA',    nf:1.5, gain:20, iip3:-5,  iip3en:true},
+  {name:'BPF',    nf:1.0, gain:-1, iip3:40,  iip3en:false},  // passive — linear
+  {name:'Mixer',  nf:7.0, gain:6,  iip3:10,  iip3en:true},
+  {name:'IF Amp', nf:5.0, gain:20, iip3:15,  iip3en:true},
 ];
 
 function cascade(sts) {
   let F_casc = 1;      // linear noise factor
-  let g_casc = 1;      // linear gain product (for IIP3 calc)
+  let g_casc = 1;      // linear gain product
   let iip3_inv_sq = 0; // sum of 1/IIP3_i^2 * (gain to that point)^2
   const nfArr=[], oip3Arr=[];
   let g_total_dB = 0;
@@ -215,25 +254,53 @@ function cascade(sts) {
     const st = sts[i];
     const F_i = Math.pow(10, st.nf/10);
     const G_i = Math.pow(10, st.gain/10);
-    const iip3_i_lin = Math.pow(10, st.iip3/10) * 1e-3; // convert dBm to W
     if(i===0){
       F_casc = F_i;
       g_casc = G_i;
-      iip3_inv_sq = 1/(iip3_i_lin*iip3_i_lin);
+      if(st.iip3en !== false) {
+        const iip3_lin = Math.pow(10, st.iip3/10)*1e-3;
+        iip3_inv_sq = 1/(iip3_lin*iip3_lin);
+      }
     } else {
       F_casc += (F_i-1)/g_casc;
-      iip3_inv_sq += (g_casc*g_casc)/(iip3_i_lin*iip3_i_lin);
+      if(st.iip3en !== false) {
+        const iip3_lin = Math.pow(10, st.iip3/10)*1e-3;
+        iip3_inv_sq += (g_casc*g_casc)/(iip3_lin*iip3_lin);
+      }
+      // if iip3en===false: 1/IIP3=0, contributes nothing (linear/passive)
       g_casc *= G_i;
     }
     g_total_dB += st.gain;
     const nf_casc_dB = 10*Math.log10(F_casc);
-    const iip3_casc_lin = 1/Math.sqrt(iip3_inv_sq);
-    const iip3_casc_dBm = 10*Math.log10(iip3_casc_lin*1e3);
-    const oip3_casc_dBm = iip3_casc_dBm + g_total_dB;
+    let iip3_casc_dBm, oip3_casc_dBm;
+    if(iip3_inv_sq > 0) {
+      const iip3_casc_lin = 1/Math.sqrt(iip3_inv_sq);
+      iip3_casc_dBm = 10*Math.log10(iip3_casc_lin*1e3);
+      oip3_casc_dBm = iip3_casc_dBm + g_total_dB;
+    } else {
+      iip3_casc_dBm = 999; oip3_casc_dBm = 999; // infinite IIP3
+    }
     nfArr.push(nf_casc_dB);
     oip3Arr.push({iip3:iip3_casc_dBm, oip3:oip3_casc_dBm});
   }
   return {F_casc, g_casc, g_total_dB, iip3_inv_sq, nfArr, oip3Arr};
+}
+
+// Sensitivity analysis: how much does system NF change if stage i NF/Gain changes by 1 dB?
+function sensitivityAnalysis(sts) {
+  const base = cascade(sts);
+  const baseNF = 10*Math.log10(base.F_casc);
+  const results = [];
+  sts.forEach((st, i) => {
+    // NF sensitivity: improve NF by 1 dB
+    const stsNF = sts.map((s,j)=>j===i?{...s,nf:s.nf-1}:s);
+    const dNF   = baseNF - 10*Math.log10(cascade(stsNF).F_casc);
+    // Gain sensitivity: increase gain by 1 dB
+    const stsG  = sts.map((s,j)=>j===i?{...s,gain:s.gain+1}:s);
+    const dG    = baseNF - 10*Math.log10(cascade(stsG).F_casc);
+    results.push({name:st.name, dNF, dG});
+  });
+  return results;
 }
 
 function fmtdB(v,d=1){return (v>=0?'+':'')+v.toFixed(d)}
@@ -243,23 +310,36 @@ function buildTable(casc, bw_Hz) {
   const {nfArr, oip3Arr, g_total_dB} = casc;
   const body = document.getElementById('stageBody');
   body.innerHTML='';
-  const maxNFContrib = Math.max(...nfArr);
-  const minOIP3 = Math.min(...oip3Arr.map(o=>o.oip3));
+  const minOIP3 = Math.min(...oip3Arr.filter(o=>o.oip3<900).map(o=>o.oip3));
 
   stages.forEach((st,i)=>{
     const tr=document.createElement('tr');
-    const nfBot = nfArr[i]===Math.max(...nfArr) ? `<span class="bn bn-b">bottleneck</span>` : '';
-    const oip3Bot = oip3Arr[i].oip3===minOIP3 ? `<span class="bn bn-b">bottleneck</span>` : '';
+    const nfBot = nfArr[i]===Math.max(...nfArr) ? `<span class="bn bn-b">⚠ bottleneck</span>` : '';
+    const oip3FinArr = oip3Arr.map(o=>o.oip3).filter(v=>v<900);
+    const oip3Bot = oip3FinArr.length && oip3Arr[i].oip3===Math.min(...oip3FinArr) ? `<span class="bn bn-b">⚠ bottleneck</span>` : '';
     const nfCol = i===0?'var(--blue)': nfArr[i]>nfArr[i-1]+0.5?'var(--red)':'var(--grn)';
-    const oip3Col = i===0?'var(--blue)': oip3Arr[i].oip3<oip3Arr[i>0?i-1:0].oip3+0.5?'var(--red)':'var(--grn)';
+    const oip3Val = oip3Arr[i].oip3;
+    const oip3Disp = oip3Val>=900 ? '∞' : oip3Val.toFixed(1);
+    const oip3Col = oip3Val>=900 ? 'var(--grn)' : (i===0?'var(--blue)': oip3Val<(oip3Arr[i>0?i-1:0].oip3)+0.5?'var(--red)':'var(--grn)');
+    const iip3en = st.iip3en !== false;
+    const iip3Cell = `
+      <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
+        <input class="ni" type="number" value="${st.iip3}" step="1" min="-30" max="50"
+          ${iip3en?'':'disabled style="opacity:.4"'}
+          onchange="stages[${i}].iip3=+this.value;update()">
+        <label class="iip3-tog ${iip3en?'iip3-on':'iip3-off'}" title="${iip3en?'IIP3 active — click to mark as linear (passive)':'Linear/passive — click to enable IIP3'}">
+          <input type="checkbox" ${iip3en?'checked':''} onchange="stages[${i}].iip3en=this.checked;update()">
+          <span class="iip3-pill">${iip3en?'IIP3 ✓':'linear —'}</span>
+        </label>
+      </div>`;
     tr.innerHTML=`
       <td><input class="ni" style="width:90px" type="text" value="${st.name}" onchange="stages[${i}].name=this.value;update()"></td>
       <td style="color:var(--tm)">Stage ${i+1}</td>
       <td><input class="ni" type="number" value="${st.nf}" step="0.25" min="0" max="30" onchange="stages[${i}].nf=+this.value;update()"></td>
       <td><input class="ni" type="number" value="${st.gain}" step="0.5" min="-20" max="40" onchange="stages[${i}].gain=+this.value;update()"></td>
-      <td><input class="ni" type="number" value="${st.iip3}" step="1" min="-30" max="50" onchange="stages[${i}].iip3=+this.value;update()"></td>
+      <td style="min-width:160px">${iip3Cell}</td>
       <td style="color:${nfCol}">${nfArr[i].toFixed(2)}</td>
-      <td style="color:${oip3Col}">${oip3Arr[i].oip3.toFixed(1)}</td>
+      <td style="color:${oip3Col}">${oip3Disp}</td>
       <td style="text-align:center">${nfBot}</td>
       <td style="text-align:center">${oip3Bot}</td>`;
     body.appendChild(tr);
@@ -267,7 +347,40 @@ function buildTable(casc, bw_Hz) {
 
   document.getElementById('tG').textContent = fmtdB(g_total_dB)+' dB';
   document.getElementById('tNF').textContent = nfArr[nfArr.length-1].toFixed(2)+' dB';
-  document.getElementById('tOIP3').textContent = oip3Arr[oip3Arr.length-1].oip3.toFixed(1)+' dBm';
+  const sysOIP3 = oip3Arr[oip3Arr.length-1].oip3;
+  document.getElementById('tOIP3').textContent = sysOIP3>=900?'∞ dBm (all linear)':sysOIP3.toFixed(1)+' dBm';
+}
+
+function buildSensTable(bw_Hz) {
+  const sens = sensitivityAnalysis(stages);
+  // Find most impactful for NF
+  const best = sens.reduce((a,b)=>b.dNF>a.dNF?b:a);
+  document.getElementById('sensSummary').innerHTML =
+    `<strong>What-if sensitivity:</strong> Improving <b>${best.name}</b>'s NF by 1 dB gives the most system NF improvement (<b>${best.dNF.toFixed(3)} dB</b> reduction). ` +
+    `Hover column headers for explanations.`;
+
+  const body = document.getElementById('sensBody');
+  body.innerHTML='';
+  const maxDNF = Math.max(...sens.map(s=>s.dNF));
+  const maxDG  = Math.max(...sens.map(s=>s.dG));
+  sens.forEach(s=>{
+    const nfImpact = s.dNF;
+    const gImpact  = s.dG;
+    const nfCls = nfImpact>0.5?'var(--red)':nfImpact>0.1?'var(--org)':'var(--tm)';
+    const gCls  = gImpact>0.5?'var(--red)':gImpact>0.1?'var(--org)':'var(--tm)';
+    const nfBar = Math.round((nfImpact/Math.max(maxDNF,0.01))*40);
+    const gBar  = Math.round((gImpact/Math.max(maxDG,0.01))*40);
+    const badge = nfImpact>0.5?` <span class="bn bn-b">⚠ high impact</span>`:'';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${s.name}${badge}</td>
+      <td><span style="font-family:'Courier New',monospace;color:${nfCls}">${nfImpact.toFixed(3)} dB</span>
+          <span class="impact-bar" style="width:${nfBar}px;background:${nfCls};opacity:.7;margin-left:4px"></span></td>
+      <td><span style="font-family:'Courier New',monospace;color:${gCls}">${gImpact.toFixed(3)} dB</span>
+          <span class="impact-bar" style="width:${gBar}px;background:${gCls};opacity:.7;margin-left:4px"></span></td>
+      <td style="color:${nfImpact>0.5?'var(--red)':nfImpact>0.1?'var(--org)':'var(--grn)'}">${nfImpact>0.5?'high':nfImpact>0.1?'moderate':'low'}</td>`;
+    body.appendChild(tr);
+  });
 }
 
 // Charts
@@ -340,6 +453,7 @@ function update(){
   document.getElementById('mBW').textContent     = bw.toFixed(1);
 
   buildTable(casc, bw_Hz);
+  buildSensTable(bw_Hz);
 
   // DR chart: output power vs input power
   const Pmin = noiseFloor - g_total_dB - 10;
