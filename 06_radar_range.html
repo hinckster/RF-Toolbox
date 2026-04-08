@@ -245,11 +245,11 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
       <h3>Key Results</h3>
       <div class="metrics">
         <div class="mc"><div class="mlb">Max Range</div><div class="mv info" id="mRmax">—</div><div class="mu">km</div></div>
-        <div class="mc"><div class="mlb">λ</div><div class="mv" id="mLambda" style="color:var(--tm)">—</div><div class="mu">cm</div></div>
-        <div class="mc"><div class="mlb">Pulse Comp. Gain</div><div class="mv good" id="mTBP">—</div><div class="mu">dB</div></div>
+        <div class="mc"><div class="mlb">Wavelength (λ)</div><div class="mv" id="mLambda" style="color:var(--tm)">—</div><div class="mu">cm</div></div>
+        <div class="mc"><div class="mlb">Pulse Compression Gain</div><div class="mv good" id="mTBP">—</div><div class="mu">dB</div></div>
         <div class="mc"><div class="mlb">R_max (compressed)</div><div class="mv info2" id="mRmaxPC">—</div><div class="mu">km</div></div>
         <div class="mc"><div class="mlb">EIRP</div><div class="mv" id="mEIRP" style="color:var(--t1)">—</div><div class="mu">dBm</div></div>
-        <div class="mc"><div class="mlb">Pr @ 10 km</div><div class="mv" id="mPr10" style="color:var(--tm)">—</div><div class="mu">dBm</div></div>
+        <div class="mc"><div class="mlb">Received Power at 10 km</div><div class="mv" id="mPr10" style="color:var(--tm)">—</div><div class="mu">dBm</div></div>
       </div>
     </div>
 
@@ -263,7 +263,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
         <div class="hints"><span>50 %</span><span>99.99 %</span></div>
       </div>
       <div class="sr" style="margin-bottom:.6rem">
-        <label>False-alarm probability P_fa</label>
+        <label>P_fa (False Alarm Probability)</label>
         <select id="selPfa" onchange="updateAlbersheim()" style="background:var(--card);border:1px solid var(--border);color:var(--t1);border-radius:5px;padding:4px 8px;font-size:.8rem;width:100%;margin-top:3px">
           <option value="1e-4">10⁻⁴</option>
           <option value="1e-5">10⁻⁵</option>
@@ -275,7 +275,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
         </select>
       </div>
       <div class="metrics" style="margin-top:.5rem">
-        <div class="mc"><div class="mlb">Req. SNR (single pulse)</div><div class="mv" id="mSnrReq" style="color:var(--blue)">—</div><div class="mu">dB · Albersheim N=1</div></div>
+        <div class="mc"><div class="mlb">Required SNR (single pulse)</div><div class="mv" id="mSnrReq" style="color:var(--blue)">—</div><div class="mu">dB · Albersheim N=1</div></div>
         <div class="mc"><div class="mlb">SNR margin at R_max</div><div class="mv" id="mSnrMargin" style="color:var(--green)">—</div><div class="mu">dB above S_min</div></div>
         <div class="mc"><div class="mlb">Achieved P_d at R_max</div><div class="mv" id="mPdAchieved" style="color:var(--good)">—</div><div class="mu">at current SNR</div></div>
       </div>
