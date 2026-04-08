@@ -1302,19 +1302,37 @@ document.getElementById('btn-copylink').addEventListener('click', function() {
   });
 });
 
-document.getElementById('btn-screenshot').addEventListener('click', () => {
-  // Use html2canvas if available; otherwise notify user
-  if (typeof html2canvas !== 'undefined') {
-    html2canvas(document.getElementById('main-content')).then(canvas => {
-      const a = document.createElement('a');
-      a.download = 'link-budget.png';
-      a.href = canvas.toDataURL();
-      a.click();
-    });
-  } else {
-    // Fallback: open print dialog
-    window.print();
-  }
+function _btnFlash(btn, msg) {
+  if (!btn) return;
+  const orig = btn.textContent;
+  btn.textContent = msg; btn.style.color = '#16a34a'; btn.style.borderColor = '#16a34a';
+  setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+}
+document.getElementById('btn-screenshot').addEventListener('click', function() {
+  const btn = this;
+  const canvases = [...document.querySelectorAll('canvas')].filter(c => c.width > 0 && c.height > 0);
+  if (!canvases.length) return;
+  const padding = 16, titleH = 44;
+  const totalW = canvases.reduce((s, c) => s + c.width + padding, padding);
+  const maxH = Math.max(...canvases.map(c => c.height));
+  const out = document.createElement('canvas');
+  out.width = totalW; out.height = maxH + titleH + padding;
+  const ctx = out.getContext('2d');
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, out.width, out.height);
+  ctx.fillStyle = '#f4f5f7'; ctx.fillRect(0, 0, out.width, titleH);
+  ctx.fillStyle = '#1a1d23'; ctx.font = 'bold 13px Segoe UI, system-ui, sans-serif';
+  ctx.fillText('Link Budget · RF Toolbox', padding, 17);
+  ctx.fillStyle = '#b5895a'; ctx.font = '11px Segoe UI, system-ui, sans-serif';
+  ctx.fillText('hinckster.github.io/RF-Toolbox', padding, 32);
+  const ts = new Date().toISOString().slice(0, 19).replace('T', ' ') + ' UTC';
+  ctx.fillStyle = '#718096'; ctx.font = '10px Courier New, monospace';
+  ctx.fillText(ts, out.width - ctx.measureText(ts).width - padding, 24);
+  let x = padding;
+  canvases.forEach(c => { ctx.drawImage(c, x, titleH + padding); x += c.width + padding; });
+  const link = document.createElement('a');
+  link.download = 'link-budget-' + Date.now() + '.png';
+  link.href = out.toDataURL('image/png'); link.click();
+  _btnFlash(btn, '✓ Saved!');
 });
 
 /* =========================================================
