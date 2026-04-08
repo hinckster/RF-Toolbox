@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Transmission Line | RF Toolbox</title>
+<title>Transmission Line — Reflection &amp; VSWR Calculator | RF Toolbox</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -125,12 +125,12 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
   <span>›</span>
   <a href="index.html">RF Toolbox</a>
   <span>›</span>
-  <span>Transmission Line</span>
+  <span>Transmission Line — Reflection &amp; VSWR Calculator</span>
 </nav>
 
 <header>
   <div class="tag">Tool 09</div>
-  <h1>Transmission Line</h1>
+  <h1>Transmission Line — Reflection &amp; VSWR Calculator</h1>
   <p>Reflection coefficient, VSWR, and standing wave pattern along a lossless transmission line</p>
 </header>
 
@@ -198,7 +198,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
     </div>
 
     <div class="slider-row">
-      <label>Line length <span id="lLen" style="display:none">0.50λ</span></label>
+      <label>Line Length (λ — wavelengths) <span id="lLen" style="display:none">0.50λ</span></label>
       <div class="sr-row">
         <input type="range" id="sLen" min="0" max="200" value="50" step="1">
         <input type="number" class="si" id="iLen" value="180.0">
@@ -484,7 +484,7 @@ function initChart() {
           fill: false
         },
         {
-          label: 'VSWR max',
+          label: 'Vmax = 1+|Γ|',
           data: [],
           borderColor: '#ffaa00',
           borderWidth: 1.5,
@@ -493,7 +493,7 @@ function initChart() {
           fill: false
         },
         {
-          label: 'VSWR min',
+          label: 'Vmin = 1−|Γ|',
           data: [],
           borderColor: '#ffaa00',
           borderWidth: 1.5,
