@@ -138,8 +138,8 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
 
 <div class="toolbar">
   <button class="tbtn" onclick="showHelp()">? Help</button>
-  <button class="tbtn" onclick="takeScreenshot()">📷 Screenshot</button>
-  <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
+  <button class="tbtn" id="ssBtn" onclick="takeScreenshot(this)">📷 Screenshot</button>
+  <button class="tbtn" id="csvBtn" onclick="exportCSV(this)">⬇ Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
   <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
 </div>
@@ -831,7 +831,13 @@ refresh();
 // ─────────────────────────────────────────────────────────────────
 // TOOLBAR
 // ─────────────────────────────────────────────────────────────────
-function takeScreenshot() {
+function _btnFlash(btn, msg) {
+  const orig = btn.textContent;
+  btn.textContent = msg;
+  btn.style.color = '#16a34a'; btn.style.borderColor = '#16a34a';
+  setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+}
+function takeScreenshot(btn) {
   const canvases = [...document.querySelectorAll('canvas')];
   const pad = 16, th = 40;
   const tw = canvases.reduce((s,c) => s + c.width + pad, pad);
@@ -849,8 +855,9 @@ function takeScreenshot() {
   const lnk = document.createElement('a');
   lnk.download = 'noise_figure_'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.png';
   lnk.href = out.toDataURL('image/png'); lnk.click();
+  _btnFlash(btn, '✓ Saved!');
 }
-function exportCSV() {
+function exportCSV(btn) {
   var g = function(id){ var el = document.getElementById(id); return el ? el.textContent.trim() : ''; };
   var res = computeCascade();
   var lines = ['PARAMETERS', 'Parameter,Value',
@@ -881,6 +888,7 @@ function exportCSV() {
   var blob = new Blob([lines.join('\n')], {type:'text/csv'});
   var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = 'rf_toolbox_receiver_chain_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
+  if (btn) _btnFlash(btn, '✓ Saved!');
 }
 function toggleFullscreen() {
   if (!document.fullscreenElement) document.documentElement.requestFullscreen();
