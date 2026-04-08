@@ -161,7 +161,7 @@ tr.drag-over td{background:rgba(37,99,235,.06)}
       <div class="eq-note">Auto-computed from frequency and distance sliders. Cannot be manually edited.</div>
     </div>
     <div class="eq-col">
-      <div class="eq-label">Receiver Sensitivity</div>
+      <div class="eq-label">Receiver &amp; Noise Parameters</div>
       <div class="eq-primary">S_min = kTB + NF + SNR + L<sub>impl</sub></div>
       <div class="eq-secondary">kTB = −174 + 10log(BW_Hz) dBm</div>
       <div class="eq-note">Noise floor rises 10 dB per decade of bandwidth.</div>
@@ -195,7 +195,7 @@ tr.drag-over td{background:rgba(37,99,235,.06)}
     </div>
 
     <div class="panel">
-      <h3>Receiver Sensitivity</h3>
+      <h3>Receiver &amp; Noise Parameters</h3>
       <div class="sr">
         <label>Noise Figure NF <span id="vNF">5.0 dB</span></label>
         <input type="range" id="sNF" min="0" max="20" step="0.25" value="5"
@@ -293,9 +293,9 @@ tr.drag-over td{background:rgba(37,99,235,.06)}
               <th style="width:8%">On</th>
               <th style="width:12%">Value</th>
               <th style="width:8%">Unit</th>
-              <th style="width:12%">Cumul. (dBm)</th>
-              <th style="width:8%">Sign</th>
-              <th style="width:12%">—</th>
+              <th style="width:12%">Running Total (dBm)</th>
+              <th style="width:8%">Gain / Loss</th>
+              <th style="width:12%">Actions</th>
             </tr>
           </thead>
           <tbody id="budgetBody"></tbody>
