@@ -240,8 +240,8 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
         <th>Gain (dB)</th>
         <th id="thNF">NF (dB)</th>
         <th>IIP3 (dBm)</th>
-        <th class="cum-cell">Cum Gain</th>
-        <th class="cum-cell">Cum NF</th>
+        <th class="cum-cell">Cumul. Gain (dB)</th>
+        <th class="cum-cell">Cumul. NF (dB)</th>
         <th style="min-width:120px">NF Contribution</th>
         <th title="Enable or bypass this stage">On</th>
         <th></th>
@@ -710,11 +710,11 @@ let teqMode = false;
 function toggleTeqMode() {
   teqMode = !teqMode;
   var btn = document.getElementById('teqToggle');
-  btn.textContent = teqMode ? 'Teq (K)' : 'NF (dB)';
+  btn.textContent = teqMode ? 'T_eq (K)' : 'NF (dB)';
   btn.style.borderColor = teqMode ? 'var(--accent2)' : '';
   btn.style.color = teqMode ? 'var(--accent2)' : '';
   var th = document.getElementById('thNF');
-  if (th) th.textContent = teqMode ? 'Teq (K)' : 'NF (dB)';
+  if (th) th.textContent = teqMode ? 'T_eq (K) — Noise Temp' : 'NF (dB)';
   refresh();
 }
 
