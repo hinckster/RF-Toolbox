@@ -174,7 +174,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
           <option value="pa">PA at backed-off power</option>
         </select>
       </div>
-      <a href="02_noise_figure.html" onclick="sendToReceiverChain(); return false;" style="display:block;text-align:right;color:#58a6ff;font-size:.75rem;text-decoration:none;margin-top:.2rem;margin-bottom:.6rem">→ Open in Receiver Chain</a>
+      <a href="02_receiver_chain.html" onclick="sendToReceiverChain(); return false;" style="display:block;text-align:right;color:#58a6ff;font-size:.75rem;text-decoration:none;margin-top:.2rem;margin-bottom:.6rem">→ Open in Receiver Chain</a>
       <div id="polyGroup">
         <div class="sr">
           <label>a₁ — Linear Gain (V/V) <span id="vA1" style="display:none">5.0</span></label>
@@ -656,10 +656,7 @@ function closeHelp(){document.getElementById('helpOverlay').classList.remove('op
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 
 function sendToReceiverChain() {
-  var a1 = parseFloat(document.getElementById('sA1').value);
-  var gainDB = (20 * Math.log10(a1)).toFixed(1);
-  var params = new URLSearchParams({ g1: gainDB, nf1: '3', iip1: '-10' });
-  window.open('02_noise_figure.html?' + params.toString(), '_blank');
+  window.open('02_receiver_chain.html', '_blank');
 }
 
 (function() {

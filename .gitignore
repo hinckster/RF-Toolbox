@@ -1,2 +1,7 @@
 node_modules/
 screenshots/
+eval_report.txt
+usability_report.txt
+qa_report.txt
+*_OLD.html
+package-lock.json

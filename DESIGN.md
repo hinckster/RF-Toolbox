@@ -636,22 +636,23 @@ Used only on `index.html` hero background to match the portfolio hero section. N
 | # | File | Topic | Governing Equation | Status |
 |---|---|---|---|---|
 | — | `index.html` | Landing page / portfolio grid | — | ✅ Live |
-| 01 | `01_friis_transmission.html` | Friis transmission equation | Pr = Pt + Gt + Gr − FSPL | ✅ Live |
-| 02 | `02_noise_figure.html` | Cascaded noise figure / receiver chain | F_sys = F₁ + (F₂−1)/G₁ + (F₃−1)/G₁G₂ + ··· | ✅ Live |
+| 01 | `01_link_budget.html` | System link budget (cascaded) | Margin = Pt + Gt − FSPL + Gr − NF − SNR_min | ✅ Live |
+| 02 | `02_receiver_chain.html` | Receiver dynamic range | F_sys = F₁ + (F₂−1)/G₁ + ··· · SFDR = ⅔(OIP3 − N_floor) | ✅ Live |
 | 03 | `03_iip3_intermod.html` | IIP3 / two-tone intermodulation | IIP3 = √(4\|a₁\|/3\|a₃\|) · y = a₁x + a₂x² + a₃x³ | ✅ Live |
 | 04 | `04_antenna_array.html` | ULA array factor / beam patterns | E_total(θ) = E_elem(θ) · Σ aₙe^(jnψ) | ✅ Live |
-| 05 | `05_smith_chart.html` | Smith chart / impedance matching | Γ = (Z_L − Z₀)/(Z_L + Z₀) · VSWR = (1+\|Γ\|)/(1−\|Γ\|) | ✅ Live |
+| 05 | `05_matching.html` | Smith chart + TL matching | Γ = (Z_L − Z₀)/(Z_L + Z₀) · Zin = Z₀·(ZL + jZ₀tanβl)/(Z₀ + jZL tanβl) | ✅ Live |
 | 06 | `06_radar_range.html` | Radar range equation | R⁴ = Pt·Gt·Gr·λ²·σ / [(4π)³·L·S_min] | ✅ Live |
 | 07 | `07_superheterodyne.html` | Superheterodyne receiver | f_image = f_RF + 2·f_IF · IRR = 20log(2f_IF/BW_RF) | ✅ Live |
 | 08 | `08_fspl.html` | Free-space path loss / multi-band sweep | FSPL = 20log(d_km) + 20log(f_MHz) + 32.44 dB | ✅ Live |
 | 09 | `09_transmission_line.html` | Transmission line reflection / VSWR | Γ(l) = Γ_L·e^(−j4πl/λ) · Zin = Z₀·(ZL + jZ₀tanβl)/(Z₀ + jZL tanβl) | ✅ Live |
-| 10 | `10_link_budget.html` | System link budget | Margin = Pt − L_tx + Gt − FSPL + Gr − L_rx − S_min | ✅ Live |
-| 11 | `11_phase_noise.html` | Phase noise / Leeson's equation | L(Δf) = 10·log[(2FkT/Ps)·(1+(f₀/2QL·Δf)²)·(1+fc/\|Δf\|)] | ✅ Live |
-| 12 | `12_pa_efficiency.html` | Power amplifier efficiency / P1dB | η_A = Pout/(2·Psat) · η_B = (π/4)·√(Pout/Psat) | ✅ Live |
-| 13 | `13_modulation_ber.html` | Modulation & BER curves | BER_BPSK = Q(√(2Eb/N0)) · C = B·log₂(1+SNR) | ✅ Live |
-| 14 | `14_microstrip.html` | Microstrip / stripline impedance | Z₀ = 60/√ε_eff · ln(8H/W + W/4H) [W/H ≤ 1] | ✅ Live |
-| 15 | `15_attenuator.html` | Attenuator pad calculator (π, T, L) | K = 10^(A/20) · R_sh = Z₀(K+1)/(K−1) | ✅ Live |
-| 16 | `16_mixer.html` | Mixer / frequency planning / spur analysis | f_IF = \|m·f_RF − n·f_LO\| · f_image = 2·f_LO − f_RF | ✅ Live |
+| 10 | `10_phase_noise.html` | Phase noise / Leeson's equation | L(Δf) = 10·log[(2FkT/Ps)·(1+(f₀/2QL·Δf)²)·(1+fc/\|Δf\|)] | ✅ Live |
+| 11 | `11_pa_efficiency.html` | Power amplifier efficiency / P1dB | η_A = Pout/(2·Psat) · η_B = (π/4)·√(Pout/Psat) | ✅ Live |
+| 12 | `12_modulation_ber.html` | Modulation & BER curves | BER_BPSK = Q(√(2Eb/N0)) · C = B·log₂(1+SNR) | ✅ Live |
+| 13 | `13_microstrip.html` | Microstrip / stripline impedance | Z₀ = 60/√ε_eff · ln(8H/W + W/4H) [W/H ≤ 1] | ✅ Live |
+| 14 | `14_attenuator.html` | Attenuator pad calculator (π, T, L) | K = 10^(A/20) · R_sh = Z₀(K+1)/(K−1) | ✅ Live |
+| 15 | `15_mixer.html` | Mixer / frequency planning / spur analysis | f_IF = \|m·f_RF − n·f_LO\| · f_image = 2·f_LO − f_RF | ✅ Live |
+| 16 | `16_sparam.html` | S-parameter cascade / converter | S→ABCD: A = [(1+S11)(1−S22)+S12·S21]/2S21 · K = (1−\|S11\|²−\|S22\|²+\|Δ\|²)/(2\|S12\|\|S21\|) | ✅ Live |
+| 17 | `17_filter.html` | Filter design & resonance (RLC + LC ladder) | f₀ = 1/(2π√LC) · Q = ω₀L/R · g_k = 2sin[(2k−1)π/2n] | ✅ Live |
 
 ---
 
@@ -815,12 +816,50 @@ Read DESIGN.md fully. Then run a full QA pass on the entire repo:
 - [ ] Tooltip styling matches design system (not Chart.js defaults)
 - [ ] Index page: bio header, last-updated timestamp, copper glow hover
 
-### v2.0 — Batch 2 (Planned)
-- [ ] `06_radar_range.html` — Radar range equation
-- [ ] `07_superheterodyne.html` — Superheterodyne receiver
-- [ ] `08_fspl.html` — Free-space path loss sweep
-- [ ] `09_transmission_line.html` — Transmission line reflection / VSWR
-- [ ] `10_link_budget.html` — Full link budget calculator
+### v2.0 — Batch 2 (Complete)
+- [x] `06_radar_range.html` — Radar range equation
+- [x] `07_superheterodyne.html` — Superheterodyne receiver
+- [x] `08_fspl.html` — Free-space path loss sweep
+- [x] `09_transmission_line.html` — Transmission line reflection / VSWR
+- [x] `10_phase_noise.html` — Phase noise / Leeson's equation
+- [x] `11_pa_efficiency.html` — PA efficiency / P1dB
+- [x] `12_modulation_ber.html` — Modulation & BER curves
+- [x] `13_microstrip.html` — Microstrip / stripline impedance
+- [x] `14_attenuator.html` — Attenuator pad calculator
+- [x] `15_mixer.html` — Mixer / frequency planning / spur analysis
+- [x] `16_sparam.html` — S-parameter cascade / converter
+- [x] `17_filter.html` — Filter design & resonance
+
+### v3.0 — Batch 3 (Planned)
+High-value tools still missing (sourced from external usability audit, April 2026):
+- [ ] Impedance matching network designer (L, Pi, T topologies with Q selection)
+- [ ] Antenna aperture / gain / Fresnel zone calculator
+- [ ] PLL loop filter / phase margin / bandwidth calculator
+- [ ] Unit converter hub (wavelength, noise power kTB, Kelvin↔dBm/Hz)
+
+Consolidation candidates (lower priority):
+- Friis transmission + Path loss → could fold into Link Budget as a "Basics" tab
+- Radar range → could become a radar mode within Link Budget
+- Phase noise: Leeson model is instructive but limited; consider expanding with varactor noise, loop filter interaction
+
+---
+
+## File Naming Convention
+
+- Files are numbered `01` through `17` (current maximum)
+- Numbers are **permanent** once assigned — never reused after deletion
+- New tools get the next available number
+- `index.html` is the only unnumbered file
+- `_OLD.html` suffix marks retired versions pending deletion decision
+
+## Tool Status Definitions
+
+| Status | Meaning |
+|--------|---------|
+| **COMPLETE** | Has toolbar, equation box, live chart, annotation, presets, white theme |
+| **BETA** | Functional but missing 1–2 features (e.g., no Export CSV, no presets) |
+| **BROKEN** | Has bugs blocking normal use — do not link from index |
+| **PLANNED** | In DESIGN.md but not yet built |
 
 ---
 
@@ -832,5 +871,5 @@ Read DESIGN.md fully. Then run a full QA pass on the entire repo:
 - Chart.js version locked to 4.4.1 — test all live files before upgrading
 - Never add login, auth, or any server-side dependency
 - The repo must always be in a deployable state on `main` — every commit must pass the pre-commit checklist
-- When adding a new tool, clone the structure of `01_friis_transmission.html` as the reference page
+- When adding a new tool, clone the structure of `02_receiver_chain.html` as the reference page (updated from 01_friis — it uses the newer CSS variable naming)
 - Screenshot PNG exports use the white design system colors — the background is `#ffffff`, not dark

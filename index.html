@@ -53,9 +53,8 @@ a:hover{text-decoration:underline}
 .section-hdr .sh-label{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:2px;text-transform:uppercase;white-space:nowrap}
 .section-hdr .sh-badge{font-size:.67rem;padding:.18rem .55rem;border-radius:10px;font-weight:600}
 .sh-badge.rf{background:rgba(37,99,235,.1);color:var(--blue)}
-.sh-badge.sig{background:rgba(124,58,237,.1);color:var(--pur)}
-.sh-badge.new{background:rgba(22,163,74,.1);color:var(--grn)}
-.sh-badge.edu{background:var(--deep);color:var(--tm)}
+.sh-badge.prop{background:rgba(124,58,237,.1);color:var(--pur)}
+.sh-badge.adv{background:rgba(22,163,74,.1);color:var(--grn)}
 
 /* Tool grid */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:1.1rem;margin-bottom:2rem}
@@ -70,11 +69,10 @@ a:hover{text-decoration:underline}
 .card-num{font-size:.67rem;font-weight:600;color:#b5895a;letter-spacing:2px;text-transform:uppercase;margin-bottom:.2rem}
 .card h2{font-size:1.05rem;font-weight:700;color:var(--t1);line-height:1.3}
 .card-desc{font-size:.82rem;color:var(--tm);line-height:1.6;flex:1}
-.card-expert{font-size:.74rem;color:var(--grn);margin-top:.1rem;font-style:italic}
 .card-eq{font-family:'Courier New',monospace;font-size:.76rem;color:#1a1d23;background:var(--deep);border:1px solid var(--bdr);border-radius:5px;padding:.45rem .7rem;margin-top:auto}
 
 .live-badge{display:inline-block;font-size:.62rem;font-weight:700;padding:.12rem .45rem;border-radius:8px;background:rgba(22,163,74,.1);color:var(--grn);text-transform:uppercase;letter-spacing:.8px;vertical-align:middle;margin-left:.4rem}
-.new-badge{display:inline-block;font-size:.62rem;font-weight:700;padding:.12rem .45rem;border-radius:8px;background:rgba(217,119,6,.1);color:var(--org);text-transform:uppercase;letter-spacing:.8px;vertical-align:middle;margin-left:.4rem}
+.beta-badge{display:inline-block;font-size:.62rem;font-weight:700;padding:.12rem .45rem;border-radius:8px;background:rgba(217,119,6,.1);color:var(--org);text-transform:uppercase;letter-spacing:.8px;vertical-align:middle;margin-left:.4rem}
 
 /* Footer */
 footer{border-top:1px solid var(--bdr);padding:2rem 1.5rem;text-align:center;color:var(--tm);font-size:.82rem;margin-top:1rem}
@@ -152,62 +150,43 @@ footer a{color:#b5895a}
   </div>
 </div>
 
-<!-- RF System Analysis Section -->
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 1: RF SYSTEMS DESIGN (01–06)
+     ═══════════════════════════════════════════════════════ -->
 <div class="section">
   <div class="section-hdr">
     <div class="sh-line"></div>
-    <div class="sh-label">RF System Analysis</div>
-    <span class="sh-badge rf">Link Budget · Receiver Chain · Propagation</span>
+    <div class="sh-label">RF Systems Design</div>
+    <span class="sh-badge rf">Tools 01–06 · Link Budget · Receiver · Radar · Array</span>
     <div class="sh-line"></div>
   </div>
 
   <div class="grid">
-    <a class="card" href="10_link_budget.html">
+
+    <a class="card" href="01_link_budget.html">
       <div class="card-top"><div class="card-icon">⚖️</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num"><span class="live-badge">Live</span></div>
+        <div class="card-num">01 <span class="live-badge">Live</span></div>
         <h2>System Link Budget</h2>
       </div>
-      <div class="card-desc">Full cascaded link budget — editable rows: Pt, FSPL, antenna gains, cable losses, NF, SNR. Running margin at every stage. Waterfall bar chart shows which term consumes the most margin.</div>
-      <div class="card-eq">Margin = Pt − L_tx + Gt − FSPL − L_atm + Gr − L_rx − S_min</div>
+      <div class="card-desc">Cascaded link budget with drag-reorderable rows. Presets: 5G mmWave, satellite, radar. Waterfall bar chart shows which stage consumes the most margin. Running total and margin bar update live.</div>
+      <div class="card-eq">Margin = Pt + Gt − FSPL + Gr − NF − SNR_min</div>
     </a>
 
-    <a class="card" href="02_noise_figure.html">
+    <a class="card" href="02_receiver_chain.html">
       <div class="card-top"><div class="card-icon">🔬</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num"><span class="live-badge">Live</span></div>
-        <h2>Noise Figure Cascade</h2>
+        <div class="card-num">02 <span class="live-badge">Live</span></div>
+        <h2>Receiver Dynamic Range</h2>
       </div>
-      <div class="card-desc">Arbitrary N-stage receiver chain. Cascaded NF (Friis), cascaded IIP3, noise floor, MDS threshold. Per-stage NF contribution bar chart. Sensitivity what-if analysis. Stage swap + Teq mode.</div>
-      <div class="card-eq">F_sys = F₁ + (F₂−1)/G₁ + (F₃−1)/G₁G₂ + ···</div>
+      <div class="card-desc">Fixed 4-stage receiver cascade: NF, cascaded IIP3, SFDR, noise floor, P1dB. Dynamic range window chart shows noise floor → input → IM3 → P1dB → OIP3. What-if sensitivity table per stage.</div>
+      <div class="card-eq">F_sys = F₁ + (F₂−1)/G₁ + ··· · SFDR = ⅔(OIP3 − N_floor)</div>
     </a>
 
-    <a class="card" href="08_fspl.html">
-      <div class="card-top"><div class="card-icon">📶</div><div class="card-arrow">›</div></div>
-      <div>
-        <div class="card-num"><span class="live-badge">Live</span></div>
-        <h2>Path Loss Comparison</h2>
-      </div>
-      <div class="card-desc">FSPL vs distance for 6 bands: 900 MHz → 77 GHz. Rain attenuation (ITU-R P.838) and atmospheric absorption (ITU-R P.676) overlays. Band selection guidance for each link scenario.</div>
-      <div class="card-eq">FSPL = 20log(d_km) + 20log(f_MHz) + 32.44 dB</div>
-    </a>
-  </div>
-</div>
-
-<!-- Signal Integrity / Circuit Theory Section -->
-<div class="section">
-  <div class="section-hdr">
-    <div class="sh-line"></div>
-    <div class="sh-label">Signal Integrity &amp; Circuit Theory</div>
-    <span class="sh-badge sig">Nonlinearity · Arrays · Matching · TL · Microstrip · Attenuator · Mixer</span>
-    <div class="sh-line"></div>
-  </div>
-
-  <div class="grid">
     <a class="card" href="03_iip3_intermod.html">
       <div class="card-top"><div class="card-icon">📈</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num"><span class="live-badge">Live</span></div>
+        <div class="card-num">03 <span class="live-badge">Live</span></div>
         <h2>IIP3 / Intermodulation</h2>
       </div>
       <div class="card-desc">Polynomial device model (a₁, a₂, a₃) → exact IIP3, IIP2, OIP3, P1dB. Spectrum shows IM2, IM3, 2nd/3rd harmonics. Intercept diagram with gain compression curve.</div>
@@ -217,191 +196,187 @@ footer a{color:#b5895a}
     <a class="card" href="04_antenna_array.html">
       <div class="card-top"><div class="card-icon">🔭</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num"><span class="live-badge">Live</span></div>
-        <h2>ULA Array Factor</h2>
+        <div class="card-num">04 <span class="live-badge">Live</span></div>
+        <h2>Phased Array Beam Pattern</h2>
       </div>
-      <div class="card-desc">Element pattern × amplitude taper → total pattern. Tapers: Uniform, Hamming, Hann, Chebyshev, Taylor. Compare two configurations side-by-side. Grating lobe markers. Cartesian and polar views.</div>
+      <div class="card-desc">ULA element pattern × amplitude taper → total pattern. Tapers: Uniform, Hamming, Hann, Chebyshev, Taylor. Compare two configurations side-by-side. Grating lobe markers. Cartesian and polar views.</div>
       <div class="card-eq">E_total(θ) = E_elem(θ) · AF(θ) = E_elem · Σ aₙe^(jnψ)</div>
     </a>
 
-    <a class="card" href="05_smith_chart.html">
+    <a class="card" href="05_matching.html">
       <div class="card-top"><div class="card-icon">🎯</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num"><span class="live-badge">Live</span></div>
-        <h2>Smith Chart</h2>
+        <div class="card-num">05 <span class="live-badge">Live</span></div>
+        <h2>Smith Chart + TL Matching</h2>
       </div>
-      <div class="card-desc">Interactive impedance plot on the complex Γ plane. Reflection coefficient, VSWR, return loss, admittance. L-match synthesis steps computed automatically. Fills full panel width.</div>
-      <div class="card-eq">Γ = (Z_L − Z₀)/(Z_L + Z₀) · VSWR = (1+|Γ|)/(1−|Γ|)</div>
+      <div class="card-desc">Interactive Smith chart with transmission-line matching. Load Γ plotted on constant-|Γ| circle; line-length slider rotates toward Z₀. Shows Z_in, VSWR, return loss after transformation.</div>
+      <div class="card-eq">Γ = (Z_L − Z₀)/(Z_L + Z₀) · Zin = Z₀·(ZL + jZ₀tanβl)/(Z₀ + jZL tanβl)</div>
+    </a>
+
+    <a class="card" href="06_radar_range.html">
+      <div class="card-top"><div class="card-icon">🛰️</div><div class="card-arrow">›</div></div>
+      <div>
+        <div class="card-num">06 <span class="live-badge">Live</span></div>
+        <h2>Radar Range Equation</h2>
+      </div>
+      <div class="card-desc">Maximum range vs RCS sweep (the key radar design curve). Received power vs range with S_min threshold. Clutter RCS context (birds, cars, aircraft). Pulse compression gain. Albersheim detection statistics.</div>
+      <div class="card-eq">R⁴ = Pt·Gt·Gr·λ²·σ / [(4π)³·L·S_min]</div>
+    </a>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 2: PROPAGATION & ARCHITECTURE (07–09)
+     ═══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="sh-line"></div>
+    <div class="sh-label">Propagation &amp; Architecture</div>
+    <span class="sh-badge prop">Tools 07–09 · Superhet · Path Loss · Transmission Line</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="grid">
+
+    <a class="card" href="07_superheterodyne.html">
+      <div class="card-top"><div class="card-icon">📻</div><div class="card-arrow">›</div></div>
+      <div>
+        <div class="card-num">07 <span class="live-badge">Live</span></div>
+        <h2>Superheterodyne Receiver</h2>
+      </div>
+      <div class="card-desc">Interactive block diagram: RF filter → LNA → mixer → IF. Frequency plan spectrum shows RF, LO, IF, image — all labeled. Image rejection vs IF frequency tradeoff. Double-conversion option.</div>
+      <div class="card-eq">f_image = f_RF + 2·f_IF · IRR = 20 log(2·f_IF / BW_RF)</div>
+    </a>
+
+    <a class="card" href="08_fspl.html">
+      <div class="card-top"><div class="card-icon">📶</div><div class="card-arrow">›</div></div>
+      <div>
+        <div class="card-num">08 <span class="live-badge">Live</span></div>
+        <h2>Path Loss Comparison</h2>
+      </div>
+      <div class="card-desc">FSPL vs distance for 6 bands: 900 MHz → 77 GHz. Rain attenuation (ITU-R P.838) and atmospheric absorption (ITU-R P.676) overlays. Band selection guidance for each link scenario.</div>
+      <div class="card-eq">FSPL = 20log(d_km) + 20log(f_MHz) + 32.44 dB</div>
     </a>
 
     <a class="card" href="09_transmission_line.html">
       <div class="card-top"><div class="card-icon">〰️</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num"><span class="live-badge">Live</span></div>
-        <h2>Transmission Line</h2>
+        <div class="card-num">09 <span class="live-badge">Live</span></div>
+        <h2>Transmission Line — Reflection &amp; VSWR</h2>
       </div>
-      <div class="card-desc">Reflection coefficient, VSWR, return loss for arbitrary load on a lossless TL. Standing wave pattern |V(z)| and Smith chart position vs line length. Input impedance Zin computation.</div>
+      <div class="card-desc">Reflection coefficient, VSWR, return loss for arbitrary load on a lossless TL. Standing wave pattern |V(z)| and Smith chart inset vs line length. Input impedance Zin computation.</div>
       <div class="card-eq">Γ(l) = Γ_L · e^(−j4πl/λ) · Zin = Z₀·(ZL + jZ₀tanβl)/(Z₀ + jZL tanβl)</div>
     </a>
 
-    <a class="card" href="14_microstrip.html">
-      <div class="card-top"><div class="card-icon">▬</div><div class="card-arrow">›</div></div>
-      <div>
-        <div class="card-num"><span class="live-badge">Live</span></div>
-        <h2>Microstrip / Stripline</h2>
-      </div>
-      <div class="card-desc">Characteristic impedance Z₀, effective permittivity ε_eff, guided wavelength λ_g and quarter-wave length for microstrip and centered stripline. Synthesis mode finds trace width W for a target Z₀. Z₀ vs W/H chart with FR4, RO4003C, RT5880 and alumina reference curves.</div>
-      <div class="card-eq">Z₀ = 60/√ε_eff · ln(8H/W + W/4H)  [microstrip, W/H ≤ 1]</div>
-    </a>
-
-    <a class="card" href="15_attenuator.html">
-      <div class="card-top"><div class="card-icon">⊟</div><div class="card-arrow">›</div></div>
-      <div>
-        <div class="card-num"><span class="live-badge">Live</span></div>
-        <h2>Attenuator Pad Calculator</h2>
-      </div>
-      <div class="card-desc">Exact resistor values for π-pad, T-pad (symmetric) and L-pad (impedance-transforming) attenuators. Shows nearest E96 standard value with error, per-resistor power dissipation, voltage/current ratings, and R vs attenuation design curves.</div>
-      <div class="card-eq">π: R_sh = Z₀(K+1)/(K−1)  ·  T: R_ser = Z₀(K−1)/(K+1)  ·  K = 10^(A/20)</div>
-    </a>
-
-    <a class="card" href="16_mixer.html">
-      <div class="card-top"><div class="card-icon">⊗</div><div class="card-arrow">›</div></div>
-      <div>
-        <div class="card-num"><span class="live-badge">Live</span></div>
-        <h2>Mixer / Frequency Planning</h2>
-      </div>
-      <div class="card-desc">Spur analysis for any RF+LO combination. Computes all |m·f_RF − n·f_LO| products up to selectable order, flags in-band spurs, identifies image and half-IF frequencies. Interactive m×n spur grid heatmap, IF spectrum plot, and LO synthesis from target IF.</div>
-      <div class="card-eq">f_IF = |m·f_RF − n·f_LO|  ·  f_image = 2·f_LO − f_RF</div>
-    </a>
   </div>
 </div>
 
-<!-- New Tools Section -->
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 3: ADVANCED TOOLS (10–17)
+     ═══════════════════════════════════════════════════════ -->
 <div class="section">
   <div class="section-hdr">
     <div class="sh-line"></div>
-    <div class="sh-label">Oscillators, Amplifiers &amp; Modulation</div>
-    <span class="sh-badge new">Phase Noise · PA · BER</span>
+    <div class="sh-label">Advanced Tools</div>
+    <span class="sh-badge adv">Tools 10–17 · Phase Noise · PA · BER · Microstrip · Attenuator · Mixer · S-Params · Filter</span>
     <div class="sh-line"></div>
   </div>
 
   <div class="grid">
-    <a class="card" href="11_phase_noise.html">
+
+    <a class="card" href="10_phase_noise.html">
       <div class="card-top"><div class="card-icon">〽️</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num"><span class="new-badge">New</span></div>
+        <div class="card-num">10 <span class="live-badge">Live</span></div>
         <h2>Phase Noise / Leeson's Equation</h2>
       </div>
-      <div class="card-desc">Oscillator phase noise L(Δf) vs offset frequency. Leeson's model: carrier power, loaded Q, flicker corner, noise figure. Integrated phase noise (rms), timing jitter, EVM impact.</div>
+      <div class="card-desc">Oscillator phase noise L(Δf) vs offset frequency. Leeson's model: carrier power, loaded Q, flicker corner, noise figure. Integrated phase noise (rms), timing jitter, EVM impact, reciprocal mixing.</div>
       <div class="card-eq">L(Δf) = 10·log[(2FkT/Ps)·(1+(f₀/2QL·Δf)²)·(1+fc/|Δf|)]</div>
     </a>
 
-    <a class="card" href="12_pa_efficiency.html">
+    <a class="card" href="11_pa_efficiency.html">
       <div class="card-top"><div class="card-icon">🔋</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num"><span class="new-badge">New</span></div>
+        <div class="card-num">11 <span class="live-badge">Live</span></div>
         <h2>Power Amplifier / Efficiency</h2>
       </div>
       <div class="card-desc">PA classes A, B, AB, C: efficiency vs output power back-off. Gain compression (P1dB), AM-AM distortion. OIP3 from P1dB rule-of-thumb. PAE vs drain efficiency. PAPR impact on average efficiency.</div>
       <div class="card-eq">η_A = Pout/(2·Psat) · η_B = (π/4)·√(Pout/Psat) · OIP3 ≈ P1dB + 10 dB</div>
     </a>
 
-    <a class="card" href="13_modulation_ber.html">
+    <a class="card" href="12_modulation_ber.html">
       <div class="card-top"><div class="card-icon">📊</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num"><span class="new-badge">New</span></div>
+        <div class="card-num">12 <span class="live-badge">Live</span></div>
         <h2>Modulation &amp; BER</h2>
       </div>
-      <div class="card-desc">BER vs Eb/N0 curves for BPSK, QPSK, 8PSK, 16QAM, 64QAM, 256QAM. Shannon capacity limit overlay. Required SNR for target BER. Spectral efficiency vs required SNR tradeoff chart.</div>
+      <div class="card-desc">BER vs Eb/N0 curves for BPSK, QPSK, 8PSK, 16QAM, 64QAM, 256QAM. Shannon capacity limit overlay. Required SNR for target BER. FEC coding gain. Spectral efficiency vs SNR tradeoff.</div>
       <div class="card-eq">BER_BPSK = Q(√(2Eb/N0)) · C = B·log₂(1+SNR) bits/s/Hz</div>
     </a>
-  </div>
-</div>
 
-<!-- Educational / Interactive Section -->
-<div class="section">
-  <div class="section-hdr">
-    <div class="sh-line"></div>
-    <div class="sh-label">Educational &amp; Interactive Demos</div>
-    <span class="sh-badge edu">Concept visualization · Teaching tools</span>
-    <div class="sh-line"></div>
-  </div>
-
-  <div class="grid">
-    <a class="card" href="07_superheterodyne.html">
-      <div class="card-top"><div class="card-icon">📻</div><div class="card-arrow">›</div></div>
+    <a class="card" href="13_microstrip.html">
+      <div class="card-top"><div class="card-icon">▬</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num"><span class="live-badge">Live</span></div>
-        <h2>Superheterodyne Receiver</h2>
+        <div class="card-num">13 <span class="live-badge">Live</span></div>
+        <h2>Microstrip / Stripline</h2>
       </div>
-      <div class="card-desc">Interactive block diagram: RF filter → LNA → mixer → IF. Frequency plan spectrum shows RF, LO, IF, image — all labeled. IRR vs IF frequency tradeoff. Double-conversion option.</div>
-      <div class="card-eq">f_image = f_RF + 2·f_IF · IRR = 20 log(2·f_IF / BW_RF)</div>
+      <div class="card-desc">Z₀, ε_eff, λ_g and λ/4 length for microstrip and centered stripline. Width synthesis for target Z₀. Conductor and dielectric loss. Z₀ vs W/H curves for FR4, RO4003C, RT5880, alumina.</div>
+      <div class="card-eq">Z₀ = 60/√ε_eff · ln(8H/W + W/4H)  [microstrip, W/H ≤ 1]</div>
     </a>
 
-    <a class="card" href="01_friis_transmission.html">
-      <div class="card-top"><div class="card-icon">📡</div><div class="card-arrow">›</div></div>
+    <a class="card" href="14_attenuator.html">
+      <div class="card-top"><div class="card-icon">⊟</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num"><span class="live-badge">Live</span></div>
-        <h2>Friis Transmission Equation</h2>
+        <div class="card-num">14 <span class="live-badge">Live</span></div>
+        <h2>Attenuator Pad Calculator</h2>
       </div>
-      <div class="card-desc">Free-space received power as a function of distance and frequency. Pr vs frequency and Pr vs distance sweeps. Link margin above sensitivity threshold annotated on chart.</div>
-      <div class="card-eq">Pr = Pt·Gt·Gr·(λ/4πd)² · LF = (c/f·4πd)²</div>
+      <div class="card-desc">Exact resistor values for π-pad, T-pad (symmetric) and L-pad (impedance-transforming). Nearest E96 standard value with error. Per-resistor power dissipation, voltage/current. R vs attenuation curves.</div>
+      <div class="card-eq">π: R_sh = Z₀(K+1)/(K−1)  ·  T: R_ser = Z₀(K−1)/(K+1)  ·  K = 10^(A/20)</div>
     </a>
 
-    <a class="card" href="06_radar_range.html">
-      <div class="card-top"><div class="card-icon">🛰️</div><div class="card-arrow">›</div></div>
+    <a class="card" href="15_mixer.html">
+      <div class="card-top"><div class="card-icon">⊗</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num"><span class="live-badge">Live</span></div>
-        <h2>Radar Range Equation</h2>
+        <div class="card-num">15 <span class="live-badge">Live</span></div>
+        <h2>Mixer / Frequency Planning</h2>
       </div>
-      <div class="card-desc">Maximum range vs RCS sweep (the key radar design curve). Received power vs range with S_min threshold. Clutter RCS context (birds, cars, aircraft). Pulse compression gain.</div>
-      <div class="card-eq">R⁴ = Pt·Gt·Gr·λ²·σ / [(4π)³·L·S_min]</div>
+      <div class="card-desc">Spur analysis for any RF+LO combination. All |m·f_RF − n·f_LO| products up to selectable order. In-band spur flagging, half-IF, image. m×n spur grid heatmap, IF spectrum plot, LO synthesis.</div>
+      <div class="card-eq">f_IF = |m·f_RF − n·f_LO|  ·  f_image = 2·f_LO − f_RF</div>
     </a>
-  </div>
-</div>
 
-<!-- Network Analysis Section -->
-<div class="section">
-  <div class="section-hdr">
-    <div class="sh-line"></div>
-    <div class="sh-label">Network Analysis &amp; Passive Design</div>
-    <span class="sh-badge new">S-Parameters · Filters · Resonators</span>
-    <div class="sh-line"></div>
-  </div>
-
-  <div class="grid">
-    <a class="card" href="17_sparam.html">
+    <a class="card" href="16_sparam.html">
       <div class="card-top"><div class="card-icon">⚡</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num"><span class="new-badge">New</span></div>
+        <div class="card-num">16 <span class="live-badge">Live</span></div>
         <h2>S-Parameter Cascade / Converter</h2>
       </div>
-      <div class="card-desc">Convert 2-port S-parameters to Z, Y, and ABCD matrices. Cascade two networks via T-matrix multiplication (exact mismatch interaction). Compute Rollett stability factor K, |Δ|, MSG, and MAG.</div>
+      <div class="card-desc">Convert 2-port S-parameters to Z, Y, ABCD matrices. Cascade two networks via T-matrix multiplication (exact mismatch interaction). Rollett stability factor K, |Δ|, MSG, MAG computation.</div>
       <div class="card-eq">S→ABCD: A = [(1+S11)(1−S22)+S12S21]/2S21 · K = (1−|S11|²−|S22|²+|Δ|²)/(2|S12||S21|)</div>
     </a>
 
-    <a class="card" href="18_filter.html">
+    <a class="card" href="17_filter.html">
       <div class="card-top"><div class="card-icon">〰</div><div class="card-arrow">›</div></div>
       <div>
-        <div class="card-num"><span class="new-badge">New</span></div>
+        <div class="card-num">17 <span class="live-badge">Live</span></div>
         <h2>Filter Design &amp; Resonance</h2>
       </div>
-      <div class="card-desc">Series and parallel RLC resonator analysis (f₀, Q, BW, |Zin| sweep). Butterworth and Chebyshev LC ladder synthesis — low-pass and high-pass up to 7th order. Exact |S21| frequency response from ABCD cascade.</div>
+      <div class="card-desc">Series and parallel RLC resonator (f₀, Q, BW, |Z| sweep). Butterworth and Chebyshev LC ladder synthesis — LP and HP up to 7th order. Exact |S21| frequency response from ABCD cascade.</div>
       <div class="card-eq">f₀ = 1/(2π√LC) · Q = ω₀L/R · g_k = 2·sin[(2k−1)π/2n] (Butterworth)</div>
     </a>
+
   </div>
 </div>
 
 <footer>
   Part of <a href="https://www.noahhinckley.com/home">Noah Hinckley's Engineering Portfolio</a> · noahhinckley.com
-  &nbsp;·&nbsp; 18 self-contained tools, no server, no build step
+  &nbsp;·&nbsp; 17 self-contained tools, no server, no build step
   &nbsp;·&nbsp; <a href="https://github.com/hinckster/RF-Toolbox">github.com/hinckster/RF-Toolbox</a>
 </footer>
 
 <script>
 // dBm converter — all inputs stay synchronized
 const Z0 = 50;
-const ids = ['cvDBM','cvW','cvMW','cvDBW','cvDBUV','cvVRMS'];
 
 function fromDBM(dbm) {
   const mw  = Math.pow(10, dbm / 10);
