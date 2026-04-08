@@ -606,8 +606,9 @@ function synthTNet(Rs, Rl, Q_design, f_GHz) {
 }
 
 function update() {
-  const Z0=get('iZ0'), R_=get('sR'), X_=get('sX');
-  document.getElementById('lR').textContent = R_+' Ω';
+  const Z0=get('iZ0'), X_=get('sX');
+  const R_ = _openCircuit ? 1e9 : get('sR');
+  document.getElementById('lR').textContent = _openCircuit ? '∞ Ω (Open)' : R_+' Ω';
   document.getElementById('lX').textContent = (X_>=0?'+':'')+X_+' Ω';
 
   const { gr, gi } = gammaFromZ(R_, X_, Z0);
@@ -617,8 +618,8 @@ function update() {
   const rl   = gmag>0 ? -20*Math.log10(gmag) : Infinity;
   const r=R_/Z0, x=X_/Z0;
 
-  document.getElementById('rZL').textContent  = R_+(X_>=0?'+j':'−j')+Math.abs(X_);
-  document.getElementById('rZn').textContent  = r.toFixed(3)+(x>=0?'+j':'−j')+Math.abs(x).toFixed(3);
+  document.getElementById('rZL').textContent  = _openCircuit ? '∞ Ω' : R_+(X_>=0?'+j':'−j')+Math.abs(X_);
+  document.getElementById('rZn').textContent  = _openCircuit ? '∞' : r.toFixed(3)+(x>=0?'+j':'−j')+Math.abs(x).toFixed(3);
   document.getElementById('rGmag').textContent = gmag.toFixed(4);
   document.getElementById('rGang').textContent = gang.toFixed(1)+'°';
   document.getElementById('rVSWR').textContent  = vswr===Infinity ? '∞' : vswr.toFixed(2);
@@ -639,7 +640,9 @@ function update() {
 
   // L-match synthesis
   const lBox = document.getElementById('lMatchBox');
-  if (gmag < 0.01) {
+  if (_openCircuit) {
+    lBox.innerHTML = '<div class="lm-wrap"><div style="color:var(--muted);font-size:.82rem;padding:.4rem 0">Open circuit (R → ∞) — cannot synthesize L-match.</div></div>';
+  } else if (gmag < 0.01) {
     lBox.innerHTML = '<div class="lm-wrap"><div style="color:var(--green);font-size:.82rem;padding:.4rem 0">Already matched — no network needed.</div></div>';
   } else if (R_ <= 0) {
     lBox.innerHTML = '<div class="lm-wrap"><div style="color:var(--muted);font-size:.82rem;padding:.4rem 0">R = 0 — cannot synthesize L-match.</div></div>';
@@ -701,7 +704,11 @@ function update() {
   // Pi / T synthesis
   const Q_design = parseFloat(document.getElementById('slQ').value) || 3;
   const f_GHz = parseFloat(document.getElementById('iFreq').value) || 1;
-  if (R_ > 0 && gmag > 0.02) {
+  if (_openCircuit) {
+    document.getElementById('piNetBox').innerHTML = '<div style="font-size:.78rem;color:var(--muted);padding:.3rem 0">Open circuit (R → ∞) — pi/T synthesis not applicable.</div>';
+    document.getElementById('tNetBox').innerHTML = '';
+    document.getElementById('qMinNote').textContent = '';
+  } else if (R_ > 0 && gmag > 0.02) {
     synthPiNet(Z0, R_, Q_design, f_GHz);
     synthTNet(Z0, R_, Q_design, f_GHz);
   } else {
@@ -726,7 +733,11 @@ function update() {
     `VSWR = <strong>${vswr===Infinity?'∞':vswr.toFixed(2)}</strong>:1, RL = <strong>${rl===Infinity?'∞':rl.toFixed(2)} dB</strong>. ${tip}`;
 }
 
+// When true, R is treated as open circuit (∞) regardless of slider position
+let _openCircuit = false;
+
 function setPreset(R, X) {
+  _openCircuit = (R >= 1e6 && X === 0);
   document.getElementById('sR').value = Math.min(R, 500);
   document.getElementById('sX').value = Math.max(-300, Math.min(300, X));
   update();
@@ -750,8 +761,10 @@ function linkSliderInput(sliderId, inputId, decimals, onUpdate, min, max) {
   sync();
 }
 
-linkSliderInput('sR', 'iR', 0, update, 0, 500);
-linkSliderInput('sX', 'iX', 0, update, -300, 300);
+// Slider/input changes clear the open-circuit override
+function updateClearOpen() { _openCircuit = false; update(); }
+linkSliderInput('sR', 'iR', 0, updateClearOpen, 0, 500);
+linkSliderInput('sX', 'iX', 0, updateClearOpen, -300, 300);
 document.getElementById('iZ0').addEventListener('input', update);
 
 // Resize canvas to fill panel width
