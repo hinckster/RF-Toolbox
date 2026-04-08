@@ -441,7 +441,7 @@ function buildDistanceSweep() {
   chart.data.labels = xs;
   chart.data.datasets[0].data = ys;
   chart.data.datasets[1].data = ref;
-  chart.options.scales.x.title.text = 'Distance';
+  chart.options.scales.x.title.text = 'Distance (m / km)';
   chart.update('none');
 }
 
@@ -457,7 +457,7 @@ function buildFrequencySweep() {
   chart.data.labels = xs;
   chart.data.datasets[0].data = ys;
   chart.data.datasets[1].data = ref;
-  chart.options.scales.x.title.text = 'Frequency';
+  chart.options.scales.x.title.text = 'Frequency (MHz / GHz)';
   chart.update('none');
 }
 
