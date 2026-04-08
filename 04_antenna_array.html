@@ -105,7 +105,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
 
 <div class="toolbar">
   <button class="tbtn" onclick="showHelp()">? Help</button>
-  <button class="tbtn" onclick="takeScreenshot('Phased Array Beam Pattern')">📷 Screenshot</button>
+  <button class="tbtn" onclick="takeScreenshot('Phased Array Beam Pattern',this)">📷 Screenshot</button>
   <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
   <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
@@ -697,7 +697,37 @@ document.getElementById('selElem').addEventListener('change', update);
 document.getElementById('selTaper').addEventListener('change', update);
 document.getElementById('selTaperB').addEventListener('change', update);
 
-function takeScreenshot(t){const cc=[...document.querySelectorAll('canvas')];const p=16,th=40;const tw=cc.reduce((s,c)=>s+c.width+p,p);const mh=Math.max(...cc.map(c=>c.height));const o=document.createElement('canvas');o.width=tw;o.height=mh+th+p*2;const x=o.getContext('2d');x.fillStyle='#16181d';x.fillRect(0,0,o.width,o.height);x.fillStyle='#e6edf3';x.font='bold 14px Segoe UI,system-ui,sans-serif';x.fillText(t+' · RF Toolbox · hinckster.github.io/RF-Toolbox',p,th/2+5);x.fillStyle='#718096';x.font='11px monospace';x.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',p,th-4);let ex=p;cc.forEach(c=>{x.drawImage(c,ex,th+p);ex+=c.width+p;});const l=document.createElement('a');l.download=`array_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;l.href=o.toDataURL('image/png');l.click();}
+function _btnFlash(btn, msg) {
+  if (!btn) return;
+  const orig = btn.textContent;
+  btn.textContent = msg; btn.style.color = '#16a34a'; btn.style.borderColor = '#16a34a';
+  setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+}
+function takeScreenshot(toolName, btn) {
+  const canvases = [...document.querySelectorAll('canvas')].filter(c => c.width > 0 && c.height > 0);
+  if (!canvases.length) return;
+  const padding = 16, titleH = 44;
+  const totalW = canvases.reduce((s,c) => s + c.width + padding, padding);
+  const maxH   = Math.max(...canvases.map(c => c.height));
+  const out = document.createElement('canvas');
+  out.width = totalW; out.height = maxH + titleH + padding;
+  const ctx = out.getContext('2d');
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, out.width, out.height);
+  ctx.fillStyle = '#f4f5f7'; ctx.fillRect(0, 0, out.width, titleH);
+  ctx.fillStyle = '#1a1d23'; ctx.font = 'bold 13px Segoe UI, system-ui, sans-serif';
+  ctx.fillText(toolName + '  ·  RF Toolbox', padding, 17);
+  ctx.fillStyle = '#b5895a'; ctx.font = '11px Segoe UI, system-ui, sans-serif';
+  ctx.fillText('hinckster.github.io/RF-Toolbox', padding, 32);
+  const ts = new Date().toISOString().slice(0,19).replace('T',' ') + ' UTC';
+  ctx.fillStyle = '#718096'; ctx.font = '10px Courier New, monospace';
+  ctx.fillText(ts, out.width - ctx.measureText(ts).width - padding, 24);
+  let x = padding;
+  canvases.forEach(c => { ctx.drawImage(c, x, titleH + padding); x += c.width + padding; });
+  const link = document.createElement('a');
+  link.download = toolName.replace(/[\s]+/g,'-').toLowerCase() + '-' + Date.now() + '.png';
+  link.href = out.toDataURL('image/png'); link.click();
+  _btnFlash(btn, '✓ Saved!');
+}
 function exportCSV() {
   var g = function(id){ var el = document.getElementById(id); return el ? el.textContent.trim() : ''; };
   var elemEl = document.getElementById('selElem'), taperEl = document.getElementById('selTaper');

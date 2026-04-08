@@ -114,7 +114,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
 
 <div class="toolbar">
   <button class="tbtn" onclick="showHelp()">? Help</button>
-  <button class="tbtn" onclick="takeScreenshot()">&#128247; Screenshot</button>
+  <button class="tbtn" onclick="takeScreenshot(this)">&#128247; Screenshot</button>
   <button class="tbtn" onclick="exportCSV()">&#11015; Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
   <button class="tbtn" id="copyBtn" onclick="copyLink()">&#8856; Copy Link</button>
@@ -772,31 +772,42 @@ initVSWRChart();
 update();
 
 // ── Toolbar ───────────────────────────────────────────────────────────────────
-function takeScreenshot() {
+function _btnFlash(btn, msg) {
+  if (!btn) return;
+  const orig = btn.textContent;
+  btn.textContent = msg; btn.style.color = '#16a34a'; btn.style.borderColor = '#16a34a';
+  setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+}
+function takeScreenshot(btn) {
   // Merge the Chart.js canvas and the Smith inset canvas side by side
   const swCanvas   = document.getElementById('swChart');
   const smithCanvas = document.getElementById('smithInset');
+  const toolName = 'Transmission Line';
 
-  const padding = 16, titleH = 40;
+  const padding = 16, titleH = 44;
   const totalW = swCanvas.width + smithCanvas.width + padding * 3;
-  const totalH = Math.max(swCanvas.height, smithCanvas.height) + titleH + padding * 2;
+  const totalH = Math.max(swCanvas.height, smithCanvas.height) + titleH + padding;
 
   const out = document.createElement('canvas');
   out.width = totalW; out.height = totalH;
-  const c = out.getContext('2d');
-  c.fillStyle = '#f4f5f7'; c.fillRect(0, 0, out.width, out.height);
-  c.fillStyle = '#1a1d23'; c.font = 'bold 14px Segoe UI, system-ui, sans-serif';
-  c.fillText('Transmission Line  \u00B7  RF Toolbox  \u00B7  hinckster.github.io/RF-Toolbox', padding, titleH / 2 + 5);
-  c.fillStyle = '#718096'; c.font = '11px monospace';
-  c.fillText(new Date().toISOString().slice(0, 19).replace('T', ' ') + ' UTC', padding, titleH - 4);
-  c.drawImage(swCanvas,    padding,                        titleH + padding);
-  c.drawImage(smithCanvas, swCanvas.width + padding * 2,  titleH + padding);
+  const ctx = out.getContext('2d');
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, out.width, out.height);
+  ctx.fillStyle = '#f4f5f7'; ctx.fillRect(0, 0, out.width, titleH);
+  ctx.fillStyle = '#1a1d23'; ctx.font = 'bold 13px Segoe UI, system-ui, sans-serif';
+  ctx.fillText(toolName + '  \u00b7  RF Toolbox', padding, 17);
+  ctx.fillStyle = '#b5895a'; ctx.font = '11px Segoe UI, system-ui, sans-serif';
+  ctx.fillText('hinckster.github.io/RF-Toolbox', padding, 32);
+  const ts = new Date().toISOString().slice(0, 19).replace('T', ' ') + ' UTC';
+  ctx.fillStyle = '#718096'; ctx.font = '10px Courier New, monospace';
+  ctx.fillText(ts, out.width - ctx.measureText(ts).width - padding, 24);
+  ctx.drawImage(swCanvas,    padding,                        titleH + padding);
+  ctx.drawImage(smithCanvas, swCanvas.width + padding * 2,  titleH + padding);
 
   const link = document.createElement('a');
-  const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-  link.download = `transmission_line_${ts}.png`;
+  link.download = 'transmission-line-' + Date.now() + '.png';
   link.href = out.toDataURL('image/png');
   link.click();
+  _btnFlash(btn, '\u2713 Saved!');
 }
 
 function exportCSV() {
