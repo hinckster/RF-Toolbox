@@ -838,22 +838,27 @@ function _btnFlash(btn, msg) {
   setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
 }
 function takeScreenshot(btn) {
-  const canvases = [...document.querySelectorAll('canvas')];
-  const pad = 16, th = 40;
-  const tw = canvases.reduce((s,c) => s + c.width + pad, pad);
-  const mh = Math.max(...canvases.map(c => c.height));
+  const canvases = [...document.querySelectorAll('canvas')].filter(c => c.width > 0 && c.height > 0);
+  if (!canvases.length) return;
+  const padding = 16, titleH = 44;
+  const totalW = canvases.reduce((s,c) => s + c.width + padding, padding);
+  const maxH   = Math.max(...canvases.map(c => c.height));
   const out = document.createElement('canvas');
-  out.width = tw; out.height = mh + th + pad * 2;
-  const c = out.getContext('2d');
-  c.fillStyle = '#f4f5f7'; c.fillRect(0,0,out.width,out.height);
-  c.fillStyle = '#e2e2e8'; c.font = 'bold 14px Segoe UI,system-ui,sans-serif';
-  c.fillText('Noise Figure Cascade  ·  RF Toolbox  ·  hinckster.github.io/RF-Toolbox', pad, th/2+5);
-  c.fillStyle = '#718096'; c.font = '11px monospace';
-  c.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC', pad, th-4);
-  let x = pad;
-  canvases.forEach(cv => { c.drawImage(cv,x,th+pad); x += cv.width+pad; });
+  out.width = totalW; out.height = maxH + titleH + padding;
+  const ctx = out.getContext('2d');
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, out.width, out.height);
+  ctx.fillStyle = '#f4f5f7'; ctx.fillRect(0, 0, out.width, titleH);
+  ctx.fillStyle = '#1a1d23'; ctx.font = 'bold 13px Segoe UI, system-ui, sans-serif';
+  ctx.fillText('Noise Figure Cascade  \u00b7  RF Toolbox', padding, 17);
+  ctx.fillStyle = '#b5895a'; ctx.font = '11px Segoe UI, system-ui, sans-serif';
+  ctx.fillText('hinckster.github.io/RF-Toolbox', padding, 32);
+  const ts = new Date().toISOString().slice(0,19).replace('T',' ') + ' UTC';
+  ctx.fillStyle = '#718096'; ctx.font = '10px Courier New, monospace';
+  ctx.fillText(ts, out.width - ctx.measureText(ts).width - padding, 24);
+  let x = padding;
+  canvases.forEach(c => { ctx.drawImage(c, x, titleH + padding); x += c.width + padding; });
   const lnk = document.createElement('a');
-  lnk.download = 'noise_figure_'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.png';
+  lnk.download = 'noise-figure-cascade-' + Date.now() + '.png';
   lnk.href = out.toDataURL('image/png'); lnk.click();
   _btnFlash(btn, '✓ Saved!');
 }
