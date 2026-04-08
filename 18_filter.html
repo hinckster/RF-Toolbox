@@ -525,12 +525,17 @@ function updateRes(){
 
   document.getElementById('annotation').innerHTML=
     `<strong>${resMode==='series'?'Series':'Parallel'} RLC:</strong> `+
-    `R = ${R} Ω, L = ${(L*1e9).toFixed(2)} nH, C = ${(Cap*1e12).toFixed(2)} pF. `+
-    `<strong>f₀ = ${fmtF(f0)}</strong>, Q = <strong>${Q.toFixed(1)}</strong>, `+
-    `3 dB BW = <strong>${fmtF(BW)}</strong>. `+
+    `f₀ = <strong>${fmtF(f0)}</strong>, Q = <strong>${Q.toFixed(1)}</strong>, `+
+    `3 dB BW = <strong>${fmtF(BW)}</strong> — R = ${R} Ω, L = ${(L*1e9).toFixed(2)} nH, C = ${(Cap*1e12).toFixed(2)} pF. `+
     (resMode==='series'
-      ?`|Z| at resonance = R = ${R} Ω (${R<50?'lower':'higher'} than 50 Ω reference).`
-      :`|Z| peak ≈ R = ${R} Ω at resonance.`);
+      ?`Series: |Z| minimum = R = <strong>${R} Ω</strong> at f₀ (near-short) — dominates in bandpass filters and series-resonant tank circuits; bandwidth scales as BW = R/L.`
+      :`Parallel: |Z| maximum ≈ R = <strong>${R} Ω</strong> at f₀ (near-open) — used as band-stop loads and oscillator tanks; bandwidth scales as BW = 1/(RC).`)+
+    ` `+
+    (Q<5
+      ?`Q = ${Q.toFixed(1)} is low — response is wideband (${fmtF(BW)}); reduce R or increase L to raise Q and sharpen the peak.`
+      :Q>100
+        ?`High Q (${Q.toFixed(1)}) — very narrow BW (${fmtF(BW)}); 1% component tolerance shifts f₀ by ~0.5%; use precision inductors and NPO/C0G capacitors.`
+        :`Q = ${Q.toFixed(1)} is moderate — for sharper stopband rejection, cascade stages or switch to the filter mode above.`);
 }
 
 // ── Update filter ─────────────────────────────────────────────────────────────
