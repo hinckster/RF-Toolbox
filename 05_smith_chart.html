@@ -213,7 +213,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
     <h3>Results</h3>
     <div class="results">
       <div class="result-card"><div class="label">Z_L</div><div class="value v-accent" id="rZL">—</div><div class="unit">Ω</div></div>
-      <div class="result-card"><div class="label">z (norm.)</div><div class="value v-accent2" id="rZn">—</div><div class="unit">Z / Z₀</div></div>
+      <div class="result-card"><div class="label">z = Z/Z₀ (normalized)</div><div class="value v-accent2" id="rZn">—</div><div class="unit">unitless</div></div>
       <div class="result-card"><div class="label">|Γ|</div><div class="value v-orange" id="rGmag">—</div><div class="unit">unitless</div></div>
       <div class="result-card"><div class="label">∠Γ</div><div class="value v-orange" id="rGang">—</div><div class="unit">degrees</div></div>
       <div class="result-card"><div class="label">VSWR</div><div class="value v-red" id="rVSWR">—</div><div class="unit">:1</div></div>
@@ -240,7 +240,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
     <h3>Pi / T Network Synthesis</h3>
     <div style="font-size:.76rem;color:var(--muted);margin-bottom:.55rem">Q-controlled 3-element matching. Q must be ≥ Q<sub>min</sub> = √(R<sub>max</sub>/R<sub>min</sub>−1).</div>
     <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;flex-wrap:wrap">
-      <label style="font-size:.78rem;color:var(--muted);white-space:nowrap">Design Q</label>
+      <label style="font-size:.78rem;color:var(--muted);white-space:nowrap" title="Quality Factor. Minimum Q = sqrt(R_max/R_min - 1). Higher Q = narrower bandwidth.">Design Q (Quality Factor)</label>
       <input type="range" id="slQ" min="0.1" max="20" step="0.05" value="3"
              oninput="document.getElementById('vQ').textContent=parseFloat(this.value).toFixed(2);update()"
              style="flex:1;min-width:80px;accent-color:#b5895a">
