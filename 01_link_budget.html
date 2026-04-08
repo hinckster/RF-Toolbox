@@ -306,6 +306,11 @@ tr.drag-over td{background:rgba(37,99,235,.06)}
 
     <div class="chart-panel">
       <h3>Power Waterfall — running signal level at each stage</h3>
+      <div style="display:flex;gap:1rem;font-size:.72rem;color:var(--tm);margin-bottom:.4rem;align-items:center">
+        <span><span style="display:inline-block;width:12px;height:10px;background:#16a34a;border-radius:2px;margin-right:4px"></span>Gain (+dB)</span>
+        <span><span style="display:inline-block;width:12px;height:10px;background:#dc2626;border-radius:2px;margin-right:4px"></span>Loss (−dB)</span>
+        <span><span style="display:inline-block;width:12px;height:10px;background:#2563eb;border-radius:2px;margin-right:4px"></span>Reference</span>
+      </div>
       <div class="chart-wrap"><canvas id="chartWaterfall">
         <p>Horizontal bar chart showing signal power level cascaded through each budget row.</p>
       </canvas></div>
