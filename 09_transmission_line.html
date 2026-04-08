@@ -244,7 +244,16 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
 
     <hr class="divider">
     <div class="smith-inset-label">VSWR vs Frequency — Bandwidth Sweep</div>
-    <div style="font-size:.75rem;color:var(--muted);margin-bottom:.5rem">Reactive load model: inductive X&#8733;f, capacitive X&#8733;1/f. Set f&#8320; above to choose center frequency.</div>
+    <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.5rem">
+      <span style="font-size:.75rem;color:var(--muted)">Load type:</span>
+      <select id="selLoadType" class="sel" style="font-size:.75rem;padding:2px 6px" onchange="update()">
+        <option value="resistive">Resistive (flat)</option>
+        <option value="rl">RL (inductive, X&#8733;f)</option>
+        <option value="rc">RC (capacitive, X&#8733;1/f)</option>
+        <option value="rlc">Series RLC (resonant)</option>
+      </select>
+      <span style="font-size:.75rem;color:var(--muted)">Set f&#8320; above to choose center frequency.</span>
+    </div>
     <div class="chart-wrap">
       <canvas id="vsfrCanvas"></canvas>
     </div>
@@ -399,15 +408,22 @@ function updateVSWRChart(R, X, Z0, f0_GHz) {
   const fMin = 0.5 * f0_GHz, fMax = 1.5 * f0_GHz;
   const labels = [], vsData = [];
 
+  const loadTypeEl = document.getElementById('selLoadType');
+  const loadType = loadTypeEl ? loadTypeEl.value : 'resistive';
+  const loadNames = {resistive:'Resistive',rl:'RL (inductive)',rc:'RC (capacitive)',rlc:'Series RLC'};
+
   for (let i = 0; i <= N; i++) {
     const f = fMin + (fMax - fMin) * i / N;
     let Xf;
-    if (Math.abs(X) < 0.5) {
-      Xf = 0; // purely resistive — stays flat
-    } else if (X > 0) {
-      Xf = X * (f / f0_GHz); // inductive: X ∝ f
+    if (loadType === 'resistive') {
+      Xf = 0;                          // flat — purely resistive
+    } else if (loadType === 'rl') {
+      Xf = X * (f / f0_GHz);          // inductive: X ∝ f
+    } else if (loadType === 'rc') {
+      Xf = X * (f0_GHz / f);          // capacitive: X ∝ 1/f
     } else {
-      Xf = X * (f0_GHz / f); // capacitive: X ∝ 1/f
+      // Series RLC: resonant at f0, X(f) = X_L(f) - X_C(f) = X*(f/f0 - f0/f)
+      Xf = X * (f / f0_GHz - f0_GHz / f);
     }
     const { gr, gi } = gammaFromZ(R, Xf, Z0);
     const gmag = Math.sqrt(gr * gr + gi * gi);
@@ -418,6 +434,7 @@ function updateVSWRChart(R, X, Z0, f0_GHz) {
 
   vsfrChartInst.data.labels = labels;
   vsfrChartInst.data.datasets[0].data = vsData;
+  vsfrChartInst.data.datasets[0].label = `VSWR — ${loadNames[loadType]}`;
   vsfrChartInst.data.datasets[1].data = new Array(N + 1).fill(2);
 
   const yMax = Math.min(20, Math.max(3, Math.ceil(Math.max(...vsData) * 1.15)));
@@ -435,7 +452,7 @@ function updateVSWRChart(R, X, Z0, f0_GHz) {
   const vswr0 = vsData[centerIdx];
 
   let bwStr;
-  if (Math.abs(X) < 0.5) {
+  if (loadType === 'resistive' || Math.abs(X) < 0.5) {
     bwStr = 'Purely resistive load — VSWR is flat across frequency.';
   } else if (inBand === 0) {
     bwStr = `VSWR > 2:1 across the entire ±50% sweep. Mismatch is broadband; consider matching network.`;
@@ -445,7 +462,7 @@ function updateVSWRChart(R, X, Z0, f0_GHz) {
   }
 
   document.getElementById('vsfrAnnotation').innerHTML =
-    `<strong>Frequency sweep: ${fMin.toFixed(3)}&ndash;${fMax.toFixed(3)} GHz around f&#8320; = ${f0_GHz} GHz</strong> &mdash; ` + bwStr;
+    `<strong>${loadNames[loadType]} — sweep: ${fMin.toFixed(3)}&ndash;${fMax.toFixed(3)} GHz around f&#8320; = ${f0_GHz} GHz</strong> &mdash; ` + bwStr;
 }
 
 function initChart() {
@@ -531,8 +548,8 @@ function initChart() {
 function updateChart(R, X, Z0, lineLenLambda) {
   const { labels, data, gmag } = buildStandingWaveData(R, X, Z0, lineLenLambda);
 
-  const vswr    = gmag < 1 ? (1 + gmag) / (1 - gmag) : 99;
-  const invVSWR = gmag < 1 ? (1 - gmag) / (1 + gmag) : 0;
+  const vMax = 1 + gmag; // standing wave peak  = 1 + |Γ|
+  const vMin = 1 - gmag; // standing wave trough = 1 - |Γ|
 
   // Thin labels to show at most ~9 ticks
   const step = Math.max(1, Math.floor(labels.length / 9));
@@ -540,12 +557,12 @@ function updateChart(R, X, Z0, lineLenLambda) {
 
   swChart.data.labels = thinLabels;
   swChart.data.datasets[0].data = data;
-  swChart.data.datasets[1].data = new Array(data.length).fill(+vswr.toFixed(6));
-  swChart.data.datasets[2].data = new Array(data.length).fill(+invVSWR.toFixed(6));
+  swChart.data.datasets[1].data = new Array(data.length).fill(+vMax.toFixed(6));
+  swChart.data.datasets[2].data = new Array(data.length).fill(+vMin.toFixed(6));
 
   // Y-axis range
   swChart.options.scales.y.min = 0;
-  swChart.options.scales.y.max = Math.ceil((vswr + 0.2) * 10) / 10;
+  swChart.options.scales.y.max = Math.ceil((vMax + 0.2) * 10) / 10;
 
   swChart.update('none');
 }
