@@ -194,11 +194,19 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
         <div class="hints"><span>−60°</span><span>+60°</span></div>
       </div>
       <div class="eq-label" style="margin-bottom:.3rem">Element Pattern</div>
-      <select class="sel" id="selElem">
+      <select class="sel" id="selElem" onchange="onElemChange();update()">
         <option value="iso">Isotropic</option>
         <option value="cos">Cosine |cos θ|</option>
         <option value="cos2" selected>Patch cos²θ</option>
+        <option value="dipole">Half-wave Dipole</option>
+        <option value="custom">Custom (JS expression)</option>
       </select>
+      <div id="customElemWrap" style="display:none;margin-bottom:.7rem">
+        <div style="font-size:.72rem;color:var(--tm);margin-bottom:.25rem">E_elem(theta_deg):</div>
+        <input id="customElemExpr" type="text" placeholder="Math.cos(theta * Math.PI/180)"
+          style="width:100%;background:var(--deep);border:1px solid var(--bdr);border-radius:4px;color:var(--t2);font-family:'Courier New',monospace;font-size:.76rem;padding:4px 6px"
+          oninput="update()">
+      </div>
       <div class="eq-label" style="margin-bottom:.3rem">Amplitude Taper</div>
       <select class="sel" id="selTaper">
         <option value="uniform">Uniform (−13 dB SLL)</option>
@@ -324,7 +332,25 @@ function elemPattern(theta_rad, type){
   const ct=Math.cos(theta_rad);
   if(type==='cos') return Math.abs(ct);
   if(type==='cos2') return ct*ct;
+  if(type==='dipole'){
+    const st=Math.max(Math.abs(Math.sin(theta_rad)),1e-10);
+    return Math.abs(Math.cos(PI/2*ct)/st);
+  }
+  if(type==='custom'){
+    try{
+      const expr=document.getElementById('customElemExpr').value.trim();
+      if(!expr) return 1;
+      const theta=theta_rad*180/PI;
+      const v=Function('theta','PI','Math','"use strict";return ('+expr+')')(theta,PI,Math);
+      return isFinite(v)&&!isNaN(v)?Math.abs(v):1;
+    }catch(e){return 1;}
+  }
   return 1;
+}
+
+function onElemChange(){
+  const v=document.getElementById('selElem').value;
+  document.getElementById('customElemWrap').style.display=v==='custom'?'block':'none';
 }
 
 function computeAF(N, d_lam, theta_deg_0, theta_arr, taperType, elemType){
@@ -545,7 +571,7 @@ function initChart(){
       ]},
       options:{
         animation:{duration:0},responsive:true,
-        plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:12}}},
+        plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:12,filter:(item)=>item.text&&!item.text.startsWith('_')}}},
         scales:{
           x:{type:'linear',grid:{color:'#e2e5ea'},ticks:{color:'#718096',maxTicksLimit:13},title:{display:true,color:'#718096',text:'Angle θ (degrees)'}},
           y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Normalized Pattern (dB)'},min:-60,max:3}
@@ -611,7 +637,7 @@ function update(){
     if(mainChart.data.datasets.length>2) mainChart.data.datasets.splice(2);
     glAngles.forEach((g,i)=>{
       mainChart.data.datasets.push({
-        label:i===0?'Grating Lobe':'',data:[{x:g,y:-60},{x:g,y:0}],
+        label:i===0?'Grating Lobe(s)':'_gl',data:[{x:g,y:-60},{x:g,y:0}],
         borderColor:'rgba(248,81,73,.85)',borderDash:[4,4],borderWidth:2,pointRadius:0,showLine:true,fill:false
       });
     });
@@ -623,7 +649,7 @@ function update(){
   }
 
   const taperNames={uniform:'Uniform (−13 dB SLL)',hamming:'Hamming (−43 dB SLL)',hann:'Hann (−31 dB SLL)',cheby:'Chebyshev (−40 dB SLL)',taylor:'Taylor −35 dB'};
-  const elemNames={iso:'isotropic',cos:'cosine',cos2:'patch (cos²θ)'};
+  const elemNames={iso:'isotropic',cos:'cosine',cos2:'patch (cos²θ)',dipole:'half-wave dipole',custom:'custom expression'};
   document.getElementById('annotation').innerHTML=
     `<strong>Array A (${N} elements, d=${d_lam}λ, ${taperNames[taper]}):</strong>
     Directivity ≈ <b>${dir_approx.toFixed(1)} dBi</b>, HPBW = <b>${hpbw?hpbw.toFixed(1)+'°':'—'}</b>,
