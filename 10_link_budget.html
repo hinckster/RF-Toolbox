@@ -461,7 +461,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
 <div class="toolbar">
   <button class="tbtn" onclick="showHelp()">? Help</button>
   <button id="btn-screenshot" title="Save screenshot">📷 Screenshot</button>
-  <button id="btn-exportcsv" title="Export CSV" onclick="exportCSV()">⬇ Export CSV</button>
+  <button id="btn-exportcsv" title="Export CSV" onclick="exportCSV(this)">⬇ Export CSV</button>
   <button id="btn-fullscreen" title="Toggle fullscreen">⛶ Fullscreen</button>
   <button id="btn-copylink"   title="Copy link to clipboard">⎘ Copy Link</button>
 </div>
@@ -1236,7 +1236,7 @@ document.getElementById('dist-slider').addEventListener('input', function() {
 /* =========================================================
    TOOLBAR ACTIONS
    ========================================================= */
-function exportCSV() {
+function exportCSV(btn) {
   var g = function(id){ var el = document.getElementById(id); return el ? el.textContent.trim() : ''; };
   var lines = [
     'RF Toolbox — Link Budget Export,' + new Date().toLocaleString(),
@@ -1269,6 +1269,7 @@ function exportCSV() {
   var blob = new Blob([lines.join('\n')], {type:'text/csv'});
   var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = 'rf_toolbox_link_budget_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
+  if (btn) { var o=btn.textContent; btn.textContent='✓ Saved!'; btn.style.color='#16a34a'; btn.style.borderColor='#16a34a'; setTimeout(()=>{btn.textContent=o;btn.style.color='';btn.style.borderColor='';},2000); }
 }
 document.getElementById('btn-fullscreen').addEventListener('click', () => {
   if (!document.fullscreenElement) {
