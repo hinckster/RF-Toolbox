@@ -105,6 +105,7 @@ table.sens-tbl td:first-child{text-align:left;font-family:'Segoe UI',system-ui,s
 <div class="toolbar">
   <button class="tbtn" onclick="showHelp()">? Help</button>
   <button class="tbtn" onclick="takeScreenshot('Receiver Dynamic Range',this)">📷 Screenshot</button>
+  <button class="tbtn" onclick="exportCSV(this)">⬇ Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
   <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
 </div>
@@ -539,6 +540,24 @@ function takeScreenshot(toolName, btn) {
   link.download = toolName.replace(/[\s]+/g,'-').toLowerCase() + '-' + Date.now() + '.png';
   link.href = out.toDataURL('image/png'); link.click();
   _btnFlash(btn, '\u2713 Saved!');
+}
+function exportCSV(btn) {
+  var g = function(id){ var el=document.getElementById(id); return el ? el.textContent.trim() : ''; };
+  var lines = ['RECEIVER DYNAMIC RANGE — EXPORT','Parameter,Value',
+    'System NF (dB),' + g('mSysNF'),
+    'System IIP3 (dBm),' + g('mSysIIP3'),
+    'System OIP3 (dBm),' + g('mSysOIP3'),
+    'Total Gain,' + g('mSysG'),
+    'Noise Floor (dBm),' + g('mNoiseFloor'),
+    'Output P1dB (dBm),' + g('mP1dB'),
+    'SFDR (dB),' + g('mSFDR'),
+    'Bandwidth (MHz),' + g('mBW'),
+    '','STAGES','Stage,NF (dB),Gain (dB),IIP3 (dBm)'];
+  stages.forEach(function(s){ lines.push(s.name+','+s.nf+','+s.gain+','+(s.oip3Mode?'OIP3 '+s.oip3:s.iip3||'—')); });
+  var blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='receiver-dynamic-range-'+Date.now()+'.csv'; a.click();
+  if(btn) _btnFlash(btn,'✓ Saved!');
 }
 function toggleFullscreen(){
   if(!document.fullscreenElement)document.documentElement.requestFullscreen();
