@@ -93,8 +93,8 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 
 .all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
 .all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
-.ds-toggle-row{display:flex;gap:.5rem;margin-bottom:.9rem}
-.ds-mode-btn{background:var(--card);border:1px solid var(--bdr);color:var(--tm);border-radius:14px;padding:.25rem .85rem;font-size:.77rem;cursor:pointer;transition:.15s;white-space:nowrap}
+.ds-toggle-row{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.9rem;align-items:center;width:100%}
+.ds-mode-btn{background:var(--card);border:1px solid var(--bdr);color:var(--tm);border-radius:14px;padding:.25rem .85rem;font-size:.77rem;cursor:pointer;transition:.15s;white-space:nowrap;flex-shrink:0;min-width:fit-content}
 .ds-mode-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
 .ds-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;font-size:.85rem}
 .ds-num{background:var(--deep);border:1px solid var(--bdr);border-radius:4px;color:#b5895a;font-family:'Courier New',monospace;font-size:.82rem;padding:3px 6px;width:78px;text-align:right;-moz-appearance:textfield;appearance:textfield}
@@ -164,6 +164,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
         <button class="ds-mode-btn active" id="btnPoly" onclick="setInputMode('poly')">Polynomial mode</button>
         <button class="ds-mode-btn" id="btnDS" onclick="setInputMode('ds')">Datasheet mode</button>
       </div>
+      <div style="border-top:1px solid var(--bdr);margin:.5rem 0"></div>
       <div class="preset-row">
         <label>Load Scenario</label>
         <select class="preset-select" id="presetSel" onchange="loadPreset(this.value)">
@@ -321,23 +322,34 @@ const specChart=new Chart(document.getElementById('chartSpectrum').getContext('2
 const interceptChart=new Chart(document.getElementById('chartIntercept').getContext('2d'),{
   type:'scatter',
   data:{datasets:[
-    {label:'Fundamental',data:[],borderColor:'#58a6ff',borderWidth:2.5,pointRadius:0,showLine:true,fill:false},
-    {label:'IM3',data:[],borderColor:'#f85149',borderWidth:2.5,pointRadius:0,showLine:true,fill:false},
-    {label:'Fund asymptote',data:[],borderColor:'rgba(88,166,255,.3)',borderDash:[5,4],borderWidth:1.5,pointRadius:0,showLine:true,fill:false},
-    {label:'IM3 asymptote',data:[],borderColor:'rgba(248,81,73,.3)',borderDash:[5,4],borderWidth:1.5,pointRadius:0,showLine:true,fill:false},
-    {label:'IIP3/OIP3',data:[],borderColor:'#e6c547',backgroundColor:'#e6c547',pointRadius:7,showLine:false},
-    {label:'P1dB point',data:[],borderColor:'#f0883e',backgroundColor:'#f0883e',pointStyle:'triangle',pointRadius:7,showLine:false},
-    {label:'Operating Pt',data:[],borderColor:'#3fb950',backgroundColor:'#3fb950',pointRadius:5,showLine:false},
-    {label:'IM2',data:[],borderColor:'#f0883e',borderWidth:2,pointRadius:0,showLine:true,fill:false},
-    {label:'IM2 asymptote',data:[],borderColor:'rgba(240,136,62,.3)',borderDash:[5,4],borderWidth:1.5,pointRadius:0,showLine:true,fill:false},
-    {label:'IIP2/OIP2',data:[],borderColor:'#f0883e',backgroundColor:'#f0883e',pointRadius:6,pointStyle:'rectRot',showLine:false}
+    // Row 1: three main lines
+    {label:'Fundamental',data:[],borderColor:'#2563eb',borderWidth:2.5,pointRadius:0,showLine:true,fill:false},
+    {label:'IM3',data:[],borderColor:'#dc2626',borderWidth:2,pointRadius:0,showLine:true,fill:false},
+    {label:'IM2',data:[],borderColor:'#d97706',borderDash:[6,3],borderWidth:1.5,pointRadius:0,showLine:true,fill:false},
+    // Asymptotes (hidden from legend via filter)
+    {label:'_fund_asym',data:[],borderColor:'rgba(37,99,235,.4)',borderDash:[5,4],borderWidth:1,pointRadius:0,showLine:true,fill:false},
+    {label:'_im3_asym',data:[],borderColor:'rgba(220,38,38,.4)',borderDash:[5,4],borderWidth:1,pointRadius:0,showLine:true,fill:false},
+    {label:'_im2_asym',data:[],borderColor:'rgba(217,119,6,.4)',borderDash:[5,4],borderWidth:1,pointRadius:0,showLine:true,fill:false},
+    // Row 2: key points
+    {label:'IIP3 / OIP3',data:[],borderColor:'#dc2626',backgroundColor:'#dc2626',pointStyle:'triangle',pointRadius:10,showLine:false},
+    {label:'P1dB',data:[],borderColor:'#7c3aed',backgroundColor:'#7c3aed',pointStyle:'rectRot',pointRadius:10,showLine:false},
+    {label:'Operating Pt',data:[],borderColor:'#16a34a',backgroundColor:'#16a34a',pointRadius:8,showLine:false},
+    {label:'IIP2 / OIP2',data:[],borderColor:'#d97706',backgroundColor:'#d97706',pointStyle:'triangle',pointRadius:8,showLine:false},
   ]},
   options:{
     animation:{duration:0},responsive:true,
-    plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:12}}},
+    plugins:{
+      legend:{
+        labels:{
+          color:'#718096',font:{size:11},boxWidth:14,
+          filter:(item)=>!item.text.startsWith('_')
+        }
+      },
+      tooltip:{backgroundColor:'#f4f5f7',titleColor:'#1a1d23',bodyColor:'#4a5568',borderColor:'#d0d4da',borderWidth:1}
+    },
     scales:{
-      x:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Input Power (dBm)'}},
-      y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Output Power (dBm)'}}
+      x:{grid:{color:'#e2e5ea'},ticks:{color:'#718096',font:{size:11}},title:{display:true,color:'#718096',text:'Input Power (dBm)',font:{size:11}}},
+      y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096',font:{size:11}},title:{display:true,color:'#718096',text:'Output Power (dBm)',font:{size:11}}}
     }
   }
 });
@@ -436,19 +448,20 @@ function update(){
   const fundAsym=pinArr.map(p=>({x:p,y:p+Gain_dB}));
   const im3Asym=pinArr.map(p=>({x:p,y:3*p+Gain_dB-2*IIP3_dBm}));
 
-  interceptChart.data.datasets[0].data=fundLine;
-  interceptChart.data.datasets[1].data=im3Line;
-  interceptChart.data.datasets[2].data=fundAsym;
-  interceptChart.data.datasets[3].data=im3Asym;
-  interceptChart.data.datasets[4].data=[{x:IIP3_dBm,y:OIP3_dBm}];
-  interceptChart.data.datasets[5].data=[{x:P1dB_in,y:P1dB_in+Gain_dB-1}];
-  interceptChart.data.datasets[6].data=[{x:Pin_dBm,y:fund_dBm}];
-  // IM2 on intercept diagram (only when a2 ≠ 0)
+  // New dataset order: 0=Fund, 1=IM3, 2=IM2, 3=fund_asym, 4=im3_asym, 5=im2_asym,
+  //                    6=IIP3pt, 7=P1dB, 8=OpPt, 9=IIP2pt
   const OIP2_dBm = IIP2_dBm + Gain_dB;
   const showIM2 = Math.abs(a2) > 1e-6;
-  interceptChart.data.datasets[7].data = showIM2 ? pinArr.map(p=>{const Av=dBmToV(p);const v=Math.abs(a2*Av*Av);return{x:p,y:v>1e-15?vTodBm(v):-200};}) : [];
-  interceptChart.data.datasets[8].data = showIM2 ? pinArr.map(p=>({x:p,y:2*p-IIP2_dBm+Gain_dB})) : [];
-  interceptChart.data.datasets[9].data = showIM2 ? [{x:IIP2_dBm,y:OIP2_dBm}] : [];
+  interceptChart.data.datasets[0].data=fundLine;
+  interceptChart.data.datasets[1].data=im3Line;
+  interceptChart.data.datasets[2].data=showIM2?pinArr.map(p=>{const Av=dBmToV(p);const v=Math.abs(a2*Av*Av);return{x:p,y:v>1e-15?vTodBm(v):-200};}):[];
+  interceptChart.data.datasets[3].data=fundAsym;
+  interceptChart.data.datasets[4].data=im3Asym;
+  interceptChart.data.datasets[5].data=showIM2?pinArr.map(p=>({x:p,y:2*p-IIP2_dBm+Gain_dB})):[];
+  interceptChart.data.datasets[6].data=[{x:IIP3_dBm,y:OIP3_dBm}];
+  interceptChart.data.datasets[7].data=[{x:P1dB_in,y:P1dB_in+Gain_dB-1}];
+  interceptChart.data.datasets[8].data=[{x:Pin_dBm,y:fund_dBm}];
+  interceptChart.data.datasets[9].data=showIM2?[{x:IIP2_dBm,y:OIP2_dBm}]:[];
   interceptChart.options.scales.x.min=PinMin;
   interceptChart.options.scales.x.max=PinMax;
   interceptChart.update();
