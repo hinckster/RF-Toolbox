@@ -121,7 +121,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
 
 <div class="toolbar">
   <button class="tbtn" onclick="showHelp()">? Help</button>
-  <button class="tbtn" onclick="takeScreenshot('Friis Transmission')">📷 Screenshot</button>
+  <button class="tbtn" onclick="takeScreenshot('Friis Transmission',this)">📷 Screenshot</button>
   <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
   <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
@@ -555,24 +555,36 @@ syncDistInput();
 onInput();
 
 // ── Toolbar functions ──
-function takeScreenshot(toolName) {
-  const canvases = [...document.querySelectorAll('canvas')];
-  const padding = 16, titleHeight = 40;
-  const totalWidth = canvases.reduce((s,c) => s + c.width + padding, padding);
-  const maxHeight = Math.max(...canvases.map(c => c.height));
+function _btnFlash(btn, msg) {
+  if (!btn) return;
+  const orig = btn.textContent;
+  btn.textContent = msg; btn.style.color = '#16a34a'; btn.style.borderColor = '#16a34a';
+  setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+}
+function takeScreenshot(toolName, btn) {
+  const canvases = [...document.querySelectorAll('canvas')].filter(c => c.width > 0 && c.height > 0);
+  if (!canvases.length) return;
+  const padding = 16, titleH = 44;
+  const totalW = canvases.reduce((s,c) => s + c.width + padding, padding);
+  const maxH   = Math.max(...canvases.map(c => c.height));
   const out = document.createElement('canvas');
-  out.width = totalWidth; out.height = maxHeight + titleHeight + padding * 2;
-  const c = out.getContext('2d');
-  c.fillStyle = '#0d0d0f'; c.fillRect(0, 0, out.width, out.height);
-  c.fillStyle = '#e2e2e8'; c.font = 'bold 14px Segoe UI, system-ui, sans-serif';
-  c.fillText(toolName + '  ·  RF Toolbox  ·  hinckster.github.io/RF-Toolbox', padding, titleHeight / 2 + 5);
-  c.fillStyle = '#718096'; c.font = '11px monospace';
-  c.fillText(new Date().toISOString().slice(0,19).replace('T',' ') + ' UTC', padding, titleHeight - 4);
+  out.width = totalW; out.height = maxH + titleH + padding;
+  const ctx = out.getContext('2d');
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, out.width, out.height);
+  ctx.fillStyle = '#f4f5f7'; ctx.fillRect(0, 0, out.width, titleH);
+  ctx.fillStyle = '#1a1d23'; ctx.font = 'bold 13px Segoe UI, system-ui, sans-serif';
+  ctx.fillText(toolName + '  ·  RF Toolbox', padding, 17);
+  ctx.fillStyle = '#b5895a'; ctx.font = '11px Segoe UI, system-ui, sans-serif';
+  ctx.fillText('hinckster.github.io/RF-Toolbox', padding, 32);
+  const ts = new Date().toISOString().slice(0,19).replace('T',' ') + ' UTC';
+  ctx.fillStyle = '#718096'; ctx.font = '10px Courier New, monospace';
+  ctx.fillText(ts, out.width - ctx.measureText(ts).width - padding, 24);
   let x = padding;
-  canvases.forEach(cv => { c.drawImage(cv, x, titleHeight + padding); x += cv.width + padding; });
+  canvases.forEach(c => { ctx.drawImage(c, x, titleH + padding); x += c.width + padding; });
   const link = document.createElement('a');
-  const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
-  link.download = `friis_transmission_${ts}.png`; link.href = out.toDataURL('image/png'); link.click();
+  link.download = toolName.replace(/\s+/g,'-').toLowerCase() + '-' + Date.now() + '.png';
+  link.href = out.toDataURL('image/png'); link.click();
+  _btnFlash(btn, '✓ Saved!');
 }
 
 function toggleFullscreen() {
