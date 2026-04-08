@@ -11,58 +11,50 @@
   --bg:#ffffff;--card:#f4f5f7;--deep:#eaecef;
   --bdr:#d0d4da;--t1:#1a1d23;--t2:#4a5568;--tm:#718096;
   --blue:#2563eb;--grn:#16a34a;--org:#d97706;--red:#dc2626;--yel:#e6c547;--pur:#7c3aed;
+  --cop:#b5895a;
 }
 body{background:var(--bg);color:var(--t2);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
-a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+a{color:var(--cop);text-decoration:none}a:hover{text-decoration:underline}
 
-/* Toolbar */
 .toolbar{position:fixed;top:14px;right:16px;display:flex;gap:6px;z-index:100}
 .tbtn{background:var(--card);border:1px solid var(--bdr);color:var(--tm);border-radius:5px;padding:5px 10px;font-size:.75rem;cursor:pointer;transition:border-color .15s,color .15s}
-.tbtn:hover{border-color:var(--blue);color:var(--blue)}
+.tbtn:hover{border-color:var(--cop);color:var(--cop)}
+.tbtn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 
-/* Nav */
 nav{padding:.75rem 1.5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.75rem;background:var(--card)}
 nav .sep{color:var(--bdr)}
 nav span{color:var(--tm);font-size:.85rem}
 
-/* Header */
 header{padding:1.5rem 1.5rem 1rem;max-width:1180px;margin:0 auto}
 header .tag{font-size:.72rem;font-weight:600;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:.3rem}
 header h1{font-size:1.7rem;font-weight:700;color:var(--t1)}
 header p{color:var(--tm);margin-top:.3rem;font-size:.88rem}
 
-/* Equation box */
 .eq-box{max-width:1180px;margin:0 auto .9rem;padding:0 1.5rem}
 .eq-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.1rem 1.75rem;display:flex;flex-wrap:wrap;gap:1.5rem;align-items:flex-start}
-.eq-col{flex:1;min-width:310px}
-.eq-label{font-size:.7rem;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+.eq-col{flex:1;min-width:280px}
+.eq-label{font-size:.7rem;color:var(--cop);text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
 .eq-primary{font-family:'Courier New',monospace;font-size:1.05rem;color:var(--t1);line-height:1.9}
 .eq-secondary{font-family:'Courier New',monospace;font-size:.9rem;color:var(--pur);line-height:1.9}
 .eq-note{font-size:.76rem;color:var(--tm);margin-top:.35rem}
-.var{display:inline-block;padding:0 3px;border-radius:3px;font-family:'Courier New',monospace}
-.var.hi{background:rgba(230,197,71,.18);color:var(--yel)}
-.var.res{background:rgba(63,185,80,.18);color:var(--grn)}
 
-/* Main layout */
-.layout{display:grid;grid-template-columns:280px 1fr;gap:1.2rem;max-width:1180px;margin:0 auto;padding:0 1.5rem 2rem}
+.layout{display:grid;grid-template-columns:290px 1fr;gap:1.2rem;max-width:1180px;margin:0 auto;padding:0 1.5rem 2rem}
 @media(max-width:768px){.layout{grid-template-columns:1fr}}
 
-/* Panels */
-.panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem}
-.panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
+.panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem;margin-bottom:1rem}
+.panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.9rem}
+.panel-sep{border-top:1px solid var(--bdr);margin:.75rem 0}
 
-/* Sliders */
 .sr{margin-bottom:.9rem}
 .sr label{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.25rem}
-.sr label span{color:#b5895a;font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
-input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
+.sr label span{color:var(--cop);font-family:'Courier New',monospace;font-weight:600;transition:all 200ms ease}
+input[type=range]{width:100%;accent-color:var(--blue);height:4px;cursor:pointer}
 .hints{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tm);margin-top:.12rem}
 
-/* Metrics */
 .metrics{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:1rem}
 .mc{background:var(--deep);border:1px solid var(--bdr);border-radius:6px;padding:.6rem .8rem}
 .mc .mlb{font-size:.67rem;color:var(--tm);text-transform:uppercase;letter-spacing:.9px}
-.mc .mv{font-family:'Courier New',monospace;font-size:1.1rem;font-weight:700;margin-top:.1rem;transition:color 200ms ease}
+.mc .mv{font-family:'Courier New',monospace;font-size:1.05rem;font-weight:700;margin-top:.1rem;transition:color 200ms ease}
 .mc .mu{font-size:.65rem;color:var(--tm)}
 .good{color:var(--grn)}.warn{color:var(--org)}.bad{color:var(--red)}.info{color:var(--blue)}.info2{color:var(--pur)}
 
@@ -73,150 +65,159 @@ input[type=range]{width:100%;accent-color:#b5895a;height:4px;cursor:pointer}
 .mb-fill{height:100%;border-radius:6px;transition:width .3s ease,background .3s ease}
 .mb-scale{display:flex;justify-content:space-between;font-size:.62rem;color:var(--tm);margin-top:.15rem}
 
+/* Preset & add-term controls */
+.preset-row{margin-bottom:.9rem}
+.preset-row label{font-size:.72rem;color:var(--tm);display:block;margin-bottom:.3rem}
+.preset-select,.add-sel{width:100%;background:var(--deep);border:1px solid var(--bdr);color:var(--t2);border-radius:6px;padding:6px 8px;font-size:.78rem;font-family:'Segoe UI',system-ui,sans-serif;cursor:pointer}
+.preset-select:focus,.add-sel:focus{outline:none;border-color:var(--cop)}
+.preset-select option,.add-sel option{background:var(--deep)}
+.add-row{display:flex;gap:.5rem;margin-bottom:.9rem;align-items:center}
+.add-btn{background:var(--blue);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:.78rem;cursor:pointer;white-space:nowrap;font-family:'Segoe UI',system-ui,sans-serif}
+.add-btn:hover{background:#1d4ed8}
+
 /* Budget table */
 .tbl-wrap{overflow-x:auto;margin-bottom:1rem}
-table.budget{width:100%;border-collapse:collapse;font-size:.8rem}
-table.budget th{padding:.45rem .6rem;color:var(--tm);font-size:.67rem;font-weight:600;text-transform:uppercase;letter-spacing:.8px;text-align:right;border-bottom:1px solid var(--bdr);background:var(--deep)}
+table.budget{width:100%;border-collapse:collapse;font-size:.8rem;min-width:560px}
+table.budget th{padding:.45rem .5rem;color:var(--tm);font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.8px;text-align:right;border-bottom:2px solid var(--bdr);background:var(--deep)}
 table.budget th:first-child{text-align:left}
-table.budget td{padding:.38rem .6rem;border-bottom:1px solid rgba(255,255,255,.03);text-align:right;font-family:'Courier New',monospace;font-size:.79rem}
-table.budget td:first-child{text-align:left;font-family:'Segoe UI',system-ui,sans-serif;color:var(--t2)}
-table.budget td:nth-child(2){font-size:.75rem}
-table.budget tr.separator td{border-top:1px solid var(--bdr);padding-top:.6rem}
-table.budget tr.total td{font-weight:700;font-size:.85rem}
-table.budget tr.total td:first-child{color:var(--t1);font-family:'Segoe UI',system-ui,sans-serif}
-.pill{display:inline-block;padding:.1rem .45rem;border-radius:10px;font-size:.7rem;font-weight:600;font-family:'Segoe UI',system-ui,sans-serif}
-.pill.pos{background:rgba(63,185,80,.15);color:var(--grn)}
-.pill.neg{background:rgba(248,81,73,.15);color:var(--red)}
-.pill.neu{background:rgba(181,137,90,.12);color:#b5895a}
+table.budget td{padding:.35rem .5rem;border-bottom:1px solid rgba(0,0,0,.04);text-align:right;vertical-align:middle}
+table.budget td:first-child{text-align:left}
+table.budget tr.locked{background:rgba(37,99,235,.03)}
+table.budget tr.locked td{font-weight:600}
+table.budget tr.row-disabled{opacity:.45}
+
+/* Row components */
+.drag-handle{cursor:grab;color:var(--tm);padding:0 4px;font-size:1rem;user-select:none;touch-action:none}
+.drag-handle:active{cursor:grabbing}
+.row-toggle{position:relative;display:inline-block;width:32px;height:18px;flex-shrink:0}
+.row-toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:var(--bdr);border-radius:9px;transition:.2s}
+.row-toggle input:checked+.toggle-track{background:var(--blue)}
+.toggle-thumb{position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:2px;left:2px;transition:.2s}
+.row-toggle input:checked~.toggle-thumb{left:16px}
+.val-input{background:var(--deep);border:1px solid var(--bdr);border-radius:4px;color:var(--t2);font-family:'Courier New',monospace;font-size:.79rem;padding:2px 5px;width:64px;text-align:right}
+.val-input:focus{outline:none;border-color:var(--blue)}
+.val-input:disabled{color:var(--tm);background:transparent;border-color:transparent;cursor:default}
+.desc-cell{font-family:'Segoe UI',system-ui,sans-serif;font-size:.79rem;color:var(--t2);min-width:130px}
+.fspl-val{font-family:'Courier New',monospace;font-size:.79rem;color:var(--tm);background:var(--deep);border-radius:4px;padding:2px 5px;display:inline-block}
+.del-btn{background:none;border:none;color:var(--tm);cursor:pointer;font-size:.9rem;padding:0 2px;border-radius:3px;line-height:1}
+.del-btn:hover{color:var(--red)}
+.lock-icon{color:var(--tm);font-size:.75rem;margin-left:3px}
+.pill{display:inline-block;padding:.1rem .45rem;border-radius:10px;font-size:.68rem;font-weight:600;font-family:'Segoe UI',system-ui,sans-serif}
+.pill.pos{background:rgba(22,163,74,.12);color:var(--grn)}
+.pill.neg{background:rgba(220,38,38,.12);color:var(--red)}
+.pill.neu{background:rgba(181,137,90,.1);color:var(--cop)}
+.run-total{font-family:'Courier New',monospace;font-size:.78rem}
 
 /* Charts */
 .chart-panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1.2rem;margin-bottom:1rem}
 .chart-panel h3{font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.8rem}
-.chart-wrap{position:relative;min-height:260px}
+.chart-wrap{position:relative;min-height:240px}
 
-/* Annotation */
-.annotation{border-left:3px solid var(--blue);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;margin-top:.8rem;font-size:.88rem;color:var(--tm);line-height:1.75}
+.annotation{border-left:3px solid var(--cop);background:var(--card);padding:11px 14px;border-radius:0 8px 8px 0;margin-top:.8rem;font-size:.88rem;color:var(--tm);line-height:1.75}
 .annotation strong{color:var(--t1)}
 .annotation b{color:var(--blue)}
-.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
-.help-overlay.open{display:flex}
-.help-box{background:#fff;border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;max-height:80vh;overflow-y:auto}
-.help-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;color:#718096;cursor:pointer}
-.help-title{font-size:1.2rem;font-weight:700;color:#1a1d23;margin-bottom:1.2rem}
-.help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
-.help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
-.help-try li::marker{color:#b5895a}
+
+/* Drag over highlight */
+tr.drag-over td{background:rgba(37,99,235,.06)}
 </style>
 </head>
 <body>
 
-<div class="toolbar">
-  <button class="tbtn" onclick="showHelp()">? Help</button>
-  <button class="tbtn" onclick="takeScreenshot('Link Budget')">📷 Screenshot</button>
-  <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
-  <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
+<div class="toolbar" role="toolbar" aria-label="Page controls">
+  <button class="tbtn" onclick="takeScreenshot('Link Budget')" aria-label="Download chart as PNG">📷 Screenshot</button>
+  <button class="tbtn" onclick="exportCSV()" aria-label="Export budget as CSV">⬇ Export CSV</button>
+  <button class="tbtn" onclick="toggleFullscreen()" aria-label="Toggle fullscreen">⛶ Fullscreen</button>
+  <button class="tbtn" id="copyBtn" onclick="copyLink()" aria-label="Copy page URL">⎘ Copy Link</button>
 </div>
 
-<nav>
+<nav aria-label="Breadcrumb">
+  <a href="https://www.noahhinckley.com/home">noahhinckley.com</a>
+  <span class="sep" aria-hidden="true">›</span>
   <a href="index.html">RF Toolbox</a>
-  <span class="sep">›</span>
-  <span>Link Budget</span>
+  <span class="sep" aria-hidden="true">›</span>
+  <span aria-current="page">Link Budget</span>
 </nav>
 
 <header>
   <div class="tag">Tool 01 · System Analysis</div>
   <h1>System Link Budget</h1>
-  <p>Full cascaded link budget — Friis equation as the zero-loss special case. Running margin at every stage.</p>
+  <p>Build your own cascaded budget — add, reorder, and toggle components. Waterfall shows running power at each stage.</p>
 </header>
 
 <div class="eq-box">
   <div class="eq-card">
     <div class="eq-col">
       <div class="eq-label">Full Link Budget</div>
-      <div class="eq-primary">Margin = <span class="var hi">Pr</span> − <span class="var hi">S_min</span></div>
-      <div class="eq-secondary"><span class="var hi">Pr</span> = Pt − L<sub>tx</sub> + G<sub>t</sub> − FSPL − L<sub>atm</sub> + G<sub>r</sub> − L<sub>rx</sub></div>
-      <div class="eq-secondary"><span class="var hi">S_min</span> = kTB + NF + SNR<sub>req</sub> + L<sub>impl</sub></div>
-      <div class="eq-note">Pozar eq. 2.40 — general form. FSPL = 20 log₁₀(4πdf/c)</div>
+      <div class="eq-primary">Margin = <span style="background:rgba(230,197,71,.18);color:var(--yel);border-radius:3px;padding:1px 4px">Pr</span> − <span style="background:rgba(230,197,71,.18);color:var(--yel);border-radius:3px;padding:1px 4px">S_min</span></div>
+      <div class="eq-secondary">Pr = Pt + ΣGains − ΣLosses</div>
+      <div class="eq-secondary">S_min = kTB + NF + SNR_req + L_impl</div>
+      <div class="eq-note">Pozar eq. 2.40 — general form. FSPL = 20log(4πdf/c)</div>
     </div>
     <div class="eq-col">
-      <div class="eq-label">Friis Equation (simplified: all extra losses = 0)</div>
-      <div class="eq-primary"><span class="var res">Pr</span> = Pt + G<sub>t</sub> + G<sub>r</sub> − FSPL</div>
-      <div class="eq-secondary">= Pt + G<sub>t</sub> + G<sub>r</sub> + 20 log₁₀(λ/4πd)</div>
-      <div class="eq-secondary">FSPL [dB] = 20log(d<sub>km</sub>) + 20log(f<sub>MHz</sub>) + 32.44</div>
-      <div class="eq-note">Friis 1946 — set L<sub>tx</sub>=L<sub>rx</sub>=L<sub>atm</sub>=0 to reduce to this form</div>
+      <div class="eq-label">Free-Space Path Loss</div>
+      <div class="eq-primary">FSPL = 20log(d<sub>km</sub>) + 20log(f<sub>MHz</sub>) + 32.44</div>
+      <div class="eq-secondary">= 20log(d<sub>km</sub>) + 20log(f<sub>GHz</sub>) + 92.44</div>
+      <div class="eq-note">Auto-computed from frequency and distance sliders. Cannot be manually edited.</div>
+    </div>
+    <div class="eq-col">
+      <div class="eq-label">Receiver Sensitivity</div>
+      <div class="eq-primary">S_min = kTB + NF + SNR + L<sub>impl</sub></div>
+      <div class="eq-secondary">kTB = −174 + 10log(BW_Hz) dBm</div>
+      <div class="eq-note">Noise floor rises 10 dB per decade of bandwidth.</div>
     </div>
   </div>
 </div>
 
 <div class="layout">
-  <!-- SIDEBAR: Controls -->
+  <!-- SIDEBAR -->
   <div>
-    <div class="panel" style="margin-bottom:1rem">
-      <h3>Transmitter</h3>
+    <div class="panel">
+      <h3>Core Parameters</h3>
       <div class="sr">
         <label>Tx Power P<sub>t</sub> <span id="vPt">20.0 dBm</span></label>
-        <input type="range" id="sPt" min="0" max="40" step="0.5" value="20">
+        <input type="range" id="sPt" min="0" max="40" step="0.5" value="20"
+          aria-label="Transmit power (dBm)" aria-valuemin="0" aria-valuemax="40" aria-valuenow="20">
         <div class="hints"><span>0 dBm</span><span>40 dBm</span></div>
       </div>
       <div class="sr">
         <label>Frequency f <span id="vF">2400 MHz</span></label>
-        <input type="range" id="sF" min="100" max="60000" step="100" value="2400">
+        <input type="range" id="sF" min="100" max="60000" step="100" value="2400"
+          aria-label="Frequency (MHz)" aria-valuemin="100" aria-valuemax="60000" aria-valuenow="2400">
         <div class="hints"><span>100 MHz</span><span>60 GHz</span></div>
       </div>
       <div class="sr">
         <label>Distance d <span id="vD">100 m</span></label>
-        <input type="range" id="sD" min="0" max="5" step="0.01" value="2">
+        <input type="range" id="sD" min="0" max="5" step="0.01" value="2"
+          aria-label="Distance (log scale)" aria-valuemin="0" aria-valuemax="5" aria-valuenow="2">
         <div class="hints"><span>1 m</span><span>100 km</span></div>
       </div>
-      <div class="sr">
-        <label>Tx Antenna Gain G<sub>t</sub> <span id="vGt">6.0 dBi</span></label>
-        <input type="range" id="sGt" min="0" max="40" step="0.5" value="6">
-        <div class="hints"><span>0 dBi</span><span>40 dBi</span></div>
-      </div>
-      <div class="sr">
-        <label>Tx Cable Loss L<sub>tx</sub> <span id="vLtx">1.0 dB</span></label>
-        <input type="range" id="sLtx" min="0" max="10" step="0.25" value="1">
-        <div class="hints"><span>0 dB</span><span>10 dB</span></div>
-      </div>
     </div>
-    <div class="panel" style="margin-bottom:1rem">
-      <h3>Channel</h3>
-      <div class="sr">
-        <label>Atmospheric Loss L<sub>atm</sub> <span id="vLatm">0.5 dB</span></label>
-        <input type="range" id="sLatm" min="0" max="20" step="0.25" value="0.5">
-        <div class="hints"><span>0 dB</span><span>20 dB</span></div>
-      </div>
-    </div>
-    <div class="panel" style="margin-bottom:1rem">
-      <h3>Receiver</h3>
-      <div class="sr">
-        <label>Rx Antenna Gain G<sub>r</sub> <span id="vGr">6.0 dBi</span></label>
-        <input type="range" id="sGr" min="0" max="40" step="0.5" value="6">
-        <div class="hints"><span>0 dBi</span><span>40 dBi</span></div>
-      </div>
-      <div class="sr">
-        <label>Rx Cable Loss L<sub>rx</sub> <span id="vLrx">1.0 dB</span></label>
-        <input type="range" id="sLrx" min="0" max="10" step="0.25" value="1">
-        <div class="hints"><span>0 dB</span><span>10 dB</span></div>
-      </div>
+
+    <div class="panel">
+      <h3>Receiver Sensitivity</h3>
       <div class="sr">
         <label>Noise Figure NF <span id="vNF">5.0 dB</span></label>
-        <input type="range" id="sNF" min="0" max="20" step="0.25" value="5">
+        <input type="range" id="sNF" min="0" max="20" step="0.25" value="5"
+          aria-label="Noise figure (dB)" aria-valuemin="0" aria-valuemax="20" aria-valuenow="5">
         <div class="hints"><span>0 dB</span><span>20 dB</span></div>
       </div>
       <div class="sr">
         <label>Bandwidth BW <span id="vBW">20 MHz</span></label>
-        <input type="range" id="sBW" min="0.001" max="2" step="0.001" value="1.301">
+        <input type="range" id="sBW" min="0.001" max="2" step="0.001" value="1.301"
+          aria-label="Bandwidth (log scale)" aria-valuemin="0.001" aria-valuemax="2" aria-valuenow="1.301">
         <div class="hints"><span>1 kHz</span><span>200 MHz</span></div>
       </div>
       <div class="sr">
         <label>Required SNR <span id="vSNR">10.0 dB</span></label>
-        <input type="range" id="sSNR" min="0" max="30" step="0.5" value="10">
+        <input type="range" id="sSNR" min="0" max="30" step="0.5" value="10"
+          aria-label="Required SNR (dB)" aria-valuemin="0" aria-valuemax="30" aria-valuenow="10">
         <div class="hints"><span>0 dB</span><span>30 dB</span></div>
       </div>
       <div class="sr">
         <label>Implementation Loss <span id="vLimpl">2.0 dB</span></label>
-        <input type="range" id="sLimpl" min="0" max="6" step="0.25" value="2">
+        <input type="range" id="sLimpl" min="0" max="6" step="0.25" value="2"
+          aria-label="Implementation loss (dB)" aria-valuemin="0" aria-valuemax="6" aria-valuenow="2">
         <div class="hints"><span>0 dB</span><span>6 dB</span></div>
       </div>
     </div>
@@ -228,7 +229,7 @@ table.budget tr.total td:first-child{color:var(--t1);font-family:'Segoe UI',syst
         <div class="mc"><div class="mlb">Received Pwr</div><div class="mv info" id="mPr">—</div><div class="mu">dBm</div></div>
         <div class="mc"><div class="mlb">Sensitivity</div><div class="mv info2" id="mSens">—</div><div class="mu">dBm</div></div>
         <div class="mc"><div class="mlb">Noise Floor</div><div class="mv" id="mNF" style="color:var(--tm)">—</div><div class="mu">dBm</div></div>
-        <div class="mc" style="grid-column:span 2"><div class="mlb">Link Margin</div><div class="mv" id="mMargin">—</div><div class="mu">dB · pass ≥ 0 dB, comfortable ≥ 6 dB</div></div>
+        <div class="mc" style="grid-column:span 2"><div class="mlb">Link Margin</div><div class="mv" id="mMargin">—</div><div class="mu">dB · pass ≥ 0, comfortable ≥ 6 dB</div></div>
       </div>
       <div class="margin-bar-wrap">
         <div class="mb-labels"><span>Link Margin</span><span id="mbLabel">— dB</span></div>
@@ -238,248 +239,527 @@ table.budget tr.total td:first-child{color:var(--t1);font-family:'Segoe UI',syst
     </div>
   </div>
 
-  <!-- MAIN: Table + Chart -->
+  <!-- MAIN -->
   <div>
     <div class="panel" style="margin-bottom:1rem">
-      <h3>Link Budget Cascade — running margin at each stage</h3>
+      <h3>Budget Table — build your link cascade</h3>
+
+      <!-- Preset loader -->
+      <div class="preset-row">
+        <label>Load Preset (fills table with typical rows)</label>
+        <select class="preset-select" id="presetSel" onchange="loadPreset(this.value);this.value=''">
+          <option value="">— Load Scenario —</option>
+          <option value="standard">Standard RF Link</option>
+          <option value="wifi">WiFi 2.4 GHz</option>
+          <option value="gps">GPS L1 Receiver</option>
+          <option value="satellite">Satellite Downlink</option>
+          <option value="bluetooth">Bluetooth LE</option>
+        </select>
+      </div>
+
+      <!-- Add-term row -->
+      <div class="add-row">
+        <select class="add-sel" id="addSel" aria-label="Select component to add">
+          <optgroup label="— Transmitter Side —">
+            <option value="tx_ant">Tx Antenna Gain (dBi)</option>
+            <option value="tx_cable">Tx Cable/Connector Loss (dB)</option>
+            <option value="tx_filter">Tx Filter Loss (dB)</option>
+            <option value="tx_amp">Tx Amplifier Gain (dB)</option>
+            <option value="tx_custom">Custom Tx Term</option>
+          </optgroup>
+          <optgroup label="— Propagation —">
+            <option value="fspl">Free-Space Path Loss (auto)</option>
+            <option value="atm">Atmospheric Gas Loss (dB)</option>
+            <option value="rain">Rain Attenuation (dB)</option>
+            <option value="point">Pointing/Alignment Loss (dB)</option>
+            <option value="prop_custom">Custom Propagation Term</option>
+          </optgroup>
+          <optgroup label="— Receiver Side —">
+            <option value="rx_ant">Rx Antenna Gain (dBi)</option>
+            <option value="rx_cable">Rx Cable/Connector Loss (dB)</option>
+            <option value="rx_filter">Rx Filter Loss (dB)</option>
+            <option value="lna">LNA Gain (dB)</option>
+            <option value="rx_custom">Custom Rx Term</option>
+          </optgroup>
+        </select>
+        <button class="add-btn" onclick="addTermFromDropdown()">+ Add Term</button>
+      </div>
+
       <div class="tbl-wrap">
-        <table class="budget">
+        <table class="budget" id="budgetTable">
           <thead>
             <tr>
-              <th style="text-align:left;width:38%">Parameter</th>
-              <th>Value</th>
-              <th>Cumul. Power (dBm)</th>
-              <th>Budget Remaining (dB)</th>
-              <th>Contribution</th>
+              <th style="text-align:left;width:28%">Component</th>
+              <th style="width:8%">On</th>
+              <th style="width:12%">Value</th>
+              <th style="width:8%">Unit</th>
+              <th style="width:12%">Cumul. (dBm)</th>
+              <th style="width:8%">Sign</th>
+              <th style="width:12%">—</th>
             </tr>
           </thead>
           <tbody id="budgetBody"></tbody>
         </table>
       </div>
+      <div style="font-size:.72rem;color:var(--tm);margin-top:.4rem">Drag ⠿ to reorder · click label to rename · toggle to include/exclude without deleting</div>
+    </div>
+
+    <div class="chart-panel">
+      <h3>Power Waterfall — running signal level at each stage</h3>
+      <div class="chart-wrap"><canvas id="chartWaterfall">
+        <p>Horizontal bar chart showing signal power level cascaded through each budget row.</p>
+      </canvas></div>
     </div>
 
     <div class="chart-panel">
       <h3>Link Margin vs Distance — cliff edge where link fails</h3>
-      <div class="chart-wrap"><canvas id="chartMargin"></canvas></div>
+      <div class="chart-wrap"><canvas id="chartMargin">
+        <p>Line chart showing link margin vs distance. Adjust sliders to update.</p>
+      </canvas></div>
     </div>
 
-    <div class="annotation" id="annotation">Computing...</div>
+    <div class="annotation" id="annotation">Computing…</div>
   </div>
 </div>
 
 <script>
-const C = 3e8;
+const C=3e8;
 
-// Slider references
-const sPt=document.getElementById('sPt'),
-      sF=document.getElementById('sF'),
-      sD=document.getElementById('sD'),
-      sGt=document.getElementById('sGt'),
-      sLtx=document.getElementById('sLtx'),
-      sLatm=document.getElementById('sLatm'),
-      sGr=document.getElementById('sGr'),
-      sLrx=document.getElementById('sLrx'),
-      sNF=document.getElementById('sNF'),
-      sBW=document.getElementById('sBW'),
-      sSNR=document.getElementById('sSNR'),
-      sLimpl=document.getElementById('sLimpl');
+// ── Budget row model ─────────────────────────────────────────────────────────
+// Each row: {id, label, type, sign(+1 gain / -1 loss / 0 neutral), val, enabled, locked, fspl}
+// sign: +1 = gain, -1 = loss, 0 = baseline / info-only
+let rows = [];
+let nextId = 1;
 
-// Chart.js defaults
-const CHART_DEFAULTS = {
-  animation:{duration:0},responsive:true,maintainAspectRatio:true,
-  plugins:{legend:{labels:{color:'#718096',font:{size:11},boxWidth:14}}},
-  scales:{
-    x:{type:'logarithmic',grid:{color:'#e2e5ea'},ticks:{color:'#718096',maxTicksLimit:8},title:{display:true,color:'#718096',text:'Distance (m)'}},
-    y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096'},title:{display:true,color:'#718096',text:'Link Margin (dB)'}}
-  }
+function makeRow(label, type, sign, val, locked, fsplLinked) {
+  return {id: nextId++, label, type, sign, val, enabled: true, locked: !!locked, fspl: !!fsplLinked};
+}
+
+const TERM_DEFS = {
+  tx_ant:      {label:'Tx Antenna Gain',  sign:+1, val:6,   unit:'dBi'},
+  tx_cable:    {label:'Tx Cable Loss',    sign:-1, val:1,   unit:'dB'},
+  tx_filter:   {label:'Tx Filter Loss',   sign:-1, val:0.5, unit:'dB'},
+  tx_amp:      {label:'Tx Amp Gain',      sign:+1, val:20,  unit:'dB'},
+  tx_custom:   {label:'Custom Tx',        sign:+1, val:0,   unit:'dB'},
+  fspl:        {label:'Free-Space PL',    sign:-1, val:0,   unit:'dB', fspl:true},
+  atm:         {label:'Atmospheric Loss', sign:-1, val:0.5, unit:'dB'},
+  rain:        {label:'Rain Atten.',      sign:-1, val:1,   unit:'dB'},
+  point:       {label:'Pointing Loss',    sign:-1, val:0.5, unit:'dB'},
+  prop_custom: {label:'Custom Prop.',     sign:-1, val:0,   unit:'dB'},
+  rx_ant:      {label:'Rx Antenna Gain',  sign:+1, val:6,   unit:'dBi'},
+  rx_cable:    {label:'Rx Cable Loss',    sign:-1, val:1,   unit:'dB'},
+  rx_filter:   {label:'Rx Filter Loss',   sign:-1, val:0.5, unit:'dB'},
+  lna:         {label:'LNA Gain',         sign:+1, val:20,  unit:'dB'},
+  rx_custom:   {label:'Custom Rx',        sign:+1, val:0,   unit:'dB'},
 };
 
-// Init chart
-const ctx = document.getElementById('chartMargin').getContext('2d');
-const chart = new Chart(ctx, {
-  type:'line',
-  data:{
-    datasets:[
-      {label:'Link Margin',data:[],borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.08)',borderWidth:3,pointRadius:0,fill:{value:0,above:'rgba(22,163,74,.08)',below:'rgba(220,38,38,.08)'}},
-      {label:'Friis (no extra losses)',data:[],borderColor:'#bc8cff',backgroundColor:'transparent',borderWidth:2,borderDash:[5,4],pointRadius:0},
-      {label:'Operating Point',data:[],borderColor:'#3fb950',backgroundColor:'#3fb950',pointRadius:6,pointHoverRadius:8,showLine:false}
-    ]
-  },
-  options:{
-    ...CHART_DEFAULTS,
-    plugins:{
-      ...CHART_DEFAULTS.plugins,
-      annotation:{annotations:{}},
-      tooltip:{callbacks:{title:ctx=>`d = ${fmtDist(ctx[0].parsed.x)}`,label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)} dB`}}
+function addTermFromDropdown() {
+  const sel = document.getElementById('addSel');
+  const key = sel.value;
+  if(!key) return;
+  const d = TERM_DEFS[key];
+  if(!d) return;
+  const r = makeRow(d.label, key, d.sign, d.val, false, !!d.fspl);
+  rows.push(r);
+  renderTable();
+  update();
+}
+
+// ── Presets ──────────────────────────────────────────────────────────────────
+const PRESETS = {
+  standard: [
+    {l:'Tx Antenna Gain', t:'tx_ant',  s:+1, v:6},
+    {l:'Tx Cable Loss',   t:'tx_cable',s:-1, v:1},
+    {l:'Free-Space PL',   t:'fspl',    s:-1, v:0, fspl:true},
+    {l:'Atmospheric Loss',t:'atm',     s:-1, v:0.5},
+    {l:'Rx Antenna Gain', t:'rx_ant',  s:+1, v:6},
+    {l:'Rx Cable Loss',   t:'rx_cable',s:-1, v:1},
+  ],
+  wifi: [
+    {l:'Tx Antenna Gain', t:'tx_ant',  s:+1, v:3},
+    {l:'Tx Cable Loss',   t:'tx_cable',s:-1, v:0.5},
+    {l:'Free-Space PL',   t:'fspl',    s:-1, v:0, fspl:true},
+    {l:'Wall/Partition',  t:'prop_custom',s:-1,v:3},
+    {l:'Rx Antenna Gain', t:'rx_ant',  s:+1, v:3},
+  ],
+  gps: [
+    {l:'Tx Antenna Gain', t:'tx_ant',  s:+1, v:13},
+    {l:'Free-Space PL',   t:'fspl',    s:-1, v:0, fspl:true},
+    {l:'Atmospheric Loss',t:'atm',     s:-1, v:0.5},
+    {l:'Rx Antenna Gain', t:'rx_ant',  s:+1, v:0},
+    {l:'LNA Gain',        t:'lna',     s:+1, v:18},
+  ],
+  satellite: [
+    {l:'Tx Antenna Gain', t:'tx_ant',  s:+1, v:40},
+    {l:'Tx Cable Loss',   t:'tx_cable',s:-1, v:1},
+    {l:'Free-Space PL',   t:'fspl',    s:-1, v:0, fspl:true},
+    {l:'Rain Atten.',     t:'rain',    s:-1, v:4},
+    {l:'Atmospheric Loss',t:'atm',     s:-1, v:2},
+    {l:'Rx Antenna Gain', t:'rx_ant',  s:+1, v:40},
+    {l:'LNA Gain',        t:'lna',     s:+1, v:30},
+  ],
+  bluetooth: [
+    {l:'Tx Antenna Gain', t:'tx_ant',  s:+1, v:0},
+    {l:'Free-Space PL',   t:'fspl',    s:-1, v:0, fspl:true},
+    {l:'Rx Antenna Gain', t:'rx_ant',  s:+1, v:0},
+    {l:'Body Loss',       t:'prop_custom',s:-1,v:3},
+  ],
+};
+const PRESET_PARAMS = {
+  standard: {pt:20, f:2400, d:2,    nf:5,  bw:1.301, snr:10, limpl:2},
+  wifi:     {pt:20, f:2400, d:1.7,  nf:7,  bw:1.845, snr:20, limpl:2},
+  gps:      {pt:27, f:1575, d:4.48, nf:1.5,bw:1,     snr:3,  limpl:1},
+  satellite:{pt:40, f:12000,d:4.48, nf:1,  bw:1.602, snr:5,  limpl:2},
+  bluetooth:{pt:4,  f:2440, d:1,    nf:8,  bw:1,     snr:18, limpl:2},
+};
+
+function loadPreset(key) {
+  const p = PRESETS[key];
+  if(!p) return;
+  nextId = 1;
+  rows = [];
+  p.forEach(r => {
+    const row = makeRow(r.l, r.t, r.s, r.v, false, !!r.fspl);
+    rows.push(row);
+  });
+  // Set sliders
+  const par = PRESET_PARAMS[key];
+  if(par) {
+    document.getElementById('sPt').value  = par.pt;
+    document.getElementById('sF').value   = par.f;
+    document.getElementById('sD').value   = par.d;
+    document.getElementById('sNF').value  = par.nf;
+    document.getElementById('sBW').value  = par.bw;
+    document.getElementById('sSNR').value = par.snr;
+    document.getElementById('sLimpl').value = par.limpl;
+  }
+  renderTable();
+  update();
+}
+
+// ── Table rendering ──────────────────────────────────────────────────────────
+function renderTable() {
+  const tbody = document.getElementById('budgetBody');
+  tbody.innerHTML = '';
+
+  // Locked first row: Tx Power
+  addLockedRow(tbody, 'Tx Power Pt', 'BASE', null, 'var(--blue)');
+
+  // Dynamic rows
+  rows.forEach((r, idx) => {
+    const tr = document.createElement('tr');
+    tr.className = r.enabled ? '' : 'row-disabled';
+    tr.dataset.id = r.id;
+    tr.draggable = !r.locked;
+
+    tr.addEventListener('dragstart', onDragStart);
+    tr.addEventListener('dragover',  onDragOver);
+    tr.addEventListener('drop',      onDrop);
+    tr.addEventListener('dragend',   onDragEnd);
+
+    // Sign label
+    const signStr = r.sign > 0 ? `<span class="pill pos">+${r.val.toFixed(1)} dB gain</span>`
+                  : r.sign < 0 ? `<span class="pill neg">${(-r.val).toFixed(1)} dB loss</span>`
+                  : `<span class="pill neu">—</span>`;
+
+    // Value cell
+    let valueCell;
+    if(r.fspl) {
+      valueCell = `<span class="fspl-val" id="fspl_${r.id}">—</span> <span style="font-size:.62rem;color:var(--tm)">🔗 auto</span>`;
+    } else {
+      valueCell = `<input class="val-input" type="number" step="0.25" value="${r.val.toFixed(2)}"
+        ${r.enabled?'':'disabled'}
+        onchange="setRowVal(${r.id}, +this.value)">`;
+    }
+
+    tr.innerHTML = `
+      <td><span class="drag-handle" title="Drag to reorder">⠿</span>
+          <span class="desc-cell" contenteditable="true" spellcheck="false"
+            onblur="setRowLabel(${r.id}, this.textContent.trim())">${escHtml(r.label)}</span></td>
+      <td style="text-align:center">
+        <label class="row-toggle" title="${r.enabled?'Enabled — click to disable':'Disabled — click to enable'}">
+          <input type="checkbox" ${r.enabled?'checked':''} onchange="toggleRow(${r.id}, this.checked)">
+          <span class="toggle-track"></span>
+          <span class="toggle-thumb"></span>
+        </label>
+      </td>
+      <td>${valueCell}</td>
+      <td style="font-size:.72rem;color:var(--tm)">${r.sign!==0?'dB':''}</td>
+      <td class="run-total" id="rt_${r.id}" style="color:var(--tm)">—</td>
+      <td>${signStr}</td>
+      <td style="text-align:center"><button class="del-btn" onclick="deleteRow(${r.id})" title="Remove this row">×</button></td>`;
+
+    tbody.appendChild(tr);
+  });
+
+  // Locked last row: Sensitivity floor
+  addLockedRow(tbody, 'Sensitivity Floor S_min', 'SENS', null, 'var(--pur)');
+}
+
+function addLockedRow(tbody, label, type, val, color) {
+  const tr = document.createElement('tr');
+  tr.className = 'locked';
+  tr.dataset.locked = type;
+  let valCell = `<span id="locked_${type}" style="font-family:'Courier New',monospace;font-size:.85rem;color:${color}">—</span>`;
+  tr.innerHTML = `
+    <td><span class="desc-cell">${label} <span class="lock-icon">🔒</span></span></td>
+    <td style="text-align:center"><span style="color:var(--tm);font-size:.75rem">always</span></td>
+    <td>${valCell}</td>
+    <td style="font-size:.72rem;color:var(--tm)">dBm</td>
+    <td id="locked_rt_${type}" class="run-total" style="color:${color}">—</td>
+    <td></td><td></td>`;
+  tbody.appendChild(tr);
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── Row mutations ─────────────────────────────────────────────────────────────
+function setRowVal(id, val) {
+  const r = rows.find(x=>x.id===id);
+  if(r){r.val=isNaN(val)?0:val;update();}
+}
+function setRowLabel(id, txt) {
+  const r = rows.find(x=>x.id===id);
+  if(r && txt) r.label = txt;
+}
+function toggleRow(id, en) {
+  const r = rows.find(x=>x.id===id);
+  if(r){r.enabled=en;renderTable();update();}
+}
+function deleteRow(id) {
+  rows = rows.filter(x=>x.id!==id);
+  renderTable();
+  update();
+}
+
+// ── Drag-and-drop reorder ─────────────────────────────────────────────────────
+let dragId = null;
+function onDragStart(e) {
+  dragId = +this.dataset.id;
+  e.dataTransfer.effectAllowed = 'move';
+  this.style.opacity = '0.5';
+}
+function onDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('tr.drag-over').forEach(r=>r.classList.remove('drag-over'));
+  this.classList.add('drag-over');
+}
+function onDrop(e) {
+  e.preventDefault();
+  const targetId = +this.dataset.id;
+  if(dragId && targetId && dragId !== targetId) {
+    const fromIdx = rows.findIndex(x=>x.id===dragId);
+    const toIdx   = rows.findIndex(x=>x.id===targetId);
+    if(fromIdx>=0 && toIdx>=0) {
+      const [r] = rows.splice(fromIdx, 1);
+      rows.splice(toIdx, 0, r);
+      renderTable();
+      update();
     }
   }
-});
+}
+function onDragEnd() {
+  this.style.opacity = '';
+  document.querySelectorAll('tr.drag-over').forEach(r=>r.classList.remove('drag-over'));
+}
 
+// ── Core calculations ─────────────────────────────────────────────────────────
 function fspl(d_m, f_Hz) {
   if(d_m <= 0) return 0;
   return 20*Math.log10(4*Math.PI*d_m*f_Hz/C);
 }
-
-function logspace(lo, hi, n) {
+function logspace(lo,hi,n){
   const r=[];
-  for(let i=0;i<n;i++) r.push(Math.pow(10, Math.log10(lo)+(Math.log10(hi)-Math.log10(lo))*i/(n-1)));
+  for(let i=0;i<n;i++) r.push(Math.pow(10,Math.log10(lo)+(Math.log10(hi)-Math.log10(lo))*i/(n-1)));
   return r;
 }
+function fmtDist(d){return d>=1000?(d/1000).toFixed(1)+' km':d.toFixed(0)+' m';}
+function fmtdB(v,d=1){return (v>=0?'+':'')+v.toFixed(d);}
 
-function fmtDist(d) {
-  if(d>=1000) return (d/1000).toFixed(1)+' km';
-  return d.toFixed(0)+' m';
-}
+// ── Charts ────────────────────────────────────────────────────────────────────
+const ctxW = document.getElementById('chartWaterfall').getContext('2d');
+const ctxM = document.getElementById('chartMargin').getContext('2d');
 
-function fmtdB(v,dec=1) { return (v>=0?'+':'')+v.toFixed(dec); }
-
-function update() {
-  const Pt   = +sPt.value;
-  const f_Hz = +sF.value * 1e6;
-  const d_m  = Math.pow(10, +sD.value);   // log slider
-  const Gt   = +sGt.value;
-  const Ltx  = +sLtx.value;
-  const Latm = +sLatm.value;
-  const Gr   = +sGr.value;
-  const Lrx  = +sLrx.value;
-  const NF   = +sNF.value;
-  const BW   = Math.pow(10, +sBW.value) * 1e6; // log slider MHz→Hz
-  const SNR  = +sSNR.value;
-  const Limpl= +sLimpl.value;
-
-  // Update labels
-  document.getElementById('vPt').textContent   = Pt.toFixed(1)+' dBm';
-  document.getElementById('vF').textContent    = f_Hz>=1e9 ? (f_Hz/1e9).toFixed(2)+' GHz' : (+sF.value)+' MHz';
-  document.getElementById('vD').textContent    = fmtDist(d_m);
-  document.getElementById('vGt').textContent   = Gt.toFixed(1)+' dBi';
-  document.getElementById('vLtx').textContent  = Ltx.toFixed(2)+' dB';
-  document.getElementById('vLatm').textContent = Latm.toFixed(2)+' dB';
-  document.getElementById('vGr').textContent   = Gr.toFixed(1)+' dBi';
-  document.getElementById('vLrx').textContent  = Lrx.toFixed(2)+' dB';
-  document.getElementById('vNF').textContent   = NF.toFixed(2)+' dB';
-  document.getElementById('vBW').textContent   = BW>=1e6 ? (BW/1e6).toFixed(1)+' MHz' : (BW/1e3).toFixed(1)+' kHz';
-  document.getElementById('vSNR').textContent  = SNR.toFixed(1)+' dB';
-  document.getElementById('vLimpl').textContent= Limpl.toFixed(2)+' dB';
-
-  // Core calculations
-  const FSPL = fspl(d_m, f_Hz);
-  const Pr   = Pt - Ltx + Gt - FSPL - Latm + Gr - Lrx;
-  const kTB  = -174 + 10*Math.log10(BW);   // thermal noise floor dBm
-  const Sens = kTB + NF + SNR + Limpl;
-  const margin = Pr - Sens;
-
-  // Friis Pr (all extra losses = 0)
-  const Pr_friis = Pt + Gt + Gr - FSPL;
-  const margin_friis = Pr_friis - Sens;
-
-  // Update metric cards
-  document.getElementById('mFSPL').textContent  = FSPL.toFixed(1);
-  document.getElementById('mPr').textContent    = Pr.toFixed(1);
-  document.getElementById('mSens').textContent  = Sens.toFixed(1);
-  document.getElementById('mNF').textContent    = kTB.toFixed(1);
-  const mEl = document.getElementById('mMargin');
-  mEl.textContent = fmtdB(margin);
-  mEl.className = 'mv ' + (margin>=6?'good':margin>=0?'warn':'bad');
-
-  // Margin bar (0→20 dB maps to 0→100%)
-  const pct = Math.min(100, Math.max(0, (margin/20)*100));
-  const fill = document.getElementById('mbFill');
-  fill.style.width = pct+'%';
-  fill.style.background = margin>=6?'#3fb950':margin>=0?'#f0883e':'#f85149';
-  document.getElementById('mbLabel').textContent = fmtdB(margin,1)+' dB';
-
-  // Budget table — running margin
-  // Total starting budget = Pt - Sens
-  const totalBudget = Pt - Sens;
-  const rows = [
-    {name:'Tx Power  Pt',       val:Pt,     sign:0,  cumul:Pt,              note:'base'},
-    {name:'Tx Cable Loss  −L_tx',val:-Ltx,  sign:-1, cumul:Pt-Ltx,         note:'cable'},
-    {name:'Tx Antenna Gain  Gt', val:Gt,    sign:1,  cumul:Pt-Ltx+Gt,      note:'gain'},
-    {name:'Free-Space Path Loss',val:-FSPL, sign:-1, cumul:Pt-Ltx+Gt-FSPL, note:'space'},
-    {name:'Atmospheric Loss  −L_atm',val:-Latm,sign:-1,cumul:Pt-Ltx+Gt-FSPL-Latm,note:'loss'},
-    {name:'Rx Antenna Gain  Gr', val:Gr,    sign:1,  cumul:Pr+Lrx,         note:'gain'},
-    {name:'Rx Cable Loss  −L_rx',val:-Lrx, sign:-1, cumul:Pr,              note:'cable'},
-  ];
-  const sensRows = [
-    {name:'Thermal Noise Floor  kTB',val:kTB,  sign:0, cumul:kTB,            note:'noise'},
-    {name:'Noise Figure  +NF',       val:NF,   sign:-1,cumul:kTB+NF,         note:'noise'},
-    {name:'Required SNR  +SNR_req',  val:SNR,  sign:-1,cumul:kTB+NF+SNR,     note:'req'},
-    {name:'Implementation Loss',     val:Limpl,sign:-1,cumul:Sens,            note:'req'},
-  ];
-
-  const tbody = document.getElementById('budgetBody');
-  tbody.innerHTML = '';
-  let remaining = totalBudget;
-
-  function makeRow(r, isSens) {
-    const tr = document.createElement('tr');
-    let rem = '';
-    let remClass = '';
-    if(!isSens && r.note!=='noise' && r.note!=='req') {
-      if(r.sign===0) { remaining = totalBudget; }
-      else { remaining += r.val; }
-      rem = remaining.toFixed(1)+' dB';
-      remClass = remaining>=6?'good':remaining>=0?'warn':'bad';
+const waterfallChart = new Chart(ctxW, {
+  type:'bar',
+  data:{labels:[],datasets:[{data:[],backgroundColor:[],borderColor:[],borderWidth:1,borderSkipped:false}]},
+  options:{
+    indexAxis:'y',
+    animation:{duration:0},responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:{
+        backgroundColor:'#f4f5f7',titleColor:'#1a1d23',bodyColor:'#4a5568',
+        borderColor:'#d0d4da',borderWidth:1,
+        callbacks:{
+          label:ctx=>{const d=ctx.raw;return `${d[0].toFixed(1)} → ${d[1].toFixed(1)} dBm`;}
+        }
+      }
+    },
+    scales:{
+      x:{grid:{color:'#e2e5ea'},ticks:{color:'#718096',font:{size:11}},
+         title:{display:true,text:'Signal Level (dBm)',color:'#718096',font:{size:11}}},
+      y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096',font:{size:11}}}
     }
-    const signLabel = r.sign>0?`<span class="pill pos">+${r.val.toFixed(1)} dB gain</span>`:
-                      r.sign<0?`<span class="pill neg">${r.val.toFixed(1)} dB loss</span>`:
-                      `<span class="pill neu">base</span>`;
-    const cumulColor = r.sign>=0?'#2563eb':'#dc2626';
-    tr.innerHTML = `
-      <td>${r.name}</td>
-      <td style="color:${r.sign>=0?'#3fb950':'#f85149'}">${r.val.toFixed(1)} dB${r.sign===0?' dBm':''}</td>
-      <td style="color:${cumulColor}">${r.cumul.toFixed(1)} dBm</td>
-      <td class="${remClass}">${rem}</td>
-      <td>${signLabel}</td>
-    `;
-    return tr;
   }
+});
 
-  rows.forEach(r => tbody.appendChild(makeRow(r,false)));
+const marginChart = new Chart(ctxM, {
+  type:'line',
+  data:{datasets:[
+    {label:'Link Margin',data:[],borderColor:'#2563eb',borderWidth:2.5,pointRadius:0,fill:{value:0,above:'rgba(22,163,74,.07)',below:'rgba(220,38,38,.07)'}},
+    {label:'Operating Point',data:[],borderColor:'#16a34a',backgroundColor:'#16a34a',pointRadius:6,showLine:false}
+  ]},
+  options:{
+    animation:{duration:0},responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{labels:{color:'#718096',font:{size:11},boxWidth:14}},
+      tooltip:{backgroundColor:'#f4f5f7',titleColor:'#1a1d23',bodyColor:'#4a5568',borderColor:'#d0d4da',borderWidth:1,
+        callbacks:{title:c=>`d = ${fmtDist(c[0].parsed.x)}`,label:c=>`${c.dataset.label}: ${c.parsed.y.toFixed(1)} dB`}}
+    },
+    scales:{
+      x:{type:'logarithmic',grid:{color:'#e2e5ea'},ticks:{color:'#718096',maxTicksLimit:8,font:{size:11}},
+         title:{display:true,text:'Distance (m)',color:'#718096',font:{size:11}}},
+      y:{grid:{color:'#e2e5ea'},ticks:{color:'#718096',font:{size:11}},
+         title:{display:true,text:'Link Margin (dB)',color:'#718096',font:{size:11}}}
+    }
+  }
+});
 
-  // Received power row
-  const trPr = document.createElement('tr');
-  trPr.className = 'total separator';
-  trPr.innerHTML = `<td style="color:var(--t1)"><strong>Received Power  Pr</strong></td>
-    <td></td><td style="color:var(--blue);font-weight:700">${Pr.toFixed(1)} dBm</td>
-    <td class="${margin>=6?'good':margin>=0?'warn':'bad'}">${fmtdB(margin,1)} dB final margin</td>
-    <td><span class="pill ${margin>=6?'pos':margin>=0?'neu':'neg'}">${margin>=0?'PASS':'FAIL'}</span></td>`;
-  tbody.appendChild(trPr);
+// ── Master update ─────────────────────────────────────────────────────────────
+function update() {
+  const Pt    = +document.getElementById('sPt').value;
+  const f_Hz  = +document.getElementById('sF').value * 1e6;
+  const d_m   = Math.pow(10, +document.getElementById('sD').value);
+  const NF    = +document.getElementById('sNF').value;
+  const BW    = Math.pow(10, +document.getElementById('sBW').value) * 1e6;
+  const SNR   = +document.getElementById('sSNR').value;
+  const Limpl = +document.getElementById('sLimpl').value;
 
-  // Sensitivity breakdown
-  const trSepS = document.createElement('tr');
-  trSepS.className='separator';
-  trSepS.innerHTML=`<td colspan="5" style="color:var(--tm);font-size:.72rem;padding-top:.7rem;text-transform:uppercase;letter-spacing:1px">Sensitivity Budget (minimum detectable signal)</td>`;
-  tbody.appendChild(trSepS);
+  // Update slider labels
+  document.getElementById('vPt').textContent    = Pt.toFixed(1)+' dBm';
+  document.getElementById('vF').textContent     = f_Hz>=1e9?(f_Hz/1e9).toFixed(2)+' GHz':(f_Hz/1e6).toFixed(0)+' MHz';
+  document.getElementById('vD').textContent     = fmtDist(d_m);
+  document.getElementById('vNF').textContent    = NF.toFixed(2)+' dB';
+  document.getElementById('vBW').textContent    = BW>=1e6?(BW/1e6).toFixed(1)+' MHz':(BW/1e3).toFixed(1)+' kHz';
+  document.getElementById('vSNR').textContent   = SNR.toFixed(1)+' dB';
+  document.getElementById('vLimpl').textContent = Limpl.toFixed(2)+' dB';
 
-  sensRows.forEach(r => {
-    const tr = document.createElement('tr');
-    const signLabel = r.sign<0?`<span class="pill neg">raises floor</span>`:`<span class="pill neu">base</span>`;
-    tr.innerHTML = `
-      <td>${r.name}</td>
-      <td style="color:${r.sign!==0?'#f85149':'#8b949e'}">${r.sign<0?'+':''}${r.val.toFixed(1)} dB${r.sign===0?' dBm':''}</td>
-      <td style="color:var(--pur)">${r.cumul.toFixed(1)} dBm</td>
-      <td></td><td>${signLabel}</td>`;
-    tbody.appendChild(tr);
+  // ARIA updates
+  ['sPt','sF','sD','sNF','sBW','sSNR','sLimpl'].forEach(id=>{
+    document.getElementById(id).setAttribute('aria-valuenow', document.getElementById(id).value);
   });
 
-  const trSens = document.createElement('tr');
-  trSens.className='total';
-  trSens.innerHTML=`<td style="color:var(--t1)"><strong>Required Sensitivity  S_min</strong></td>
-    <td></td><td style="color:var(--pur);font-weight:700">${Sens.toFixed(1)} dBm</td>
-    <td></td><td></td>`;
-  tbody.appendChild(trSens);
+  // Core values
+  const FSPL_val = fspl(d_m, f_Hz);
+  const kTB      = -174 + 10*Math.log10(BW);
+  const Sens     = kTB + NF + SNR + Limpl;
 
-  // Chart: margin vs distance
+  // Update FSPL-linked rows
+  rows.forEach(r=>{
+    if(r.fspl){ r.val = FSPL_val; const el=document.getElementById(`fspl_${r.id}`); if(el) el.textContent=FSPL_val.toFixed(1)+' dB'; }
+  });
+
+  // Cascade the active rows
+  let running = Pt;
+  const waterfallLabels = ['Pt (source)'];
+  const waterfallData   = [[Pt, Pt]]; // anchor bar width 0 at Pt
+  const waterfallColors = ['#2563eb'];
+
+  document.getElementById('locked_BASE').textContent = Pt.toFixed(1);
+  document.getElementById('locked_rt_BASE').textContent = Pt.toFixed(1)+' dBm';
+
+  rows.forEach(r => {
+    // Update running total display regardless of enabled
+    const rt_el = document.getElementById(`rt_${r.id}`);
+
+    if(r.enabled) {
+      const delta = r.sign * r.val;
+      const from  = running;
+      const to    = running + delta;
+      running = to;
+
+      waterfallLabels.push(r.label);
+      waterfallData.push([from, to]);
+      const col = r.sign >= 0 ? '#16a34a' : '#dc2626';
+      waterfallColors.push(col+'cc');
+
+      if(rt_el) {rt_el.textContent = to.toFixed(1)+' dBm'; rt_el.style.color = to>=Sens?'var(--grn)':to>=Sens+6?'var(--grn)':'var(--org)';}
+    } else {
+      if(rt_el){rt_el.textContent='(off)';rt_el.style.color='var(--tm)';}
+    }
+  });
+
+  const Pr = running;
+  const margin = Pr - Sens;
+
+  // Sensitivity row
+  waterfallLabels.push('S_min (sens)');
+  waterfallData.push([Sens, Sens]); // marker width=0
+  waterfallColors.push('#7c3aedcc');
+
+  // Update locked row displays
+  document.getElementById('locked_SENS').textContent = Sens.toFixed(1);
+  document.getElementById('locked_rt_SENS').textContent = Sens.toFixed(1)+' dBm';
+
+  // Metrics
+  document.getElementById('mFSPL').textContent = FSPL_val.toFixed(1);
+  document.getElementById('mPr').textContent   = Pr.toFixed(1);
+  document.getElementById('mSens').textContent = Sens.toFixed(1);
+  document.getElementById('mNF').textContent   = kTB.toFixed(1);
+  const mEl = document.getElementById('mMargin');
+  mEl.textContent = fmtdB(margin);
+  mEl.className = 'mv '+(margin>=6?'good':margin>=0?'warn':'bad');
+
+  const pct = Math.min(100,Math.max(0,(margin/20)*100));
+  const fill = document.getElementById('mbFill');
+  fill.style.width = pct+'%';
+  fill.style.background = margin>=6?'#16a34a':margin>=0?'#d97706':'#dc2626';
+  document.getElementById('mbLabel').textContent = fmtdB(margin,1)+' dB';
+
+  // Waterfall chart
+  waterfallChart.data.labels = waterfallLabels;
+  waterfallChart.data.datasets[0].data = waterfallData.map((d,i)=>{
+    if(i===0) return [d[0]-0.01, d[0]]; // Pt anchor (tiny bar)
+    if(i===waterfallData.length-1) return [d[0]-0.01, d[0]]; // Sens marker
+    return d;
+  });
+  waterfallChart.data.datasets[0].backgroundColor = waterfallColors;
+  waterfallChart.data.datasets[0].borderColor = waterfallColors.map(c=>c.slice(0,7));
+
+  // Dynamic canvas height for waterfall
+  const rowCount = waterfallLabels.length;
+  const neededH  = Math.max(200, rowCount * 36 + 40);
+  document.getElementById('chartWaterfall').parentElement.style.minHeight = neededH+'px';
+
+  // Sensitivity reference line
+  waterfallChart.options.plugins.annotation = {annotations:{sensLine:{
+    type:'line',xMin:Sens,xMax:Sens,borderColor:'rgba(124,58,237,.7)',
+    borderWidth:2,borderDash:[5,4],
+    label:{content:'S_min',display:true,color:'#7c3aed',font:{size:10},position:'start'}
+  }}};
+
+  // x-axis range: a bit beyond min and max
+  const allVals = waterfallData.flat().filter(isFinite);
+  const xMin = Math.min(...allVals, Sens) - 5;
+  const xMax = Math.max(...allVals, Pt) + 5;
+  waterfallChart.options.scales.x.min = xMin;
+  waterfallChart.options.scales.x.max = xMax;
+  waterfallChart.update();
+
+  // Margin vs distance chart
   const dists = logspace(1, 1e6, 300);
-  const marginData = dists.map(d => ({x:d, y:(Pt-Ltx+Gt-fspl(d,f_Hz)-Latm+Gr-Lrx)-Sens}));
-  const friisData  = dists.map(d => ({x:d, y:(Pt+Gt+Gr-fspl(d,f_Hz))-Sens}));
+  // Compute gain/loss sum from non-FSPL enabled rows
+  let sumNonFSPL = 0;
+  rows.forEach(r=>{if(r.enabled && !r.fspl) sumNonFSPL += r.sign * r.val;});
+  const marginData = dists.map(d=>({x:d, y:Pt+sumNonFSPL-fspl(d,f_Hz)-Sens}));
+  marginChart.data.datasets[0].data = marginData;
+  marginChart.data.datasets[1].data = [{x:d_m, y:margin}];
+  marginChart.options.scales.y.suggestedMin = Math.min(-10, margin-5);
+  marginChart.update();
 
-  chart.data.datasets[0].data = marginData;
-  chart.data.datasets[1].data = friisData;
-  chart.data.datasets[2].data = [{x:d_m, y:margin}];
-
-  // Find max range (margin=0 crossover)
+  // Find max range
   let maxRange = null;
   for(let i=0;i<marginData.length-1;i++){
     if(marginData[i].y>=0 && marginData[i+1].y<0){
@@ -489,106 +769,105 @@ function update() {
     }
   }
 
-  // Add shaded fail region — use y-axis min annotation
-  chart.options.scales.y.suggestedMin = Math.min(-10, margin-5);
-  chart.update();
-
-  // Annotation text
-  const extra_loss = Ltx + Lrx + Latm;
-  const maxR_txt = maxRange ? '  Maximum range (margin=0): <b>'+fmtDist(maxRange)+'</b>. ' : '';
-  const bottleneck = FSPL>40 ? 'Free-space path loss' : (Latm>5 ? 'Atmospheric loss' : 'System noise');
+  // Annotation
+  const activeRows = rows.filter(r=>r.enabled);
+  const totalGain  = activeRows.filter(r=>r.sign>0).reduce((s,r)=>s+r.val,0);
+  const totalLoss  = activeRows.filter(r=>r.sign<0).reduce((s,r)=>s+r.val,0);
+  const maxR_txt   = maxRange?`Max range (margin=0): <b>${fmtDist(maxRange)}</b>. `:'' ;
   document.getElementById('annotation').innerHTML =
-    `<strong>Current operating point:</strong> ${fmtDist(d_m)} @ ${(f_Hz/1e9).toFixed(2)} GHz —
-    Pr = <b>${Pr.toFixed(1)} dBm</b>, Sensitivity = <b>${Sens.toFixed(1)} dBm</b>,
-    Margin = <b class="${margin>=6?'':'warn'}" style="color:${margin>=6?'var(--grn)':margin>=0?'var(--org)':'var(--red)'}">${fmtdB(margin,1)} dB</b>.${maxR_txt}<br>
-    <strong>Bottleneck:</strong> ${bottleneck} is the dominant loss term at <b>${FSPL.toFixed(1)} dB FSPL</b>.
-    Extra losses (cables + atm) consume <b>${extra_loss.toFixed(1)} dB</b> —
-    ${extra_loss<3?'negligible compared to FSPL.':extra_loss<8?'moderate — worth optimizing cable runs.':'significant — reduce cable lengths or add a low-loss LNA at antenna.'}<br>
-    <strong>Friis gap:</strong> Full budget has <b>${(Pr_friis-Pr).toFixed(1)} dB</b> more loss than ideal Friis case.
-    Noise floor = <b>${kTB.toFixed(1)} dBm</b> for <b>${BW>=1e6?(BW/1e6).toFixed(1)+' MHz':(BW/1e3).toFixed(1)+' kHz'}</b> bandwidth.`;
+    `<strong>At ${fmtDist(d_m)} @ ${(f_Hz/1e9).toFixed(2)} GHz:</strong>
+    Pr = <b>${Pr.toFixed(1)} dBm</b>, S_min = <b>${Sens.toFixed(1)} dBm</b>,
+    Margin = <b style="color:${margin>=6?'var(--grn)':margin>=0?'var(--org)':'var(--red)'}">${fmtdB(margin,1)} dB</b>.
+    ${maxR_txt}<br>
+    <strong>Budget components:</strong> FSPL = <b>${FSPL_val.toFixed(1)} dB</b>,
+    total gain = <b>+${totalGain.toFixed(1)} dB</b>,
+    total loss (excl. FSPL) = <b>${totalLoss.toFixed(1)} dB</b>,
+    noise floor = <b>${kTB.toFixed(1)} dBm</b> @ ${BW>=1e6?(BW/1e6).toFixed(1)+' MHz':(BW/1e3).toFixed(1)+' kHz'} BW.<br>
+    <strong>Design rule:</strong> ${margin>=6?'Link passes with comfortable margin — reduce power or antenna gain to find the edge.':
+    margin>=0?'Link barely passes — consider higher-gain antennas or lower NF.':
+    'Link FAILS — increase Pt, add antenna gain, reduce distance, or widen sensitivity.'}`;
 }
 
-// Log sliders: sD = log10(distance_m), sBW = log10(BW_MHz)
-[sPt,sF,sD,sGt,sLtx,sLatm,sGr,sLrx,sNF,sBW,sSNR,sLimpl].forEach(s=>s.addEventListener('input',update));
-
+// ── Toolbar ───────────────────────────────────────────────────────────────────
 function takeScreenshot(toolName) {
-  const canvases=[...document.querySelectorAll('canvas')];
-  const padding=16,titleHeight=40;
-  const totalWidth=canvases.reduce((s,c)=>s+c.width+padding,padding);
-  const maxHeight=Math.max(...canvases.map(c=>c.height));
-  const out=document.createElement('canvas');
-  out.width=totalWidth; out.height=maxHeight+titleHeight+padding*2;
-  const ctx2=out.getContext('2d');
-  ctx2.fillStyle='#16181d'; ctx2.fillRect(0,0,out.width,out.height);
-  ctx2.fillStyle='#e6edf3'; ctx2.font='bold 14px Segoe UI,system-ui,sans-serif';
-  ctx2.fillText(toolName+' · RF Toolbox · hinckster.github.io/RF-Toolbox',padding,titleHeight/2+5);
-  ctx2.fillStyle='#718096'; ctx2.font='11px monospace';
-  ctx2.fillText(new Date().toISOString().slice(0,19).replace('T',' ')+' UTC',padding,titleHeight-4);
-  let x=padding;
-  canvases.forEach(c=>{ctx2.drawImage(c,x,titleHeight+padding);x+=c.width+padding;});
-  const link=document.createElement('a');
-  const ts=new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
-  link.download=`link_budget_${ts}.png`; link.href=out.toDataURL('image/png'); link.click();
+  const canvases = [...document.querySelectorAll('canvas')];
+  const padding = 16, titleH = 40;
+  const totalW = canvases.reduce((s,c)=>s+c.width+padding, padding);
+  const maxH   = Math.max(...canvases.map(c=>c.height));
+  const out = document.createElement('canvas');
+  out.width = totalW; out.height = maxH + titleH + padding*2;
+  const ctx = out.getContext('2d');
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,out.width,out.height);
+  ctx.fillStyle = '#f4f5f7'; ctx.fillRect(0,0,out.width,titleH);
+  ctx.fillStyle = '#1a1d23'; ctx.font = 'bold 13px Segoe UI, system-ui, sans-serif';
+  ctx.fillText(toolName + '  ·  RF Toolbox', padding, 17);
+  ctx.fillStyle = '#b5895a'; ctx.font = '11px Segoe UI, system-ui, sans-serif';
+  ctx.fillText('hinckster.github.io/RF-Toolbox', padding, 32);
+  const ts = new Date().toISOString().slice(0,19).replace('T',' ')+' UTC';
+  ctx.fillStyle = '#718096'; ctx.font = '10px Courier New, monospace';
+  const tsW = ctx.measureText(ts).width;
+  ctx.fillText(ts, out.width - tsW - padding, 24);
+  let x = padding;
+  canvases.forEach(c=>{try{ctx.drawImage(c,x,titleH+padding);}catch(e){}x+=c.width+padding;});
+  const a = document.createElement('a');
+  const slug = toolName.toLowerCase().replace(/\s+/g,'_');
+  const fn = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+  a.download = `${slug}_${fn}.png`; a.href = out.toDataURL('image/png'); a.click();
 }
-function toggleFullscreen(){
-  if(!document.fullscreenElement) document.documentElement.requestFullscreen();
-  else document.exitFullscreen();
+
+function exportCSV() {
+  const Pt    = +document.getElementById('sPt').value;
+  const f_Hz  = +document.getElementById('sF').value * 1e6;
+  const d_m   = Math.pow(10, +document.getElementById('sD').value);
+  const lines = ['RF Toolbox — Link Budget Export',
+    `Frequency,${(f_Hz/1e6).toFixed(1)} MHz`,
+    `Distance,${fmtDist(d_m)}`,
+    `Tx Power,${Pt.toFixed(1)} dBm`,
+    '',
+    'Component,Sign,Value (dB),Enabled',
+    ...rows.map(r=>`${r.label},${r.sign>0?'gain':'loss'},${r.val.toFixed(2)},${r.enabled?'yes':'no'}`),
+    '',
+    `Received Power,${document.getElementById('mPr').textContent} dBm`,
+    `Sensitivity,${document.getElementById('mSens').textContent} dBm`,
+    `Link Margin,${document.getElementById('mMargin').textContent} dB`,
+  ];
+  try {
+    const blob = new Blob([lines.join('\n')],{type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `link_budget_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+  } catch(e) {
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(lines.join('\n'));
+    a.download = `link_budget_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  }
 }
-function copyLink(){
+
+function toggleFullscreen() {
+  if(!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(()=>{
+      window.open(window.location.href,'_blank');
+    });
+  } else { document.exitFullscreen(); }
+}
+
+function copyLink() {
   navigator.clipboard.writeText(window.location.href).then(()=>{
     const btn=document.getElementById('copyBtn');
     const orig=btn.textContent; btn.textContent='✓ Copied!';
-    btn.style.color='#3fb950'; btn.style.borderColor='#3fb950';
+    btn.style.color='#16a34a'; btn.style.borderColor='#16a34a';
     setTimeout(()=>{btn.textContent=orig;btn.style.color='';btn.style.borderColor='';},2000);
-  });
+  }).catch(()=>{ prompt('Copy this URL:',window.location.href); });
 }
 
-update();
-function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
-function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
+// ── Init ──────────────────────────────────────────────────────────────────────
+['sPt','sF','sD','sNF','sBW','sSNR','sLimpl'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', update);
+});
+
+// Load standard preset on init
+loadPreset('standard');
 </script>
-
-<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
-  <div class="help-box">
-    <button class="help-close" onclick="closeHelp()">×</button>
-    <div class="help-title">System Link Budget — Help</div>
-
-    <div class="help-section">What this tool calculates</div>
-    <div class="help-body">Computes a full cascaded RF link budget following the Friis transmission equation (Pozar eq. 2.40). Each loss and gain element is applied in sequence to track cumulative received power. Receiver sensitivity is derived from thermal noise: S_min = kTB + NF + SNR_req + L_impl. Link Margin = P_r − S_min; positive means the link closes.</div>
-
-    <div class="help-section">Sliders &amp; inputs</div>
-    <div class="help-body">
-      <ul>
-        <li><strong>Tx Power P_t:</strong> Transmitter output power, 0–40 dBm (1 mW – 10 W).</li>
-        <li><strong>Frequency f:</strong> Carrier frequency, 100 MHz – 60 GHz. Higher frequency → more FSPL.</li>
-        <li><strong>Distance d:</strong> Log-scale slider, 1 m – 100 km. Every 10× distance adds 20 dB FSPL.</li>
-        <li><strong>Tx/Rx Antenna Gain G_t, G_r:</strong> Directional antenna gain, 0–40 dBi. Dipole ≈ 2.15 dBi, patch ≈ 6–10 dBi, dish ≈ 25–40 dBi.</li>
-        <li><strong>Tx/Rx Cable Loss L_tx, L_rx:</strong> Feeder and connector losses, 0–10 dB.</li>
-        <li><strong>Atmospheric Loss L_atm:</strong> Rain, oxygen absorption. Significant above 10 GHz.</li>
-        <li><strong>Noise Figure NF:</strong> Receiver noise figure, 0–20 dB. Directly sets noise floor.</li>
-        <li><strong>Bandwidth BW:</strong> Log-scale, 1 kHz – 200 MHz. Wider bandwidth → higher noise floor.</li>
-        <li><strong>Required SNR:</strong> Demodulation threshold, 0–30 dB. Depends on modulation and coding.</li>
-        <li><strong>Implementation Loss:</strong> Practical penalties (ADC, synchronization), typically 1–3 dB.</li>
-      </ul>
-    </div>
-
-    <div class="help-section">How to read the charts</div>
-    <div class="help-body">The waterfall table shows power at each stage (dBm) and running margin (dB) relative to final sensitivity. Green pills = gain stages; red pills = loss stages. The margin chart plots Link Margin vs Distance — the cliff edge where the line crosses 0 dB is the maximum range. A 6 dB margin is a comfortable design target.</div>
-
-    <div class="help-section">Key results</div>
-    <div class="help-body"><strong>FSPL:</strong> Free-space path loss at the chosen frequency and distance. <strong>Received Power:</strong> Power at the receiver input. <strong>Sensitivity:</strong> Minimum detectable signal level. <strong>Link Margin:</strong> Headroom above sensitivity; positive = link closes, negative = link fails.</div>
-
-    <div class="help-section">Things to try</div>
-    <ul class="help-try">
-      <li>Set frequency to 28 GHz (5G mmWave) vs 2.4 GHz — observe the FSPL increase at the same distance.</li>
-      <li>Compare a 10 dBi patch antenna vs a 30 dBi dish — see how 20 dBi extra gain extends the maximum range dramatically.</li>
-      <li>Set BW = 100 MHz vs 200 kHz (NB-IoT) — the noise floor drops 27 dB, enabling much longer range at low data rates.</li>
-    </ul>
-
-    <div class="help-section">Reference</div>
-    <div class="help-body">Pozar, <em>Microwave Engineering</em>, 4th ed., Wiley, 2012, §2.7 (Friis transmission equation). Friis, H.T., <em>Proc. IRE</em>, 34(5), 1946.</div>
-  </div>
-</div>
 </body>
 </html>
