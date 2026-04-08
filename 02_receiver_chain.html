@@ -172,14 +172,15 @@ table.sens-tbl td:first-child{text-align:left;font-family:'Segoe UI',system-ui,s
 </div>
 
 <!-- What-If Sensitivity Table -->
+<div style="max-width:1200px;margin:0 auto .3rem;padding:0 1.5rem"><h3 style="font-size:.72rem;font-weight:600;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase">What If? — System NF Impact by Stage</h3></div>
 <div class="sens-summary" id="sensSummary">—</div>
 <div class="sens-table-wrap">
   <table class="sens-tbl">
     <thead>
       <tr>
         <th style="text-align:left">Stage</th>
-        <th><span title="How much does system NF improve if this stage's NF improves by 1 dB? Larger = this stage matters more.">Impact: NF −1 dB</span></th>
-        <th><span title="How much does system NF improve if this stage's gain increases by 1 dB? Larger = increasing gain here suppresses downstream noise more.">Impact: Gain +1 dB</span></th>
+        <th><span title="How much does system NF improve if this stage's NF improves by 1 dB? Larger = this stage matters more.">System NF Δ if NF −1 dB</span></th>
+        <th><span title="How much does system NF improve if this stage's gain increases by 1 dB? Larger = increasing gain here suppresses downstream noise more.">System NF Δ if Gain +1 dB</span></th>
         <th>Sensitivity</th>
       </tr>
     </thead>
@@ -356,7 +357,7 @@ function buildSensTable(bw_Hz) {
   // Find most impactful for NF
   const best = sens.reduce((a,b)=>b.dNF>a.dNF?b:a);
   document.getElementById('sensSummary').innerHTML =
-    `<strong>What-if sensitivity:</strong> Improving <b>${best.name}</b>'s NF by 1 dB gives the most system NF improvement (<b>${best.dNF.toFixed(3)} dB</b> reduction). ` +
+    `<strong>What-If Analysis:</strong> Improving <b>${best.name}</b>'s NF by 1 dB gives the most system NF improvement (<b>${best.dNF.toFixed(3)} dB</b> reduction). ` +
     `Hover column headers for explanations.`;
 
   const body = document.getElementById('sensBody');
