@@ -102,7 +102,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
 
 <div class="toolbar">
   <button class="tbtn" onclick="showHelp()">? Help</button>
-  <button class="tbtn" onclick="takeScreenshot()">&#128247; Screenshot</button>
+  <button class="tbtn" onclick="takeScreenshot('Modulation & BER',this)">&#128247; Screenshot</button>
   <button class="tbtn" onclick="exportCSV()">&#11015; Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
   <button class="tbtn" id="copyBtn" onclick="copyLink()">&#8856; Copy Link</button>
@@ -482,7 +482,37 @@ update();
 function showHelp(){document.getElementById('helpOverlay').classList.add('open')}
 function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
-function takeScreenshot(){}
+function _btnFlash(btn, msg) {
+  if (!btn) return;
+  const orig = btn.textContent;
+  btn.textContent = msg; btn.style.color = '#16a34a'; btn.style.borderColor = '#16a34a';
+  setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+}
+function takeScreenshot(toolName, btn) {
+  const canvases = [...document.querySelectorAll('canvas')].filter(c => c.width > 0 && c.height > 0);
+  if (!canvases.length) return;
+  const padding = 16, titleH = 44;
+  const totalW = canvases.reduce((s,c) => s + c.width + padding, padding);
+  const maxH   = Math.max(...canvases.map(c => c.height));
+  const out = document.createElement('canvas');
+  out.width = totalW; out.height = maxH + titleH + padding;
+  const ctx = out.getContext('2d');
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, out.width, out.height);
+  ctx.fillStyle = '#f4f5f7'; ctx.fillRect(0, 0, out.width, titleH);
+  ctx.fillStyle = '#1a1d23'; ctx.font = 'bold 13px Segoe UI, system-ui, sans-serif';
+  ctx.fillText(toolName + '  ·  RF Toolbox', padding, 17);
+  ctx.fillStyle = '#b5895a'; ctx.font = '11px Segoe UI, system-ui, sans-serif';
+  ctx.fillText('hinckster.github.io/RF-Toolbox', padding, 32);
+  const ts = new Date().toISOString().slice(0,19).replace('T',' ') + ' UTC';
+  ctx.fillStyle = '#718096'; ctx.font = '10px Courier New, monospace';
+  ctx.fillText(ts, out.width - ctx.measureText(ts).width - padding, 24);
+  let x = padding;
+  canvases.forEach(c => { ctx.drawImage(c, x, titleH + padding); x += c.width + padding; });
+  const link = document.createElement('a');
+  link.download = toolName.replace(/\s+/g,'-').toLowerCase() + '-' + Date.now() + '.png';
+  link.href = out.toDataURL('image/png'); link.click();
+  _btnFlash(btn, '✓ Saved!');
+}
 function exportCSV(){
   const EbN0_dB=+document.getElementById('sEbN0').value;
   const targetBER=Math.pow(10,+document.getElementById('selBERtarget').value);
