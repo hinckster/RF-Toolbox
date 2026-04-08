@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Antenna Array Factor | RF Toolbox</title>
+<title>Phased Array Beam Pattern (ULA) | RF Toolbox</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -105,7 +105,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
 
 <div class="toolbar">
   <button class="tbtn" onclick="showHelp()">? Help</button>
-  <button class="tbtn" onclick="takeScreenshot('Antenna Array Factor')">📷 Screenshot</button>
+  <button class="tbtn" onclick="takeScreenshot('Phased Array Beam Pattern')">📷 Screenshot</button>
   <button class="tbtn" onclick="exportCSV()">⬇ Export CSV</button>
   <button class="tbtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
   <button class="tbtn" id="copyBtn" onclick="copyLink()">⎘ Copy Link</button>
@@ -116,13 +116,13 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
   <span class="sep">›</span>
   <a href="index.html">RF Toolbox</a>
   <span class="sep">›</span>
-  <span>Antenna Array Factor</span>
+  <span>Phased Array Beam Pattern (ULA)</span>
 </nav>
 
 <header>
   <div class="tag">Tool 04 · Array Theory</div>
-  <h1>ULA Array Factor</h1>
-  <p>Element pattern × amplitude taper → total array pattern. Compare uniform vs tapered; grating lobe markers; Balanis Ch. 6.</p>
+  <h1>Phased Array Beam Pattern (ULA)</h1>
+  <p>Element pattern × amplitude taper → total array pattern. Uniform Linear Array (ULA). Compare uniform vs tapered; grating lobe markers.</p>
 </header>
 
 <div class="eq-box">
@@ -167,7 +167,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
         </select>
       </div>
       <div class="sr">
-        <label>Elements N <span id="vN" style="display:none">16</span></label>
+        <label>Number of Elements (N) <span id="vN" style="display:none">16</span></label>
         <div class="sr-row">
           <input type="range" id="sN" min="2" max="64" step="1" value="16">
           <input type="number" class="si" id="iN" value="16">
@@ -185,7 +185,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
         <div class="hints"><span>0.1λ</span><span>2.0λ</span></div>
       </div>
       <div class="sr">
-        <label>Steer angle θ₀ <span id="vTheta" style="display:none">0°</span></label>
+        <label>Steer Angle θ₀ (degrees) <span id="vTheta" style="display:none">0°</span></label>
         <div class="sr-row">
           <input type="range" id="sTheta" min="-60" max="60" step="1" value="0">
           <input type="number" class="si" id="iTheta" value="0">
@@ -255,7 +255,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
       <div class="metrics">
         <div class="mc"><div class="mlb">Directivity</div><div class="mv info" id="mDir">—</div><div class="mu">dBi</div></div>
         <div class="mc"><div class="mlb">HPBW</div><div class="mv info" id="mHPBW">—</div><div class="mu">deg</div></div>
-        <div class="mc"><div class="mlb">1st SLL</div><div class="mv warn" id="mSLL">—</div><div class="mu">dBc</div></div>
+        <div class="mc"><div class="mlb">1st Sidelobe</div><div class="mv warn" id="mSLL">—</div><div class="mu">dBc</div></div>
         <div class="mc"><div class="mlb">Grating Lobes</div><div class="mv" id="mGL" style="color:var(--tm)">—</div><div class="mu"></div></div>
       </div>
     </div>
