@@ -173,14 +173,14 @@ footer a{color:#b5895a}
       <div class="card-eq">Margin = Pt + Gt − FSPL + Gr − NF − SNR_min</div>
     </a>
 
-    <a class="card" href="02_receiver_chain.html">
-      <div class="card-top"><div class="card-icon">🔬</div><div class="card-arrow">›</div></div>
+    <a class="card" href="02_noise_figure.html">
+      <div class="card-top"><div class="card-icon">📡</div><div class="card-arrow">›</div></div>
       <div>
         <div class="card-num">02 <span class="live-badge">Live</span></div>
-        <h2>Receiver Dynamic Range</h2>
+        <h2>Noise Figure Cascade</h2>
       </div>
-      <div class="card-desc">Fixed 4-stage receiver cascade: NF, cascaded IIP3, SFDR, noise floor, P1dB. Dynamic range window chart shows noise floor → input → IM3 → P1dB → OIP3. What-if sensitivity table per stage.</div>
-      <div class="card-eq">F_sys = F₁ + (F₂−1)/G₁ + ··· · SFDR = ⅔(OIP3 − N_floor)</div>
+      <div class="card-desc">Arbitrary N-stage Friis cascade: NF, gain, IIP3, noise floor per stage. Add, remove, reorder stages. Bar charts show NF contribution and cumulative gain. What-if sensitivity analysis table.</div>
+      <div class="card-eq">F_sys = F₁ + (F₂−1)/G₁ + (F₃−1)/(G₁G₂) + ···</div>
     </a>
 
     <a class="card" href="03_iip3_intermod.html">

@@ -637,7 +637,7 @@ Used only on `index.html` hero background to match the portfolio hero section. N
 |---|---|---|---|---|
 | — | `index.html` | Landing page / portfolio grid | — | ✅ Live |
 | 01 | `01_link_budget.html` | System link budget (cascaded) | Margin = Pt + Gt − FSPL + Gr − NF − SNR_min | ✅ Live |
-| 02 | `02_receiver_chain.html` | Receiver dynamic range | F_sys = F₁ + (F₂−1)/G₁ + ··· · SFDR = ⅔(OIP3 − N_floor) | ✅ Live |
+| 02 | `02_noise_figure.html` | Noise figure cascade (Friis, N stages) | F_sys = F₁ + (F₂−1)/G₁ + (F₃−1)/(G₁G₂) + ··· | ✅ Live |
 | 03 | `03_iip3_intermod.html` | IIP3 / two-tone intermodulation | IIP3 = √(4\|a₁\|/3\|a₃\|) · y = a₁x + a₂x² + a₃x³ | ✅ Live |
 | 04 | `04_antenna_array.html` | ULA array factor / beam patterns | E_total(θ) = E_elem(θ) · Σ aₙe^(jnψ) | ✅ Live |
 | 05 | `05_smith_chart.html` | Smith chart / impedance matching | Γ = (Z_L − Z₀)/(Z_L + Z₀) · VSWR = (1+\|Γ\|)/(1−\|Γ\|) | ✅ Live |
@@ -871,5 +871,5 @@ Consolidation candidates (lower priority):
 - Chart.js version locked to 4.4.1 — test all live files before upgrading
 - Never add login, auth, or any server-side dependency
 - The repo must always be in a deployable state on `main` — every commit must pass the pre-commit checklist
-- When adding a new tool, clone the structure of `02_receiver_chain.html` as the reference page (updated from 01_friis — it uses the newer CSS variable naming)
+- When adding a new tool, clone the structure of `01_link_budget.html` as the reference page — it uses the current CSS variable naming and has the complete toolbar pattern
 - Screenshot PNG exports use the white design system colors — the background is `#ffffff`, not dark

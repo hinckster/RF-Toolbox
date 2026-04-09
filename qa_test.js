@@ -14,7 +14,7 @@ const fs = require('fs');
 const TOOLS = [
   { file: 'index.html',               num: null,  title: 'RF Toolbox' },
   { file: '01_link_budget.html',      num: '01',  title: 'Link Budget' },
-  { file: '02_receiver_chain.html',   num: '02',  title: null },
+  { file: '02_noise_figure.html',     num: '02',  title: null },
   { file: '03_iip3_intermod.html',    num: '03',  title: null },
   { file: '04_antenna_array.html',    num: '04',  title: null },
   { file: '05_smith_chart.html',      num: '05',  title: null },
@@ -171,10 +171,10 @@ async function testPage(browser, tool) {
 
   // 9. Equation box
   const hasEqBox = await tab.evaluate(() =>
-    !!(document.querySelector('.equation-box') || document.querySelector('.eq-box'))
+    !!(document.querySelector('.equation-box') || document.querySelector('.eq-box') || document.querySelector('.eq-bar'))
   );
   const eqBoxEmpty = await tab.evaluate(() => {
-    const el = document.querySelector('.equation-box') || document.querySelector('.eq-box');
+    const el = document.querySelector('.equation-box') || document.querySelector('.eq-box') || document.querySelector('.eq-bar');
     return el ? el.textContent.trim().length < 5 : true;
   });
   results.push(hasEqBox && !eqBoxEmpty ? p('Equation box present and non-empty') : f('Missing or empty equation box'));

@@ -13,7 +13,7 @@ const fs = require('fs');
 const PAGES = [
   'index.html',
   '01_link_budget.html',
-  '02_receiver_chain.html',
+  '02_noise_figure.html',
   '03_iip3_intermod.html',
   '04_antenna_array.html',
   '05_smith_chart.html',
