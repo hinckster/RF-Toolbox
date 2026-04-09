@@ -16,7 +16,7 @@ const PAGES = [
   '02_receiver_chain.html',
   '03_iip3_intermod.html',
   '04_antenna_array.html',
-  '05_matching.html',
+  '05_smith_chart.html',
   '06_radar_range.html',
   '07_superheterodyne.html',
   '08_fspl.html',

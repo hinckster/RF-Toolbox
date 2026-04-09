@@ -640,7 +640,7 @@ Used only on `index.html` hero background to match the portfolio hero section. N
 | 02 | `02_receiver_chain.html` | Receiver dynamic range | F_sys = F₁ + (F₂−1)/G₁ + ··· · SFDR = ⅔(OIP3 − N_floor) | ✅ Live |
 | 03 | `03_iip3_intermod.html` | IIP3 / two-tone intermodulation | IIP3 = √(4\|a₁\|/3\|a₃\|) · y = a₁x + a₂x² + a₃x³ | ✅ Live |
 | 04 | `04_antenna_array.html` | ULA array factor / beam patterns | E_total(θ) = E_elem(θ) · Σ aₙe^(jnψ) | ✅ Live |
-| 05 | `05_matching.html` | Smith chart + TL matching | Γ = (Z_L − Z₀)/(Z_L + Z₀) · Zin = Z₀·(ZL + jZ₀tanβl)/(Z₀ + jZL tanβl) | ✅ Live |
+| 05 | `05_smith_chart.html` | Smith chart / impedance matching | Γ = (Z_L − Z₀)/(Z_L + Z₀) · VSWR = (1+\|Γ\|)/(1−\|Γ\|) | ✅ Live |
 | 06 | `06_radar_range.html` | Radar range equation | R⁴ = Pt·Gt·Gr·λ²·σ / [(4π)³·L·S_min] | ✅ Live |
 | 07 | `07_superheterodyne.html` | Superheterodyne receiver | f_image = f_RF + 2·f_IF · IRR = 20log(2f_IF/BW_RF) | ✅ Live |
 | 08 | `08_fspl.html` | Free-space path loss / multi-band sweep | FSPL = 20log(d_km) + 20log(f_MHz) + 32.44 dB | ✅ Live |
