@@ -98,6 +98,8 @@ table.sens-tbl td:first-child{text-align:left;font-family:'Segoe UI',system-ui,s
 .help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
 .help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
 .help-try li::marker{color:#b5895a}
+.all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
+.all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
 </style>
 </head>
 <body>
@@ -617,5 +619,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
     <div class="help-body">Pozar, <em>Microwave Engineering</em>, 4th ed., Wiley, 2012, §10.1–10.3 (Friis cascade, IIP3 cascade, SFDR).</div>
   </div>
 </div>
+<a href="index.html" class="all-tools-btn">&#8862; All Tools</a>
 </body>
 </html>

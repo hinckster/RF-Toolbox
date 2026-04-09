@@ -46,7 +46,7 @@
   .slider-row { margin-bottom: 1rem; }
   .slider-row label { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.3rem; }
   .slider-row label span { color: var(--orange); font-family: 'Courier New', monospace; font-weight: 600; transition: all 200ms ease; }
-  input[type=range] { width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer; }
+  input[type=range] { width: 100%; accent-color: #2563eb; height: 4px; cursor: pointer; }
   .hints { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 0.15rem; }
   .sr-row { display:flex; align-items:center; gap:6px; }
   .sr-row input[type=range] { flex:1; width:auto; min-width:0; }
@@ -243,7 +243,7 @@ details.try-it ul{margin:8px 0 0 0;padding-left:16px;font-size:0.8rem;color:var(
       <label style="font-size:.78rem;color:var(--muted);white-space:nowrap" title="Quality Factor. Minimum Q = sqrt(R_max/R_min - 1). Higher Q = narrower bandwidth.">Design Q (Quality Factor)</label>
       <input type="range" id="slQ" min="0.1" max="20" step="0.05" value="3"
              oninput="document.getElementById('vQ').textContent=parseFloat(this.value).toFixed(2);update()"
-             style="flex:1;min-width:80px;accent-color:#b5895a">
+             style="flex:1;min-width:80px;accent-color:#2563eb">
       <span id="vQ" style="font-family:'Courier New',monospace;font-size:.82rem;color:#b5895a;min-width:2.5rem">3.00</span>
       <span id="qMinNote" style="font-size:.72rem;color:var(--muted)"></span>
     </div>

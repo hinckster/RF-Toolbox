@@ -129,6 +129,8 @@ tr.drag-over td{background:rgba(37,99,235,.06)}
 .help-section{font-size:.75rem;font-weight:600;text-transform:uppercase;color:#718096;letter-spacing:1px;margin:.9rem 0 .3rem}
 .help-body{font-size:.9rem;color:#4a5568;line-height:1.75}
 .help-try li::marker{color:#b5895a}
+.all-tools-btn{position:fixed;bottom:16px;left:16px;background:#f4f5f7;border:1px solid #d0d4da;color:#718096;border-radius:5px;padding:5px 10px;font-size:.75rem;text-decoration:none;z-index:100;transition:border-color .15s,color .15s}
+.all-tools-btn:hover{border-color:#b5895a;color:#b5895a}
 </style>
 </head>
 <body>
@@ -663,7 +665,8 @@ function update() {
 
   // ARIA updates
   ['sPt','sF','sD','sNF','sBW','sSNR','sLimpl'].forEach(id=>{
-    document.getElementById(id).setAttribute('aria-valuenow', document.getElementById(id).value);
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('aria-valuenow', el.value);
   });
 
   // Core values
@@ -889,12 +892,18 @@ function closeHelp(){document.getElementById('helpOverlay').classList.remove('op
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()})
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-['sPt','sF','sD','sNF','sBW','sSNR','sLimpl'].forEach(id=>{
-  document.getElementById(id).addEventListener('input', update);
-});
-
-// Load standard preset on init
-loadPreset('standard');
+function _init() {
+  ['sPt','sF','sD','sNF','sBW','sSNR','sLimpl'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', update);
+  });
+  loadPreset('standard');
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _init);
+} else {
+  _init();
+}
 </script>
 
 <div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
@@ -935,5 +944,6 @@ loadPreset('standard');
     <div class="help-body">Friis, H.T., <em>A Note on a Simple Transmission Formula</em>, Proc. IRE, 34(5):254–256, 1946. Pozar, <em>Microwave Engineering</em>, 4th ed., §8.1.</div>
   </div>
 </div>
+<a href="index.html" class="all-tools-btn">&#8862; All Tools</a>
 </body>
 </html>
